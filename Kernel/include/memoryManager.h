@@ -13,7 +13,7 @@ typedef struct {
 
 typedef struct MemoryManagerCDT* MemoryManagerADT;
 
-void memory_init();
+void memory_init(void * start, uint64_t size);
 void * memory_alloc(size_t size);
 void memory_free(void* ptr);
 memory_info_t memory_get_info();
