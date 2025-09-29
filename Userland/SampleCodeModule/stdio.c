@@ -1,10 +1,13 @@
+// This is a personal academic project. Dear PVS-Studio, please check it.
+// PVS-Studio Static Code Analyzer for C, C++, C#, and Java:
+// https://pvs-studio.com
+
 #include <syscalls.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
 #include <string.h>
 #include <stdint.h>
-#include <sound.h>
 
 #define CURSOR_FREQ 10  /* Frecuencia en Ticks del dibujo del cursor*/
 
@@ -134,8 +137,6 @@ int scanf(char * fmt, ...) {
             else if(bIdx>0){
                 bIdx--;
                 putchar(c);
-            } else {
-                playSoundLimitReached();
             }
         }
     }

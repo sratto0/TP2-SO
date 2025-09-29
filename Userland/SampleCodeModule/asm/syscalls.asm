@@ -64,11 +64,6 @@ getMemory:
     int 80h
     ret
 
-playSound:
-    mov rax, 10
-    int 80h
-    ret
-
 setFontColor:
     mov rax, 11
     int 80h

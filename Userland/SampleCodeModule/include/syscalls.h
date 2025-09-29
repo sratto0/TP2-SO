@@ -72,13 +72,6 @@ uint64_t getTicks();
 void getMemory(uint64_t pos, uint8_t * vec);
 
 /**
- * @brief Reproduce un sonido
- * @param frequency: Frecuencia del sonido
- * @param ticks: Cantidad de ticks que se desea que dure el sonido
- */
-void playSound(uint64_t frequency, uint64_t ticks);
-
-/**
  * @brief Ejecuta una excepcion de Invalid Opcode Exception
  */
 void kaboom();
