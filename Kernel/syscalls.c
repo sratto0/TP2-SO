@@ -8,7 +8,9 @@
 #include <lib.h>
 #include <color.h>
 #include <time.h>
-#include <memory.h>
+#include "memory.h"
+#include "stdlib.h"
+#include "memoryManager.h"
 /* File Descriptors*/
 #define STDIN 0
 #define STDOUT 1
@@ -26,8 +28,10 @@
 #define DRAW_RECT 7
 #define GET_TICKS 8
 #define GET_MEMORY 9
-#define SET_FONT_COLOR 11
-#define GET_FONT_COLOR 12
+#define SET_FONT_COLOR 10
+#define GET_FONT_COLOR 11
+#define MALLOC 12
+#define FREE 13
 
 static uint8_t syscall_read(uint32_t fd);
 static void syscall_write(uint32_t fd, char c);
@@ -40,6 +44,8 @@ static uint64_t syscall_getTicks();
 static void syscall_getMemory(uint64_t pos, uint8_t * vec);
 static void syscall_setFontColor(uint8_t r, uint8_t g, uint8_t b);
 static uint32_t syscall_getFontColor();
+static void * syscall_malloc(uint64_t size);
+static void syscall_free(void * ptr);
 
 
 uint64_t syscallDispatcher(uint64_t nr, uint64_t arg0, uint64_t arg1, uint64_t arg2, uint64_t arg3, uint64_t arg4, uint64_t arg5) {
@@ -71,6 +77,12 @@ uint64_t syscallDispatcher(uint64_t nr, uint64_t arg0, uint64_t arg1, uint64_t a
             break;
         case GET_FONT_COLOR:
             return syscall_getFontColor();
+        case MALLOC:
+            return (uint64_t) syscall_malloc((uint64_t) arg0);
+            break;
+        case FREE:
+            syscall_free((void *) arg0);
+            break;
 	}
 	return 0;
 }
@@ -146,4 +158,14 @@ static void syscall_setFontColor(uint8_t r, uint8_t g, uint8_t b){
 static uint32_t syscall_getFontColor(){
     ColorInt c = { color: getFontColor() };
     return c.bits;
+}
+
+//Malloc
+static void * syscall_malloc(uint64_t size){
+    return memory_alloc(size);
+}
+
+//Free
+static void syscall_free(void * ptr){
+    memory_free(ptr);
 }

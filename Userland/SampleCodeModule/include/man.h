@@ -21,6 +21,8 @@ char * usages [QTY_COMMANDS] = { "Uso: help - muestra todos los comandos que exi
                               "Uso: printmem [DIR] - imprime los primeros 32 bytes de memoria a partir de una direccion de memoria enviada como parametro\n"
                               "Ejemplo: printmem 10ff8c",
                               
-                              "Uso: clear - limpia la pantalla. No recibe parametros"
+                              "Uso: clear - limpia la pantalla. No recibe parametros",
+
+                              "Uso: test-mm - corre el test del memory manager. No recibe parametros"
                               };
 #endif

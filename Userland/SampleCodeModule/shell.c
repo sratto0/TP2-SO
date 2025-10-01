@@ -5,11 +5,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <shell.h>
+#include "./include/shell.h"
 #include <stdint.h>
-#include <syscalls.h>
-#include <man.h>
+#include "./include/syscalls.h"
+#include "./include/man.h"
 #include <libasm.h>
+#include "./include/test_functions.h"
 
 /* Enum para la cantidad de argumentos recibidos */
 typedef enum {NO_PARAMS = 0, SINGLE_PARAM, DUAL_PARAM} functionType;    
@@ -44,6 +45,7 @@ static int div(char * num, char * div);
 static void fontSize(char * size);
 static void printMem(char * pos);
 static int getCommandIndex(char * command);
+static void mm_test();
 
 static Command commands[QTY_COMMANDS];
 
@@ -54,9 +56,10 @@ void init() {
     commands[3] = (Command){"time", "Despliega la hora actual UTC - 3", .f = (void*) &time, NO_PARAMS};
     commands[4] = (Command){ "div", "Hace la division entera de dos numeros naturales enviados por parametro", .h = (void*) &div, DUAL_PARAM};
     commands[5] = (Command){ "kaboom", "Ejecuta una excepcion de Invalid Opcode", .f = (void*) &kaboom, NO_PARAMS};
-    commands[8] = (Command){ "font-size", "Cambio de dimensiones de la fuente. Para hacerlo escribir el comando seguido de un numero", .g = (void*) &fontSize, SINGLE_PARAM};
-    commands[9] = (Command){ "printmem", "Realiza un vuelco de memoria de los 32 bytes posteriores a una direccion de memoria en formato hexadecimal enviada por parametro", .g = (void*) &printMem, SINGLE_PARAM};
-    commands[10] = (Command){ "clear", "Limpia toda la pantalla", .f = (void*) &clear, NO_PARAMS};
+    commands[6] = (Command){ "font-size", "Cambio de dimensiones de la fuente. Para hacerlo escribir el comando seguido de un numero", .g = (void*) &fontSize, SINGLE_PARAM};
+    commands[7] = (Command){ "printmem", "Realiza un vuelco de memoria de los 32 bytes posteriores a una direccion de memoria en formato hexadecimal enviada por parametro", .g = (void*) &printMem, SINGLE_PARAM};
+    commands[8] = (Command){ "clear", "Limpia toda la pantalla", .f = (void*) &clear, NO_PARAMS};
+    commands[9] = (Command){"test-mm", "Corre el test del memory mamager", .f = (void*)&mm_test, NO_PARAMS};
 }
 
 void run_shell() {
@@ -164,4 +167,8 @@ static void man(char * command){
         printf("%s\n", usages[idx]);
     else
         printErr(INVALID_COMMAND);
+}
+
+static void mm_test() {
+    test_mm(1, (char*[]){"4000000"});
 }

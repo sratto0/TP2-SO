@@ -2,7 +2,7 @@
 #define _SYSCALLS_H
 
 #include <stdint.h>
-#include <color.h>
+#include "color.h"
 
 /**
  * @brief Escribe a partir del descriptor recibido un caracter
@@ -89,4 +89,15 @@ void setFontColor(uint8_t r, uint8_t g, uint8_t b);
  * @return Color 
  */
 Color getFontColor();
+
+/**
+ * @brief Asigna memoria dinamica
+ * @param size: Cantidad de bytes a asignar
+ * @return Puntero a la memoria asignada
+ */
+void * malloc(uint64_t size);
+
+void free(void * ptr);
+
+
 #endif

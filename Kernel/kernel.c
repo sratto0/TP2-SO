@@ -45,35 +45,9 @@ void initializeKernelBinary()
 	clearBSS(&bss, &endOfKernel - &bss);
 }
 
-void memory_test() {
-    void *ptr1 = memory_alloc(100);
-    void *ptr2 = memory_alloc(200);
-    void *ptr3 = memory_alloc(50);
-    
-    // Si tienes funciones de print, puedes usarlas aquí para debug
-    printf("ptr1: %p, ptr2: %p, ptr3: %p\n", ptr1, ptr2, ptr3);
-    
-    memory_info_t info = memory_get_info();
-    printf("Used: %lu, Free: %lu\n", info.used, info.free);
-    
-    memory_free(ptr2);  // Liberar el del medio
-    memory_free(ptr1);
-    memory_free(ptr3);
-}
-
 int main()
 {	
 	load_idt();
-
-    // Inicializar memory manager
-    // Usar memoria después de los módulos cargados
-    void * heap_start = (void*)0x600000;  // Después de sampleDataModuleAddress
-    uint64_t heap_size = 1024 * 1024;    // 1MB
-    
-    memory_init(heap_start, heap_size);
-    
-    // Probar el memory manager
-    memory_test();
 
 	((EntryPoint)sampleCodeModuleAddress)();
 	while(1) _hlt();
