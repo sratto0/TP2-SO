@@ -12,8 +12,8 @@ GLOBAL playSound
 GLOBAL kaboom
 GLOBAL setFontColor
 GLOBAL getFontColor
-GLOBAL malloc
-GLOBAL free
+GLOBAL sys_malloc
+GLOBAL sys_free
 
 read:
     mov rax, 0
@@ -76,12 +76,12 @@ getFontColor:
     int 80h
     ret
 
-malloc:
+sys_malloc:
     mov rax, 12
     int 80h
     ret
 
-free:
+sys_free:
     mov rax, 13
     int 80h
     ret

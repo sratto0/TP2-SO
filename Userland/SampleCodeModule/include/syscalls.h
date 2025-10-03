@@ -95,9 +95,10 @@ Color getFontColor();
  * @param size: Cantidad de bytes a asignar
  * @return Puntero a la memoria asignada
  */
-void * malloc(uint64_t size);
+ 
+void * sys_malloc(uint64_t size);
 
-void free(void * ptr);
+void sys_free(void * ptr);
 
 
 #endif

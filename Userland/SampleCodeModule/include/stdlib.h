@@ -1,6 +1,7 @@
 #ifndef _STDLIB_H
 #define _STDLIB_H
 #include <stdint.h>
+#include "syscalls.h"
 
 /**
  * @brief Convierte un arreglo de caracteres en numero entero en formato decimal
@@ -33,4 +34,9 @@ int strtoh(char* s, char ** end);
  * @return Longitud del buffer (numero que se convirtio en cadena de caracteres)
  */
 int itoa(uint64_t n, char* buffer, int base);
+
+void * my_malloc(uint64_t size);
+
+void my_free(void * ptr);
+
 #endif

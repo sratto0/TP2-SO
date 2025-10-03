@@ -44,8 +44,8 @@ static uint64_t syscall_getTicks();
 static void syscall_getMemory(uint64_t pos, uint8_t * vec);
 static void syscall_setFontColor(uint8_t r, uint8_t g, uint8_t b);
 static uint32_t syscall_getFontColor();
-static void * syscall_malloc(uint64_t size);
-static void syscall_free(void * ptr);
+static uint64_t syscall_malloc(uint64_t size);  
+static void syscall_free(void * ptr);           
 
 
 uint64_t syscallDispatcher(uint64_t nr, uint64_t arg0, uint64_t arg1, uint64_t arg2, uint64_t arg3, uint64_t arg4, uint64_t arg5) {
@@ -161,8 +161,8 @@ static uint32_t syscall_getFontColor(){
 }
 
 //Malloc
-static void * syscall_malloc(uint64_t size){
-    return memory_alloc(size);
+static uint64_t syscall_malloc(uint64_t size){
+    return (uint64_t) memory_alloc(size);
 }
 
 //Free

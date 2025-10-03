@@ -2,7 +2,7 @@
 // PVS-Studio Static Code Analyzer for C, C++, C#, and Java:
 // https://pvs-studio.com
 
-#include <stdlib.h>
+#include "stdlib.h"
 #include <stdint.h>
 #include <stdio.h>
 
@@ -74,4 +74,12 @@ int strtoh(char* s, char ** end) {
     }
     *end = s; 
     return num;
+}
+
+void * my_malloc(uint64_t size){
+    return (void *) sys_malloc(size);
+}
+
+void my_free(void * ptr){
+    sys_free(ptr);
 }

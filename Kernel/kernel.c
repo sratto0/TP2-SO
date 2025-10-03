@@ -47,6 +47,7 @@ void initializeKernelBinary()
 
 int main()
 {	
+	memory_init((void *)0XF00000, 0X100000);
 	load_idt();
 
 	((EntryPoint)sampleCodeModuleAddress)();
