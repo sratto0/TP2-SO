@@ -23,6 +23,10 @@ char * usages [QTY_COMMANDS] = { "Uso: help - muestra todos los comandos que exi
                               
                               "Uso: clear - limpia la pantalla. No recibe parametros",
 
-                              "Uso: test-mm - corre el test del memory manager. No recibe parametros"
+                              "Uso: test-mm - corre el test del memory manager. No recibe parametros",
+
+                              "Uso: test-processes - corre el test de procesos. No recibe parametros",
+                              
+                              "Uso: test-prio - corre el test de prioridades. No recibe parametros"
                               };
 #endif

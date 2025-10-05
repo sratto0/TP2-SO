@@ -34,7 +34,7 @@ include Makefile.inc
 
 KERNEL=kernel.bin
 # Use all C sources except the original memoryManager.c; we will use buddyMemoryManager.c instead
-SOURCES=$(filter-out memoryManager.c,$(wildcard *.c))
+SOURCES=$(filter-out ./memoryManager/memoryManager.c,$(wildcard *.c))
 SOURCES_ASM=$(wildcard asm/*.asm)
 OBJECTS=$(SOURCES:.c=.o)
 OBJECTS_ASM=$(SOURCES_ASM:.asm=.o)

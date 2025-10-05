@@ -60,6 +60,8 @@ void init() {
     commands[7] = (Command){ "printmem", "Realiza un vuelco de memoria de los 32 bytes posteriores a una direccion de memoria en formato hexadecimal enviada por parametro", .g = (void*) &printMem, SINGLE_PARAM};
     commands[8] = (Command){ "clear", "Limpia toda la pantalla", .f = (void*) &clear, NO_PARAMS};
     commands[9] = (Command){"test-mm", "Corre el test del memory mamager", .f = (void*)&mm_test, NO_PARAMS};
+    commands[10] = (Command){"test-processes", "Corre el test de procesos", .f = (void*)&test_processes, NO_PARAMS};
+    commands[11] = (Command){"test-prio", "Corre el test de prioridades", .f = (void*)&test_prio, NO_PARAMS};
 }
 
 void run_shell() {

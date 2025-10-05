@@ -4,6 +4,20 @@
 #include <stdint.h>
 #include "color.h"
 
+typedef struct PInfo{
+    uint8_t priority;
+    int16_t pid;
+    int ground;
+    uint64_t stack_pos;
+    uint64_t stack_base;
+    uint8_t status;
+    uint64_t rip;
+    char * name;
+}PInfo;
+
+typedef struct PInfo * TPInfo;
+
+
 /**
  * @brief Escribe a partir del descriptor recibido un caracter
  * @param fd: FileDescriptor (STDOUT | STDERR)
@@ -100,5 +114,21 @@ void * sys_malloc(uint64_t size);
 
 void sys_free(void * ptr);
 
+uint64_t sys_getpid();
+uint64_t sys_create_process(char *name, uint64_t argc, char *argv[]);
+uint64_t sys_nice(uint64_t pid, uint64_t new_prio);
+uint64_t sys_kill(uint64_t pid);
+uint64_t sys_block(uint64_t pid);
+uint64_t sys_unblock(uint64_t pid);
+TPInfo sys_process_info(uint64_t *process_cant);
+uint64_t sys_change_priority(uint64_t pid, uint64_t new_prio);
+
+
+// int64_t sys_sem_open(char *sem_id, uint64_t initialValue);
+// int64_t sys_sem_wait(char *sem_id);
+// int64_t sys_sem_post(char *sem_id);
+// int64_t sys_sem_close(char *sem_id);
+// int64_t sys_yield();
+// int64_t sys_wait(int64_t pid);
 
 #endif

@@ -14,6 +14,14 @@ GLOBAL setFontColor
 GLOBAL getFontColor
 GLOBAL sys_malloc
 GLOBAL sys_free
+GLOBAL sys_create_process
+GLOBAL sys_process_info
+GLOBAL sys_getpid
+GLOBAL sys_kill
+GLOBAL sys_change_priority
+GLOBAL sys_block
+GLOBAL sys_unblock
+GLOBAL sys_nice
 
 read:
     mov rax, 0
@@ -85,3 +93,45 @@ sys_free:
     mov rax, 13
     int 80h
     ret
+
+sys_create_process:
+    mov rax, 14
+    mov r10, rcx
+    int 80h
+    ret
+
+sys_process_info:
+    mov rax, 15
+    int 80h
+    ret
+
+sys_getpid:
+    mov rax, 16
+    int 80h
+    ret
+
+sys_kill:
+    mov rax, 17
+    int 80h
+    ret
+
+sys_change_priority:
+    mov rax, 18
+    int 80h
+    ret
+
+sys_block:
+    mov rax, 19
+    int 80h
+    ret
+
+sys_unblock:
+    mov rax, 20
+    int 80h
+    ret
+
+sys_nice:
+    mov rax, 21
+    int 80h
+    ret
+
