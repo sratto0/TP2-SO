@@ -51,13 +51,11 @@
 #include <stdio.h>
 #include <string.h>
 
-/* colas por prioridad: Round-Robin interno */
 static process_t *queues[PRIORITY_LEVELS][MAX_PROCESSES];
 static int q_count[PRIORITY_LEVELS];
 static int q_head[PRIORITY_LEVELS];
 static process_t *current_proc = NULL;
 
-/* dummy stack pointer para el caso "prev == NULL" */
 static void *dummy_sp = NULL;
 
 void scheduler_init(void) {
@@ -102,11 +100,12 @@ void scheduler_remove(process_t *p) {
   remove_from_priority(p, p->priority);
 }
 
-void scheduler_change_priority(process_t *p, uint8_t new_prio) {
+void my_change_priority(process_t *p, uint8_t new_prio) {
   if (!p) return;
   remove_from_priority(p, p->priority);
   p->priority = (new_prio >= PRIORITY_LEVELS) ? (PRIORITY_LEVELS - 1) : new_prio;
   if (p->state == PROC_READY) enqueue_at_priority(p, p->priority);
+  
 }
 
 process_t *scheduler_next(void) {
@@ -129,8 +128,6 @@ process_t *scheduler_current(void) {
   return current_proc;
 }
 
-/* Cambia ejecución al siguiente proceso disponible.
-   Llamar desde tick timer para preempción o desde yield syscalls. */
 void scheduler_yield(void) {
   process_t *next = scheduler_next();
   process_t *prev = current_proc;
@@ -150,8 +147,9 @@ void scheduler_yield(void) {
   /* Pasamos las direcciones de los campos stack_pointer al asm */
   void **from_ptr = prev ? &prev->stack_pointer : &dummy_sp;
   void **to_ptr = &next->stack_pointer;
-  context_switch(from_ptr, to_ptr);
+  // no tenemos implementado un context_switch
+  // context_switch(from_ptr, to_ptr);
 }
 
-/* Nota: context_switch está implementada en ASM (context_switch.S) */
-void context_switch(void **from_sp_ptr, void **to_sp_ptr);
+// /* Nota: context_switch está implementada en ASM (context_switch.S) */
+// void context_switch(void **from_sp_ptr, void **to_sp_ptr);

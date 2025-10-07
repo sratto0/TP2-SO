@@ -18,11 +18,11 @@
 // } process_t;
 
 #include <stdint.h>
-
-#define MAX_PROCESSES 64
-#define PRIORITY_LEVELS 3 /* 0 = low, 1 = med, 2 = high */
+#include "memoryManager.h"
+#include "scheduler.h"
 
 typedef enum { PROC_READY, PROC_RUNNING, PROC_BLOCKED, PROC_KILLED } proc_state_t;
+
 
 typedef struct process {
     int32_t pid;
@@ -47,6 +47,7 @@ int my_unblock(int32_t pid);
 int my_nice(int32_t pid, int new_prio);
 int32_t my_getpid(void);
 void my_list_processes(void);
-int my_process_info(int32_t pid, process_info_t *out);
+int my_process_info(int32_t pid, process_t *out);
+
 
 #endif

@@ -11,6 +11,8 @@
 #include "memory.h"
 #include "stdlib.h"
 #include "memoryManager.h"
+#include "scheduler.h"
+
 /* File Descriptors*/
 #define STDIN 0
 #define STDOUT 1
@@ -55,10 +57,10 @@ static uint32_t syscall_getFontColor();
 static uint64_t syscall_malloc(uint64_t size);  
 static void syscall_free(void * ptr);
 static uint64_t syscall_create_process(char *name, uint64_t argc, char *argv[]);
-static uint64_t syscall_process_info(uint64_t *process_cant);
+static uint64_t syscall_process_info(int32_t pid, process_t *out);
 static uint64_t syscall_getpid();
 static uint64_t syscall_kill(uint64_t pid);
-static uint64_t syscall_change_priority(uint64_t pid, uint64_t new_prio);
+static void syscall_change_priority(process_t * p, uint8_t new_prio);
 static uint64_t syscall_block(uint64_t pid);
 static uint64_t syscall_unblock(uint64_t pid);
 static uint64_t syscall_nice(uint64_t pid, uint64_t new_prio);        
@@ -100,28 +102,28 @@ uint64_t syscallDispatcher(uint64_t nr, uint64_t arg0, uint64_t arg1, uint64_t a
             syscall_free((void *) arg0);
             break;
         case CREATE_PROCESS:
-            return (uint64_t) sys_create_process((char *) arg0, (uint64_t) arg1, (char **) arg2);
+            return (uint64_t) syscall_create_process((char *) arg0, (uint64_t) arg1, (char **) arg2);
             break;
         case PROCESS_INFO:
-            return (uint64_t) processInfo((uint64_t *) arg0);
+            return (uint64_t) syscall_process_info((int32_t) arg0, (process_t *) arg1);
             break;
         case GETPID:
-            return (uint64_t) sys_getpid();
+            return (uint64_t) syscall_getpid();
             break;
         case KILL:
-            return (uint64_t) sys_kill((uint64_t) arg0);
+            return (uint64_t) syscall_kill((uint64_t) arg0);
             break;
         case CHANGE_PRIORITY:
-            return (uint64_t) sys_change_priority((uint64_t) arg0, (uint64_t) arg1);
+            syscall_change_priority((process_t *) arg0, (uint8_t) arg1);
             break;
         case BLOCK:
-            return (uint64_t) sys_block((uint64_t) arg0);
+            return (uint64_t) syscall_block((uint64_t) arg0);
             break;
         case UNBLOCK:
-            return (uint64_t) sys_unblock((uint64_t) arg0);
+            return (uint64_t) syscall_unblock((uint64_t) arg0);
             break;
         case NICE:
-            return (uint64_t) sys_nice((uint64_t) arg0, (uint64_t) arg1);
+            return (uint64_t) syscall_nice((uint64_t) arg0, (uint64_t) arg1);
             break;
 	}
 	return 0;
@@ -216,8 +218,8 @@ static uint64_t syscall_create_process(char *name, uint64_t argc, char *argv[]){
 }
 
 //Process info
-static uint64_t syscall_process_info(uint64_t *process_cant){
-    return (uint64_t) my_process_info(process_cant);
+static uint64_t syscall_process_info(int32_t pid, process_t *out){
+    return (uint64_t) my_process_info(pid, out);
 }
 
 //Get pid
@@ -231,8 +233,8 @@ static uint64_t syscall_kill(uint64_t pid){
 }
 
 //Change priority
-static uint64_t syscall_change_priority(uint64_t pid, uint64_t new_prio){
-    return (uint64_t) my_change_priority(pid, new_prio);
+static void syscall_change_priority(process_t * p, uint8_t new_prio){
+    my_change_priority(p, new_prio);
 }
 
 //Block

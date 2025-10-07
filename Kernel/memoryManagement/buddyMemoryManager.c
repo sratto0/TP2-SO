@@ -1,4 +1,4 @@
-#include "include/memoryManager.h"
+#include "memoryManager.h"
 
 // Enable this file by compiling with -DUSE_BUDDY_MM to avoid duplicate symbols
 #ifdef USE_BUDDY_MM

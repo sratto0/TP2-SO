@@ -114,14 +114,14 @@ void * sys_malloc(uint64_t size);
 
 void sys_free(void * ptr);
 
-uint64_t sys_getpid();
-uint64_t sys_create_process(char *name, uint64_t argc, char *argv[]);
-uint64_t sys_nice(uint64_t pid, uint64_t new_prio);
-uint64_t sys_kill(uint64_t pid);
-uint64_t sys_block(uint64_t pid);
-uint64_t sys_unblock(uint64_t pid);
-TPInfo sys_process_info(uint64_t *process_cant);
-uint64_t sys_change_priority(uint64_t pid, uint64_t new_prio);
+extern uint64_t sys_getpid();
+extern uint64_t sys_create_process(char *name, uint64_t argc, char *argv[]);
+extern uint64_t sys_nice(uint64_t pid, uint64_t new_prio);
+extern uint64_t sys_kill(uint64_t pid);
+extern uint64_t sys_block(uint64_t pid);
+extern uint64_t sys_unblock(uint64_t pid);
+extern TPInfo sys_process_info(uint64_t *process_cant);
+extern uint64_t sys_change_priority(uint64_t pid, uint64_t new_prio);
 
 
 // int64_t sys_sem_open(char *sem_id, uint64_t initialValue);
