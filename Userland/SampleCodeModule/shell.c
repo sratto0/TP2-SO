@@ -11,9 +11,11 @@
 #include "./include/man.h"
 #include <libasm.h>
 #include "./include/test_functions.h"
+#include <stddef.h>
 
 /* Enum para la cantidad de argumentos recibidos */
-typedef enum {NO_PARAMS = 0, SINGLE_PARAM, DUAL_PARAM} functionType;    
+typedef enum { NO_PARAMS = 0, SINGLE_PARAM, DUAL_PARAM } functionType;
+
 #define QTY_BYTES 32 /* Cantidad de bytes de respuesta del printmem */
 #define DEFAULT_FONT_SIZE 1
 #define MIN_FONT_SIZE 1
@@ -30,9 +32,10 @@ typedef struct {
     char * name;                    // Nombre del comando
     char * description;             // Descripcion del comando (para help)
     union {                         // Puntero a la funcion
-       int (*f)(void);
-       int (*g)(char *);
-       int (*h)(char *, char *);
+       int  (*f)(void);
+       int  (*g)(char *);
+       int  (*h)(char *, char *);
+       void (*s)(char **);          // Variante que recibe char** (argv)
     };
     functionType ftype;             // Cantidad de argumentos del comando
 } Command;
@@ -45,55 +48,72 @@ static int div(char * num, char * div);
 static void fontSize(char * size);
 static void printMem(char * pos);
 static int getCommandIndex(char * command);
-static void mm_test();
+static void mm_test(char ** max_memory);
 
 static Command commands[QTY_COMMANDS];
 
 void init() {
-    commands[0] = (Command){"help", "Listado de comandos", .f = (void*) &help, NO_PARAMS};
-    commands[1] = (Command){ "man", "Manual de uso de los comandos", .g = (void*) &man, SINGLE_PARAM};
-    commands[2] = (Command){"inforeg", "Informacion de los registos que fueron capturados en un momento arbitrario de ejecucion del sistema", .f = (void*)&printInfoReg, NO_PARAMS}; 
-    commands[3] = (Command){"time", "Despliega la hora actual UTC - 3", .f = (void*) &time, NO_PARAMS};
-    commands[4] = (Command){ "div", "Hace la division entera de dos numeros naturales enviados por parametro", .h = (void*) &div, DUAL_PARAM};
-    commands[5] = (Command){ "kaboom", "Ejecuta una excepcion de Invalid Opcode", .f = (void*) &kaboom, NO_PARAMS};
-    commands[6] = (Command){ "font-size", "Cambio de dimensiones de la fuente. Para hacerlo escribir el comando seguido de un numero", .g = (void*) &fontSize, SINGLE_PARAM};
-    commands[7] = (Command){ "printmem", "Realiza un vuelco de memoria de los 32 bytes posteriores a una direccion de memoria en formato hexadecimal enviada por parametro", .g = (void*) &printMem, SINGLE_PARAM};
-    commands[8] = (Command){ "clear", "Limpia toda la pantalla", .f = (void*) &clear, NO_PARAMS};
-    commands[9] = (Command){"test-mm", "Corre el test del memory mamager", .f = (void*)&mm_test, NO_PARAMS};
-    commands[10] = (Command){"test-processes", "Corre el test de procesos", .f = (void*)&test_processes, NO_PARAMS};
-    commands[11] = (Command){"test-prio", "Corre el test de prioridades", .f = (void*)&test_prio, NO_PARAMS};
+    commands[0]  = (Command){ "help",           "Listado de comandos",                                                                 .f = (void*)&help,        NO_PARAMS };
+    commands[1]  = (Command){ "man",            "Manual de uso de los comandos",                                                       .g = (void*)&man,         SINGLE_PARAM };
+    commands[2]  = (Command){ "inforeg",        "Informacion de los registos capturados",                                             .f = (void*)&printInfoReg, NO_PARAMS };
+    commands[3]  = (Command){ "time",           "Despliega la hora actual UTC - 3",                                                   .f = (void*)&time,        NO_PARAMS };
+    commands[4]  = (Command){ "div",            "Division entera de dos numeros naturales",                                           .h = (void*)&div,         DUAL_PARAM };
+    commands[5]  = (Command){ "kaboom",         "Ejecuta una excepcion de Invalid Opcode",                                            .f = (void*)&kaboom,      NO_PARAMS };
+    commands[6]  = (Command){ "font-size",      "Cambia dimensiones de la fuente",                                                    .g = (void*)&fontSize,    SINGLE_PARAM };
+    commands[7]  = (Command){ "printmem",       "Vuelco de memoria de 32 bytes desde direccion dada",                                 .g = (void*)&printMem,    SINGLE_PARAM };
+    commands[8]  = (Command){ "clear",          "Limpia toda la pantalla",                                                            .f = (void*)&clear,       NO_PARAMS };
+    // test-mm requiere pasar char** (argv) para reutilizar la firma del test que pide argv[]
+    commands[9]  = (Command){ "test-mm",        "Corre el test del memory manager",                                                   .s = (void*)&mm_test,     SINGLE_PARAM };
+    commands[10] = (Command){ "test-processes", "Corre el test de procesos",                                                          .f = (void*)&test_processes, NO_PARAMS };
+    commands[11] = (Command){ "test-prio",      "Corre el test de prioridades",                                                       .f = (void*)&test_prio,   NO_PARAMS };
 }
 
 void run_shell() {
     init();
     int index;
     puts(WELCOME);
-    while(1){
+    while (1) {
         putchar('>');
         char command[MAX_CHARS] = {0};
-        char arg1[MAX_CHARS];
-        char arg2[MAX_CHARS];
-        int qtyParams = scanf("%s %s %s", command, arg1, arg2); 
+        char arg1[MAX_CHARS] = {0};
+        char arg2[MAX_CHARS] = {0};
+
+        int qtyParams = scanf("%s %s %s", command, arg1, arg2);
+        if (qtyParams <= 0) {
+            continue;
+        }
+
         index = getCommandIndex(command);
         if (index == -1) {
             if (command[0] != 0)
                 printErr(INVALID_COMMAND);
             continue;
         }
+
         int funcParams = commands[index].ftype;
-        if(qtyParams - 1 != funcParams){
+        if (qtyParams - 1 != funcParams) {
             printErr(WRONG_PARAMS);
             printf(CHECK_MAN, command);
             continue;
         }
-        switch (commands[index].ftype)
-        {
-            case NO_PARAMS: 
+
+        switch (commands[index].ftype) {
+            case NO_PARAMS:
                 commands[index].f();
                 break;
-            case SINGLE_PARAM:
-                commands[index].g(arg1);
+
+            case SINGLE_PARAM: {
+                // Si el comando fue registrado con .s (char**),
+                // armamos argv con un único parámetro y lo pasamos.
+                if (commands[index].s != NULL) {
+                    char *argv1[2] = { arg1, NULL };
+                    commands[index].s(argv1);
+                } else {
+                    commands[index].g(arg1);
+                }
                 break;
+            }
+
             case DUAL_PARAM:
                 commands[index].h(arg1, arg2);
                 break;
@@ -104,14 +124,14 @@ void run_shell() {
 /**
  * @brief  Devuelve el indice del vector de comandos dado su nombre
  * @param  command: Nombre del comando a buscar
- * @return  Indice del comando 
+ * @return  Indice del comando
  */
 static int getCommandIndex(char * command) {
     int idx = 0;
-    for(; idx < QTY_COMMANDS; idx++){
-        if(!strcmp(commands[idx].name, command))
+    for (; idx < QTY_COMMANDS; idx++) {
+        if (!strcmp(commands[idx].name, command))
             return idx;
-    }    
+    }
     return -1;
 }
 
@@ -125,7 +145,7 @@ static int div(char * num, char * div) {
     return 1;
 }
 
-static void time(){
+static void time() {
     uint32_t secs = getSeconds();
     uint32_t h = secs / 3600, m = secs % 3600 / 60, s = secs % 3600 % 60;
     printf("%2d:%2d:%2d\r\n", h, m, s);
@@ -133,20 +153,19 @@ static void time(){
 
 static void fontSize(char * size) {
     int s = atoi(size);
-    if(s >= MIN_FONT_SIZE && s <= MAX_FONT_SIZE)
+    if (s >= MIN_FONT_SIZE && s <= MAX_FONT_SIZE)
         setFontSize((uint8_t)atoi(size));
-    else{
+    else {
         printErr(INVALID_FONT_SIZE);
         puts(CHECK_MAN_FONT);
     }
 }
 
-
-static void printMem(char * pos){
+static void printMem(char * pos) {
     uint8_t resp[QTY_BYTES];
     char * end;
     getMemory(strtoh(pos, &end), resp);
-    for(int i = 0; i < QTY_BYTES; i++) {
+    for (int i = 0; i < QTY_BYTES; i++) {
         printf("0x%2x ", resp[i]);
         if (i % 4 == 3)
             putchar('\n');
@@ -160,10 +179,9 @@ static void printInfoReg() {
     getInfoReg(regSnapshot);
     for (int i = 0; i < len; i++)
         printf("%s: 0x%x\n", _regNames[i], regSnapshot[i]);
-    
 }
 
-static void man(char * command){
+static void man(char * command) {
     int idx = getCommandIndex(command);
     if (idx != -1)
         printf("%s\n", usages[idx]);
@@ -171,6 +189,11 @@ static void man(char * command){
         printErr(INVALID_COMMAND);
 }
 
-static void mm_test() {
-    test_mm(1, (char*[]){"4000000"});
+// Wrapper que adapta (char**) para test_mm(argc, argv)
+static void mm_test(char ** max_memory) {
+    if(atoi(max_memory[0]) <= 0) {
+        printErr("El parametro debe ser un numero positivo\n");
+        return;
+    }
+    test_mm(1, max_memory);
 }

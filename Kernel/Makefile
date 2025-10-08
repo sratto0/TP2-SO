@@ -2,7 +2,8 @@ include Makefile.inc
 
 KERNEL=kernel.bin
 # SOURCES=$(wildcard *.c)
-SOURCES=$(wildcard *.c memoryManagement/*.c process/*.c)
+SOURCES=$(wildcard *.c memoryManagement/.c process/*.c)
+# SOURCES=$(wildcard *.c memoryManagement/buddyMemoryManager.c process/*.c)
 SOURCES_ASM=$(wildcard asm/*.asm)
 OBJECTS=$(SOURCES:.c=.o)
 OBJECTS_ASM=$(SOURCES_ASM:.asm=.o)

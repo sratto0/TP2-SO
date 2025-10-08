@@ -7,7 +7,7 @@
 #define PRIORITY_LEVELS 3 /* 0 = low, 1 = med, 2 = high */
 #define MAX_PROCESSES 64
 
-
+typedef struct process process_t;
 /* Scheduler API */
 void scheduler_init(void);
 void scheduler_add(process_t *p);

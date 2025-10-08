@@ -1,7 +1,7 @@
 #include "memoryManager.h"
 
-// Enable this file by compiling with -DUSE_BUDDY_MM to avoid duplicate symbols
-#ifdef USE_BUDDY_MM
+// // Enable this file by compiling with -DUSE_BUDDY_MM to avoid duplicate symbols
+// #ifdef USE_BUDDY_MM
 
 // Constants and helpers exactly as in the reference
 #define FREE 0
@@ -174,4 +174,4 @@ static void setSplitedChildren(uint64_t node) {
 	}
 }
 
-#endif // USE_BUDDY_MM
+// #endif // USE_BUDDY_MM
