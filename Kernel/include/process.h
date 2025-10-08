@@ -25,9 +25,10 @@ typedef enum { PROC_READY, PROC_RUNNING, PROC_BLOCKED, PROC_KILLED } proc_state_
 
 
 typedef struct process {
-    int32_t pid;
+  int32_t pid;
   char name[32];
   uint8_t priority;
+  uint8_t quantum; /* 1 si es foreground, 0 si es background */
   proc_state_t state;
   void *stack_pointer; /* valor actual del SP guardado en el descriptor */
   void *stack_base;    /* inicio del buffer de stack */
