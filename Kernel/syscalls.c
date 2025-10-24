@@ -12,6 +12,7 @@
 #include "stdlib.h"
 #include "memoryManager.h"
 #include "scheduler.h"
+#include "process.h"
 
 /* File Descriptors*/
 #define STDIN 0
@@ -67,7 +68,7 @@ static uint32_t syscall_get_pid();
 static int syscall_block_process(uint16_t pid);
 static int syscall_unblock_process(uint16_t pid);
 static int syscall_set_priority(uint16_t pid, uint8_t priority);
-static int syscall_get_processes_info();
+static uint64_t syscall_get_processes_info();
 static int syscall_kill_process(uint16_t pid);
 static int syscall_wait_pid(uint16_t pid, int32_t * exit_code);
 static uint64_t syscall_total_ticks();
@@ -257,13 +258,13 @@ static int syscall_set_priority(uint16_t pid, uint8_t priority) {
 }
 
 //Get process info
-static uint64_t syscall_get_process_info() {
+static uint64_t syscall_get_processes_info() {
     return (uint64_t) get_processes_info();
 }
 
 // Kill process
 static int syscall_kill_process(uint16_t pid) {
-    return my_kill(pid);
+    return kill_process(pid);
 }
 
 // Wait PID

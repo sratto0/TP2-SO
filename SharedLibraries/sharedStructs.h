@@ -9,12 +9,12 @@
 typedef enum { PROC_READY, PROC_RUNNING, PROC_BLOCKED, PROC_KILLED } process_state_t;
 
 typedef struct {
-    charn name[32];
-    int16_t pid;
-    int16_t p_pid;
+    char name[32];
+    uint16_t pid;
+    uint16_t parent_pid;
     uint8_t priority;
     void * stack_base;
-    void stack_pointer;
+    void * stack_pointer;
     uint8_t foreground; 
     process_state_t state;
     uint64_t ticks;

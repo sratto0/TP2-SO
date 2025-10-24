@@ -1,4 +1,4 @@
-include ../Makefile.inc
+zinclude ../Makefile.inc
 
 MODULE=0000-sampleCodeModule.bin
 SOURCES=$(wildcard [^_]*.c)
@@ -16,7 +16,7 @@ $(MODULE): _loader.c $(OBJECTS) $(OBJECTS_ASM) $(TEST_OBJECTS)
 
 %.o: %.c
 	mkdir -p obj
-	$(GCC) $(GCCFLAGS) -I$(INCLUDE) -c $< -o $@
+	$(GCC) $(GCCFLAGS) -I$(INCLUDE) -I../../SharedLibraries -c $< -o $@
 
 obj/%.asm.o: asm/%.asm
 	mkdir -p obj

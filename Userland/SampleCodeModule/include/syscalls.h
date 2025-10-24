@@ -4,19 +4,7 @@
 #include <stdint.h>
 #include "color.h"
 
-typedef struct PInfo{
-    uint8_t priority;
-    int16_t pid;
-    int ground;
-    uint64_t stack_pos;
-    uint64_t stack_base;
-    uint8_t status;
-    uint64_t rip;
-    char * name;
-}PInfo;
-
-typedef struct PInfo * TPInfo;
-
+#include "../../SharedLibraries/sharedStructs.h"
 
 /**
  * @brief Escribe a partir del descriptor recibido un caracter

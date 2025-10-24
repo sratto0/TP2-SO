@@ -2,23 +2,18 @@
 // PVS-Studio Static Code Analyzer for C, C++, C#, and Java:
 // https://pvs-studio.com
 
-#include <time.h>
+#include "./include/time.h"
 #include <stdint.h>
-
-typedef struct {
-	uint32_t pid;
-	uint64_t wake_up_tick;
-} sleeping_process_t;
 
 static uint64_t ticks = 0;
 static sleeping_process_t sleeping_processes[MAX_PROCESSES];
 static uint64_t next_tick = UINT64_MAX;
+static void unblock_sleeping_processes();
 
 void timerHandler(uint64_t rsp) {
 	ticks++;
 	unblock_sleeping_processes();
 	rsp = (uint64_t) schedule((void*) rsp);
-	return rsp;
 }
 
 uint64_t ticksElapsed() {

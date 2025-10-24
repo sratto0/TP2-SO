@@ -101,3 +101,10 @@ int strtoi(char* s, char ** end) {
     *end = s; 
     return num;
 }
+
+void my_strncpy(char * dest, const char * src, uint64_t n) {
+	for (uint64_t i = 0; i < n && src[i] != '\0'; i++) {
+		dest[i] = src[i];
+	}
+	dest[n - 1] = '\0'; 
+}

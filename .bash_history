@@ -25,3 +25,33 @@ cd root/Toolchain
 make
 cd ..
 make
+cd root
+make 
+cd root
+make clean
+cd Toolchain
+make clean
+make
+cd ..
+make
+make
+make
+make
+make
+make clean
+make clean
+make
+make
+make
+make
+make
+make
+make
+make
+make
+make
+make
+make
+make clean
+make
+exit

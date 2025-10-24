@@ -37,6 +37,8 @@ int itoa(uint64_t n, char* buffer, int base);
  */
 int strtoi(char* s, char ** end);
 
+void my_strncpy(char * dest, const char * src, uint64_t n);
+
 /**
  * @brief Devuelve el scancode de la ultima tecla presionada
  * @return Scancode
@@ -78,5 +80,7 @@ void saveRegisters();
  * @brief  Detiene la ejecucion del programa hasta que se produzca una interrupcion
  */
 void _hlt();
+
+
 #endif
 
