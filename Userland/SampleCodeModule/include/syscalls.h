@@ -114,21 +114,26 @@ void * sys_malloc(uint64_t size);
 
 void sys_free(void * ptr);
 
-extern uint64_t sys_getpid();
-extern uint64_t sys_create_process(char *name, uint64_t argc, char *argv[]);
-extern uint64_t sys_nice(uint64_t pid, uint64_t new_prio);
-extern uint64_t sys_kill(uint64_t pid);
-extern uint64_t sys_block(uint64_t pid);
-extern uint64_t sys_unblock(uint64_t pid);
-extern TPInfo sys_process_info(uint64_t *process_cant);
-extern uint64_t sys_change_priority(uint64_t pid, uint64_t new_prio);
+uint16_t sys_create_process(uint64_t main, char ** argv, char * name, uint8_t no_kill, int * file_descriptors);
 
+uint64_t sys_exit(int64_t exit_code);
 
-// int64_t sys_sem_open(char *sem_id, uint64_t initialValue);
-// int64_t sys_sem_wait(char *sem_id);
-// int64_t sys_sem_post(char *sem_id);
-// int64_t sys_sem_close(char *sem_id);
-// int64_t sys_yield();
-// int64_t sys_wait(int64_t pid);
+uint64_t sys_yield();
+
+uint64_t sys_getpid();
+
+uint64_t sys_block(int16_t pid);
+
+uint64_t sys_unblock(int16_t pid);
+
+uint64_t sys_set_priority(int16_t pid, uint8_t priority);
+    
+uint64_t sys_get_processes_info();
+
+uint64_t sys_kill(int16_t pid);
+
+uint64_t sys_wait_pid(int16_t pid, int * ret);
+
+uint64_t sys_total_cpu_ticks();
 
 #endif

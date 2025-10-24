@@ -39,4 +39,6 @@ void * my_malloc(uint64_t size);
 
 void my_free(void * ptr);
 
+int64_t my_create_process(char * name, int argc, char * argv[]);
+
 #endif

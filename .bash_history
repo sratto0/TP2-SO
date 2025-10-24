@@ -21,3 +21,7 @@ cd ..
 make 
 make 
 exit
+cd root/Toolchain
+make
+cd ..
+make

@@ -15,13 +15,17 @@ GLOBAL getFontColor
 GLOBAL sys_malloc
 GLOBAL sys_free
 GLOBAL sys_create_process
-GLOBAL sys_process_info
+GLOBAL sys_exit_process
+GLOBAL sys_yield
 GLOBAL sys_getpid
-GLOBAL sys_kill
-GLOBAL sys_change_priority
-GLOBAL sys_block
-GLOBAL sys_unblock
-GLOBAL sys_nice
+GLOBAL sys_block_process
+GLOBAL sys_unblock_process
+GLOBAL sys_set_priority
+GLOBAL sys_get_processes_info
+GLOBAL sys_kill_process
+GLOBAL sys_wait_pid
+GLOBAL sys_total_cpu_ticks
+
 
 read:
     mov rax, 0
@@ -100,38 +104,52 @@ sys_create_process:
     int 80h
     ret
 
-sys_process_info:
+sys_exit_process:
     mov rax, 15
     int 80h
     ret
 
-sys_getpid:
+sys_yield:
     mov rax, 16
     int 80h
     ret
 
-sys_kill:
+sys_getpid:
     mov rax, 17
     int 80h
     ret
 
-sys_change_priority:
+sys_block_process:  
     mov rax, 18
     int 80h
     ret
 
-sys_block:
+sys_unblock_process:
     mov rax, 19
     int 80h
     ret
 
-sys_unblock:
+sys_set_priority:
     mov rax, 20
     int 80h
     ret
 
-sys_nice:
+sys_get_processes_info:
     mov rax, 21
     int 80h
     ret
 
+sys_kill:
+    mov rax, 22
+    int 80h
+    ret
+
+sys_wait_pid:
+    mov rax, 23
+    int 80h
+    ret
+
+sys_total_cpu_ticks:
+    mov rax, 24
+    int 80h
+    ret

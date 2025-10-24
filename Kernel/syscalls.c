@@ -35,13 +35,17 @@
 #define MALLOC 12
 #define FREE 13
 #define CREATE_PROCESS 14
-#define PROCESS_INFO 15
-#define GETPID 16
-#define KILL 17
-#define CHANGE_PRIORITY 18
-#define BLOCK 19
-#define UNBLOCK 20
-#define NICE 21
+#define EXIT_PROCESS 15
+#define YIELD 16
+#define GET_PID 17  
+#define BLOCK_PROCESS 18
+#define UNBLOCK_PROCESS 19
+#define SET_PRIORITY 20
+#define GET_PROCESSES_INFO 21
+#define KILL_PROCESS 22
+#define WAIT_PID 23
+#define TOTAL_CPU_TICKS 24
+
 
 static uint8_t syscall_read(uint32_t fd);
 static void syscall_write(uint32_t fd, char c);
@@ -56,14 +60,18 @@ static void syscall_setFontColor(uint8_t r, uint8_t g, uint8_t b);
 static uint32_t syscall_getFontColor();
 static uint64_t syscall_malloc(uint64_t size);  
 static void syscall_free(void * ptr);
-static uint64_t syscall_create_process(char *name, uint64_t argc, char *argv[]);
-static uint64_t syscall_process_info(int32_t pid, process_t *out);
-static uint64_t syscall_getpid();
-static uint64_t syscall_kill(uint64_t pid);
-static void syscall_change_priority(process_t * p, uint8_t new_prio);
-static uint64_t syscall_block(uint64_t pid);
-static uint64_t syscall_unblock(uint64_t pid);
-static uint64_t syscall_nice(uint64_t pid, uint64_t new_prio);        
+static uint64_t syscall_create_process(uint64_t main, char ** argv, char * name, uint8_t no_kill, int * file_descriptors);
+static void syscall_exit_process(int64_t exit_code);
+static void syscall_yield();
+static uint32_t syscall_get_pid();
+static int syscall_block_process(uint16_t pid);
+static int syscall_unblock_process(uint16_t pid);
+static int syscall_set_priority(uint16_t pid, uint8_t priority);
+static int syscall_get_processes_info();
+static int syscall_kill_process(uint16_t pid);
+static int syscall_wait_pid(uint16_t pid, int32_t * exit_code);
+static uint64_t syscall_total_ticks();
+       
 
 
 uint64_t syscallDispatcher(uint64_t nr, uint64_t arg0, uint64_t arg1, uint64_t arg2, uint64_t arg3, uint64_t arg4, uint64_t arg5) {
@@ -102,29 +110,30 @@ uint64_t syscallDispatcher(uint64_t nr, uint64_t arg0, uint64_t arg1, uint64_t a
             syscall_free((void *) arg0);
             break;
         case CREATE_PROCESS:
-            return (uint64_t) syscall_create_process((char *) arg0, (uint64_t) arg1, (char **) arg2);
+            return (uint64_t) syscall_create_process((uint64_t) arg0, (char **) arg1, (char *) arg2, (uint8_t) arg3, (int *) arg4);
             break;
-        case PROCESS_INFO:
-            return (uint64_t) syscall_process_info((int32_t) arg0, (process_t *) arg1);
+        case EXIT_PROCESS:
+            syscall_exit_process((int64_t) arg0);
             break;
-        case GETPID:
-            return (uint64_t) syscall_getpid();
+        case YIELD:
+            syscall_yield();
             break;
-        case KILL:
-            return (uint64_t) syscall_kill((uint64_t) arg0);
-            break;
-        case CHANGE_PRIORITY:
-            syscall_change_priority((process_t *) arg0, (uint8_t) arg1);
-            break;
-        case BLOCK:
-            return (uint64_t) syscall_block((uint64_t) arg0);
-            break;
-        case UNBLOCK:
-            return (uint64_t) syscall_unblock((uint64_t) arg0);
-            break;
-        case NICE:
-            return (uint64_t) syscall_nice((uint64_t) arg0, (uint64_t) arg1);
-            break;
+        case GET_PID:
+            return syscall_get_pid();
+        case BLOCK_PROCESS:
+            return (uint64_t) syscall_block_process((uint16_t) arg0);
+        case UNBLOCK_PROCESS:
+            return (uint64_t) syscall_unblock_process((uint16_t) arg0);
+        case SET_PRIORITY:
+            return (uint64_t) syscall_set_priority((uint16_t) arg0, (uint8_t) arg1);
+        case GET_PROCESSES_INFO:
+            return (uint64_t) syscall_get_processes_info();
+        case KILL_PROCESS:
+            return (uint64_t) syscall_kill_process((uint16_t) arg0);
+        case WAIT_PID:
+            return (uint64_t) syscall_wait_pid((uint16_t) arg0, (int32_t *) arg1);
+        case TOTAL_CPU_TICKS:
+            return (uint64_t) syscall_total_ticks();
 	}
 	return 0;
 }
@@ -213,41 +222,56 @@ static void syscall_free(void * ptr){
 }
 
 //Create process
-static uint64_t syscall_create_process(char *name, uint64_t argc, char *argv[]){
-    return (uint64_t) my_create_process(name, argc, argv);
+static uint64_t syscall_create_process(uint64_t main, char ** argv, char * name, uint8_t no_kill, int * file_descriptors){
+    return (uint64_t) add_process((entry_point_t) main, argv, name, no_kill, file_descriptors);
 }
 
-//Process info
-static uint64_t syscall_process_info(int32_t pid, process_t *out){
-    return (uint64_t) my_process_info(pid, out);
+//Exit process
+static void syscall_exit_process(int64_t exit_code){
+    my_exit(exit_code);
 }
 
-//Get pid
-static uint64_t syscall_getpid(){
-    return (uint64_t) my_getpid();
+//Yield
+static void syscall_yield(){
+    yield();
 }
 
-//Kill
-static uint64_t syscall_kill(uint64_t pid){
-    return (uint64_t) my_kill(pid);
+//Get PID
+static uint32_t syscall_get_pid() {
+    return get_current_pid();
 }
 
-//Change priority
-static void syscall_change_priority(process_t * p, uint8_t new_prio){
-    my_change_priority(p, new_prio);
+// Block process
+static int syscall_block_process(uint16_t pid) {
+    return block_process(pid);
 }
 
-//Block
-static uint64_t syscall_block(uint64_t pid){
-    return (uint64_t) my_block(pid);
+// Unblock process
+static int syscall_unblock_process(uint16_t pid) {
+    return unblock_process(pid);
 }
 
-//Unblock
-static uint64_t syscall_unblock(uint64_t pid){
-    return (uint64_t) my_unblock(pid);
+// Set priority
+static int syscall_set_priority(uint16_t pid, uint8_t priority) {
+    return set_process_priority(pid, priority);
 }
 
-//Nice
-static uint64_t syscall_nice(uint64_t pid, uint64_t new_prio){
-    return (uint64_t) my_nice(pid, new_prio);
+//Get process info
+static uint64_t syscall_get_process_info() {
+    return (uint64_t) get_processes_info();
+}
+
+// Kill process
+static int syscall_kill_process(uint16_t pid) {
+    return my_kill(pid);
+}
+
+// Wait PID
+static int syscall_wait_pid(uint16_t pid, int32_t * exit_code) {
+    return wait_pid(pid, exit_code);
+}
+
+// Total CPU ticks
+static uint64_t syscall_total_ticks() {
+    return total_ticks();
 }

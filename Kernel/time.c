@@ -4,10 +4,21 @@
 
 #include <time.h>
 #include <stdint.h>
-static uint64_t ticks = 0;
 
-void timerHandler() {
+typedef struct {
+	uint32_t pid;
+	uint64_t wake_up_tick;
+} sleeping_process_t;
+
+static uint64_t ticks = 0;
+static sleeping_process_t sleeping_processes[MAX_PROCESSES];
+static uint64_t next_tick = UINT64_MAX;
+
+void timerHandler(uint64_t rsp) {
 	ticks++;
+	unblock_sleeping_processes();
+	rsp = (uint64_t) schedule((void*) rsp);
+	return rsp;
 }
 
 uint64_t ticksElapsed() {
@@ -16,4 +27,36 @@ uint64_t ticksElapsed() {
 
 int secondsElapsed() {
 	return ticks / 18;
+}
+
+void init_sleeping_processes(){
+	for(int i = 0; i < MAX_PROCESSES; i++){
+		sleeping_processes[i].pid = -1;
+	}
+}
+
+void remove_sleeping_process(uint32_t pid){
+	sleeping_processes[pid].pid = -1;
+}
+
+static void unblock_sleeping_processes(){
+	if(ticks < next_tick)
+		return;
+	for(int i = 0; i < MAX_PROCESSES; i++){
+		if(sleeping_processes[i].pid != -1 && sleeping_processes[i].wake_up_tick <= ticks){
+			unblock_process(sleeping_processes[i].pid);
+			sleeping_processes[i].pid = -1;
+		}else if(sleeping_processes[i].pid != -1 && sleeping_processes[i].wake_up_tick < next_tick){
+			next_tick = sleeping_processes[i].wake_up_tick;
+		}
+	}
+}
+
+void sleep(uint32_t sleeping_ticks){
+	uint32_t pid = get_current_pid();
+	sleeping_processes[pid].wake_up_tick = ticks + sleeping_ticks;
+	sleeping_processes[pid].pid = pid;
+	if(sleeping_processes[pid].wake_up_tick < next_tick)
+		next_tick = sleeping_processes[pid].wake_up_tick;
+	sleep_block(pid, 1);
 }

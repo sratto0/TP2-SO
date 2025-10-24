@@ -62,7 +62,6 @@ void init() {
     commands[6]  = (Command){ "font-size",      "Cambia dimensiones de la fuente",                                                    .g = (void*)&fontSize,    SINGLE_PARAM };
     commands[7]  = (Command){ "printmem",       "Vuelco de memoria de 32 bytes desde direccion dada",                                 .g = (void*)&printMem,    SINGLE_PARAM };
     commands[8]  = (Command){ "clear",          "Limpia toda la pantalla",                                                            .f = (void*)&clear,       NO_PARAMS };
-    // test-mm requiere pasar char** (argv) para reutilizar la firma del test que pide argv[]
     commands[9]  = (Command){ "test-mm",        "Corre el test del memory manager",                                                   .s = (void*)&mm_test,     SINGLE_PARAM };
     commands[10] = (Command){ "test-processes", "Corre el test de procesos",                                                          .f = (void*)&test_processes, NO_PARAMS };
     commands[11] = (Command){ "test-prio",      "Corre el test de prioridades",                                                       .f = (void*)&test_prio,   NO_PARAMS };

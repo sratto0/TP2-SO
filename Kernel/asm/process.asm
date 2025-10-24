@@ -1,4 +1,5 @@
 GLOBAL set_stack_frame
+EXTERN pushState
 
 section .text
 
@@ -20,7 +21,7 @@ set_stack_frame:
 	mov rdi, rsi
 	mov rsi, rcx
 	; Guardar registros generales
-	pushState  ; macro definida en interrupts.asm (push rax .. push r15)
+	pushState 1; macro definida en interrupts.asm (push rax .. push r15)
 	; rax = puntero al frame creado
 	mov rax, rsp
 	; Restaurar stack original
