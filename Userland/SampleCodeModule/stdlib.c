@@ -6,11 +6,12 @@
 #include <stdint.h>
 #include <stdio.h>
 
+
 #define toLower(n) ((n) >= 'A' && (n) <= 'Z' ? (n) - ('A' - 'a') : (n))
 #define isNumber(n) ((n) >= '0' && (n) <= '9')
 #define isHex(n) ((n) >= 'a' && (n) <= 'f')
 
-static calculate_total_ticks(process_info_t * process_array);
+static int calculate_total_ticks(process_info_t * process_array);
 
 static unsigned int log(uint64_t n, int base) {
     unsigned int count = 1;
@@ -86,59 +87,59 @@ void my_free(void * ptr){
     sys_free(ptr);
 }
 
-int ps(int argc, chat * argv[]) {
-    if (argc != 0) {
-        printf("ps: Invalid number of arguments.\n");
-        return -1;
-    }
+// int ps(int argc, chat * argv[]) {
+//     if (argc != 0) {
+//         printf("ps: Invalid number of arguments.\n");
+//         return -1;
+//     }
 
-    process_info_t * process_array = (process_info_t *) sys_get_processes_info();
-    process_info_t * current  = process_array;
+//     process_info_t * process_array = (process_info_t *) sys_get_processes_info();
+//     process_info_t * current  = process_array;
     
-    int total_cpu_ticks = calculate_total_ticks(process_array);
-    ftab_print(GRAY, "PID", 4);
-    ftab_print(GRAY, "PPID", 5);
-    ftab_print(GRAY, "Prio", 5);
-    ftab_print(GRAY, "Stat", 10);
-    ftab_print(GRAY, "Name", 8);
-    ftab_print(GRAY, "StackB", 9);
-    ftab_print(GRAY, "StackP", 10);
-    ftab_print(GRAY, "FG", 5);
-    ftab_print(GRAY, "CPU%", 10);
-    putchar('\n');
+//     int total_cpu_ticks = calculate_total_ticks(process_array);
+//     ftab_print(GRAY, "PID", 4);
+//     ftab_print(GRAY, "PPID", 5);
+//     ftab_print(GRAY, "Prio", 5);
+//     ftab_print(GRAY, "Stat", 10);
+//     ftab_print(GRAY, "Name", 8);
+//     ftab_print(GRAY, "StackB", 9);
+//     ftab_print(GRAY, "StackP", 10);
+//     ftab_print(GRAY, "FG", 5);
+//     ftab_print(GRAY, "CPU%", 10);
+//     putchar('\n');
 
     
-    while(current->pid != NO_PID) {
-        int CPU_percent = (total_cpu_ticks > 0) ? (current->ticks * 100) / total_cpu_ticks : 0;
+//     while(current->pid != NO_PID) {
+//         int CPU_percent = (total_cpu_ticks > 0) ? (current->ticks * 100) / total_cpu_ticks : 0;
         
-        if(current->p_pid < 0) {
-            ftab_print("-", 5)
-        }
+//         if(current->p_pid < 0) {
+//             ftab_print("-", 5)
+//         }
         
-    }
-}
+//     }
+// }
 
-static void ftab_print(int fd, char * buffer, int width) {
-    int len = 0;
-    const char * str = buffer;
-    while(*str++) len++;
-    fd_print(fd, "%s", buffer);
-    for(int i = 0; i < width - len; i++) putchar(' ');
-}
+// static void ftab_print(int fd, char * buffer, int width) {
+//     int len = 0;
+//     const char * str = buffer;
+//     while(*str++) len++;
+//     fd_print(fd, "%s", buffer);
+//     for(int i = 0; i < width - len; i++) putchar(' ');
+// }
 
 
-int fd_print(uint64_t fd, const char * format, ...) {
-    va_list args;
-    va_start(args, format);
-    int toRet = print_args(fd, format, args);
-    va_end(args);
-    return toRet;
-}
+// int fd_print(uint64_t fd, const char * format, ...) {
+//     va_list args;
+//     va_start(args, format);
+//     int toRet = print_args(fd, format, args);
+//     va_end(args);
+//     return toRet;
+// }
 
-static int print_args(uint64_t fd, const char * format, va_list args) {
-    char buf[BUFFER_SIZE];
+// static int print_args(uint64_t fd, const char * format, va_list args) {
+//     char buf[BUFFER_SIZE];
     
-}
+// }
 
 static void print_int(int val, int width){
     int len = 0, tmp = (val < 0) ? -val : val;
@@ -149,16 +150,16 @@ static void print_int(int val, int width){
             tmp /= 10;
         }
     }
-    if(value < 0) len++;
+    if(val < 0) len++;
     printf("%d", val);
     for(int i = 0; i < width - len; i++) putchar(' ');
 }
 
-static calculate_total_ticks(process_info_t * process_array){
+static int calculate_total_ticks(process_info_t * process_array){
     int total = 0;
     process_info_t * current = process_array;
     while (current->pid != -1) {
-        total += current->total_ticks;
+        total += current->ticks;
         current++;
     }
     return total;
@@ -168,12 +169,8 @@ uint64_t my_create_process(uint64_t main, char ** argv, char * name, uint8_t no_
     return sys_create_process(main, argv, name, no_kill, file_descriptors);
 }
 
-uint64_t my_wait_pid(int pid, int * exit_code) {
-    return sys_wait_pid(pid, exit_code);
-}
-
 uint64_t my_exit(int exit_code) {
-    return sys_exit(exit_code);
+    return sys_exit_process(exit_code);
 }
 
 uint64_t my_yield() {
@@ -185,19 +182,19 @@ uint64_t my_getpid() {
 }
 
 uint64_t my_block_process(int16_t pid) {
-    return sys_block(pid);
+    return sys_block_process(pid);
 }
 
 uint64_t my_unblock_process(int16_t pid) {
-    return sys_unblock(pid);
+    return sys_unblock_process(pid);
 }
 
-uint64_t my_set_priority(int16_t pid, uint8_t priority) {
+uint64_t my_nice(int16_t pid, uint8_t priority) {
     return sys_set_priority(pid, priority);
 }
 
 uint64_t my_kill(int16_t pid) {
-    return sys_kill(pid);
+    return sys_kill_process(pid);
 }
 
 uint64_t my_wait_pid(int pid, int * exit_code) {

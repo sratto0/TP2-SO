@@ -6,6 +6,8 @@
 #include "../../SharedLibraries/sharedStructs.h"
 
 #define PROCESS_NAME_LEN 32
+#define DEFAULT_PRIORITY 1
+#define NO_PID_U16 ((uint16_t)0xFFFF)
 
 typedef int (*entry_point_t)(int argc, char **argv);
 
@@ -37,7 +39,7 @@ typedef struct process {
 /* Inicialización del subsistema de procesos */
 void process_system_init(void);
 
-process_t *my_create_process(uint16_t pid, uint16_t parent_pid, entry_point_t entry_point, char ** argv, char * name, uint8_t priority);
+process_t * my_create_process(uint16_t pid, uint16_t parent_pid, entry_point_t entry_point, char ** argv, char * name, uint8_t no_kill, int * fds, uint8_t priority);
 void destroy_process(process_t * proc);
 void free_argv(char ** argv);
 void process_caller(entry_point_t main, char ** argv);

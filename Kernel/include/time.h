@@ -12,15 +12,18 @@ typedef struct {
 /**
  * @brief Handler del timer tick
  */
-void timerHandler();
+void timerHandler(uint64_t rsp);
 /**
  * @return Devuelve los ticks 
  */
-uint64_t ticksElapsed();
+uint64_t ticksElapsed(void);
 
 /**
  * @return  Devuelve los segundos
  */
-int secondsElapsed();
+int secondsElapsed(void);
+void init_sleeping_processes(void);
+void remove_sleeping_process(uint32_t pid);
+void sleep(uint32_t sleeping_ticks);
 
 #endif

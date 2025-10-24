@@ -49,6 +49,8 @@ static void fontSize(char * size);
 static void printMem(char * pos);
 static int getCommandIndex(char * command);
 static void mm_test(char ** max_memory);
+static void my_test_processes();
+static void my_test_prio();
 
 static Command commands[QTY_COMMANDS];
 
@@ -63,8 +65,8 @@ void init() {
     commands[7]  = (Command){ "printmem",       "Vuelco de memoria de 32 bytes desde direccion dada",                                 .g = (void*)&printMem,    SINGLE_PARAM };
     commands[8]  = (Command){ "clear",          "Limpia toda la pantalla",                                                            .f = (void*)&clear,       NO_PARAMS };
     commands[9]  = (Command){ "test-mm",        "Corre el test del memory manager",                                                   .s = (void*)&mm_test,     SINGLE_PARAM };
-    commands[10] = (Command){ "test-processes", "Corre el test de procesos",                                                          .f = (void*)&test_processes, NO_PARAMS };
-    commands[11] = (Command){ "test-prio",      "Corre el test de prioridades",                                                       .f = (void*)&test_prio,   NO_PARAMS };
+    commands[10] = (Command){ "test-processes", "Corre el test de procesos",                                                          .f = (void*)&my_test_processes, NO_PARAMS };
+    commands[11] = (Command){ "test-prio",      "Corre el test de prioridades",                                                       .f = (void*)&my_test_prio,   NO_PARAMS };
 }
 
 void run_shell() {
@@ -195,4 +197,14 @@ static void mm_test(char ** max_memory) {
         return;
     }
     test_mm(1, max_memory);
+}
+
+static void my_test_processes() {
+    char *argv[] = { "10", NULL }; // número por defecto de procesos
+    test_processes(1, argv);
+}
+
+static void my_test_prio() {
+    char *argv[] = { "1000000", NULL }; // valor por defecto para el bucle
+    test_prio(1, argv);
 }

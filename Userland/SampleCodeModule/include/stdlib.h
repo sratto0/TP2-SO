@@ -39,6 +39,22 @@ void * my_malloc(uint64_t size);
 
 void my_free(void * ptr);
 
-int64_t my_create_process(char * name, int argc, char * argv[]);
+uint64_t my_create_process(uint64_t main, char ** argv, char * name, uint8_t no_kill, int * file_descriptors);
+
+uint64_t my_wait_pid(int pid, int * exit_code);
+
+uint64_t my_exit(int exit_code);
+
+uint64_t my_yield();
+
+uint64_t my_getpid();
+
+uint64_t my_block_process(int16_t pid);
+
+uint64_t my_unblock_process(int16_t pid);
+
+uint64_t my_nice(int16_t pid, uint8_t priority);
+
+uint64_t my_kill(int16_t pid);
 
 #endif

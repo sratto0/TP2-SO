@@ -1,7 +1,7 @@
-#include <stdio.h>
-#include <string.h>
+#include <stdint.h>
 #include "process.h"
 #include "scheduler.h"
+#include "lib.h"
 
 static process_t proc_table[MAX_PROCESSES];
 static int32_t next_pid = 1;
@@ -14,12 +14,16 @@ void process_system_init(void) {
 
 #define STACK_SIZE 0x1000
 
-extern void *setup_stack_frame(void (*wrapper)(entry_point_t, char  **), entry_point_t main, void *stack_top, void *argv);
+extern void * set_stack_frame(void (*wrapper)(entry_point_t, char  **), entry_point_t main, void *stack_top, void *argv);
 
 static char ** duplicate_argv(char ** argv);
 static int count_from_argv(char ** argv);
+static uint32_t str_length(const char * str);
+static void free_partial_argv(char ** argv, int allocated);
 
-process_t *my_create_process(uint16_t pid, uint16_t parent_pid, entry_point_t entry_point, char ** argv, char * name, uint8_t priority) {
+process_t * my_create_process(uint16_t pid, uint16_t parent_pid, entry_point_t entry_point, char ** argv, char * name, uint8_t no_kill, int * fds, uint8_t priority) {
+  (void) no_kill;
+  (void) fds;
   process_t * proc = memory_alloc(sizeof(process_t));
 
   if (proc==NULL){
@@ -28,10 +32,13 @@ process_t *my_create_process(uint16_t pid, uint16_t parent_pid, entry_point_t en
 
   proc->pid = pid;
   proc->parent_pid = parent_pid;
+  proc->waiting_pid = NO_PID_U16;
   proc->ticks = 0;
   proc->state = PROC_READY;
   proc->priority = priority;
-  proc->quantum = 
+  proc->quantum = priority;
+  proc->entry_point = entry_point;
+  proc->return_value = 0;
   
   proc->stack_base = memory_alloc(STACK_SIZE);
   if (proc->stack_base == NULL){
@@ -39,7 +46,8 @@ process_t *my_create_process(uint16_t pid, uint16_t parent_pid, entry_point_t en
     return NULL;
   }
 
-  proc->stack_pointer = proc->stack_base + STACK_SIZE;
+  proc->stack_pointer = (uint8_t *)proc->stack_base + STACK_SIZE;
+  proc->stack_top = proc->stack_pointer;
   
   proc->argv = duplicate_argv(argv);
   if (proc->argv == NULL){
@@ -48,9 +56,14 @@ process_t *my_create_process(uint16_t pid, uint16_t parent_pid, entry_point_t en
     return NULL;
   }
 
-  strncpy(proc->name, name, sizeof(proc->name)-1);
-  proc->name[sizeof(proc->name)-1] = 0;
-  proc->stack_pointer = setup_stack_frame(&process_caller, entry_point, proc->stack_pointer, (void *) proc->argv);
+  proc->argc = count_from_argv(proc->argv);
+
+  if (name != NULL){
+    my_strncpy(proc->name, name, sizeof(proc->name));
+  } else {
+    proc->name[0] = 0;
+  }
+  proc->stack_pointer = set_stack_frame(&process_caller, entry_point, proc->stack_pointer, (void *) proc->argv);
   return proc;
 }
 
@@ -77,9 +90,11 @@ static char ** duplicate_argv(char ** argv){
   if (new_argv==NULL)
     return NULL;
   for (int i=0; i<count; i++){
-    int len = strlen(argv[i]) + 1;
+    uint32_t len = str_length(argv[i]) + 1;
     new_argv[i] = memory_alloc(len);
     if (new_argv[i]==NULL){
+      free_partial_argv(new_argv, i);
+      memory_free(new_argv);
       return NULL;
     }
     memcpy(new_argv[i], argv[i], len);
@@ -90,7 +105,10 @@ static char ** duplicate_argv(char ** argv){
 
 static int count_from_argv(char ** argv){
   int count = 0;
-  while (argv != NULL || argv[count] != NULL){
+  if (argv == NULL){
+    return 0;
+  }
+  while (argv[count] != NULL){
     count++;
   }
   return count;
@@ -110,4 +128,26 @@ void process_caller(entry_point_t main, char ** argv){
   int count = count_from_argv(argv);
   int64_t ret = main(count, argv);
   my_exit(ret);
+}
+
+static uint32_t str_length(const char * str){
+  if (str == NULL){
+    return 0;
+  }
+  uint32_t len = 0;
+  while (str[len] != 0){
+    len++;
+  }
+  return len;
+}
+
+static void free_partial_argv(char ** argv, int allocated){
+  if (argv == NULL){
+    return;
+  }
+  for (int i = 0; i < allocated; i++){
+    if (argv[i] != NULL){
+      memory_free(argv[i]);
+    }
+  }
 }

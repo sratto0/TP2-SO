@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include "syscall.h"
 #include "test_util.h"
+#include "stdlib.h"
+#include <stddef.h>
 
 enum State { RUNNING,
              BLOCKED,
@@ -17,7 +19,6 @@ int64_t test_processes(uint64_t argc, char *argv[]) {
   uint8_t action;
   uint64_t max_processes;
   char *argvAux[] = {0};
-  int fds[2] = {0, 1}; // stdin, stdout
 
   if (argc != 1)
     return -1;
@@ -31,7 +32,7 @@ int64_t test_processes(uint64_t argc, char *argv[]) {
 
     // Create max_processes processes
     for (rq = 0; rq < max_processes; rq++) {
-      p_rqs[rq].pid = my_create_process( ,argvAux, "endless_loop", 0, fds);
+      p_rqs[rq].pid = my_create_process((uint64_t)endless_loop, argvAux, "endless_loop", 0, NULL);
 
       if (p_rqs[rq].pid == -1) {
         printf("test_processes: ERROR creating process\n");
@@ -51,7 +52,7 @@ int64_t test_processes(uint64_t argc, char *argv[]) {
         switch (action) {
           case 0:
             if (p_rqs[rq].state == RUNNING || p_rqs[rq].state == BLOCKED) {
-              if (sys_kill(p_rqs[rq].pid) == -1) {
+              if (my_kill(p_rqs[rq].pid) == -1) {
                 printf("test_processes: ERROR killing process\n");
                 return -1;
               }
@@ -62,7 +63,7 @@ int64_t test_processes(uint64_t argc, char *argv[]) {
 
           case 1:
             if (p_rqs[rq].state == RUNNING) {
-              if (sys_block(p_rqs[rq].pid) == -1) {
+              if (my_block_process(p_rqs[rq].pid) == -1) {
                 printf("test_processes: ERROR blocking process\n");
                 return -1;
               }
@@ -75,7 +76,7 @@ int64_t test_processes(uint64_t argc, char *argv[]) {
       // Randomly unblocks processes
       for (rq = 0; rq < max_processes; rq++)
         if (p_rqs[rq].state == BLOCKED && GetUniform(100) % 2) {
-          if (sys_unblock(p_rqs[rq].pid) == -1) {
+          if (my_unblock_process(p_rqs[rq].pid) == -1) {
             printf("test_processes: ERROR unblocking process\n");
             return -1;
           }

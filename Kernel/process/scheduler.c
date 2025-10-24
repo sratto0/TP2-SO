@@ -81,7 +81,7 @@ int64_t add_process(entry_point_t main, char ** argv, char * name, uint8_t no_ki
     parent_pid = scheduler->current;
   }
   
-  process_t * new_process = my_create_process(main, argv, name, pid, no_kill, file_descriptors);
+  process_t * new_process = my_create_process(pid, parent_pid, main, argv, name, no_kill, file_descriptors, DEFAULT_PRIORITY);
   
   if(new_process == NULL){
     return -1;
@@ -194,7 +194,7 @@ int kill_process(uint16_t pid){
   remove_process(pid);
 
   if(context_switch){
-    yeild();
+    yield();
   }
   return 0;
 }
@@ -221,7 +221,7 @@ int block_process(uint16_t pid){
   proc->state = PROC_BLOCKED;
 
   if(context_switch){
-    yeild();
+    yield();
   }
   return 0;
 }

@@ -3,9 +3,10 @@
 #define SCHEDULER_ADDRESS 0x60000
 #define SHELL_PID 1
 
-// #include "process.h"
+#include "process.h"
 #include "../../SharedLibraries/sharedStructs.h"
 #include "lib.h"
+#include "time.h"
 
 #define MAX_PROCESSES 100
 

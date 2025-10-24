@@ -139,7 +139,7 @@ sys_get_processes_info:
     int 80h
     ret
 
-sys_kill:
+sys_kill_process:
     mov rax, 22
     int 80h
     ret

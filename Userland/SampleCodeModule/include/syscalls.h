@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include "color.h"
 
-#include "../../SharedLibraries/sharedStructs.h"
+#include "../../../SharedLibraries/sharedStructs.h"
 
 /**
  * @brief Escribe a partir del descriptor recibido un caracter
@@ -104,21 +104,21 @@ void sys_free(void * ptr);
 
 uint16_t sys_create_process(uint64_t main, char ** argv, char * name, uint8_t no_kill, int * file_descriptors);
 
-uint64_t sys_exit(int64_t exit_code);
+uint64_t sys_exit_process(int64_t exit_code);
 
 uint64_t sys_yield();
 
 uint64_t sys_getpid();
 
-uint64_t sys_block(int16_t pid);
+uint64_t sys_block_process(int16_t pid);
 
-uint64_t sys_unblock(int16_t pid);
+uint64_t sys_unblock_process(int16_t pid);
 
 uint64_t sys_set_priority(int16_t pid, uint8_t priority);
     
 uint64_t sys_get_processes_info();
 
-uint64_t sys_kill(int16_t pid);
+uint64_t sys_kill_process(int16_t pid);
 
 uint64_t sys_wait_pid(int16_t pid, int * ret);
 
