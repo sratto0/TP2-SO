@@ -5,6 +5,7 @@
 #include "stdlib.h"
 #include <stdint.h>
 #include <stdio.h>
+#include "../../SharedLibraries/sharedStructs.h"
 
 
 #define toLower(n) ((n) >= 'A' && (n) <= 'Z' ? (n) - ('A' - 'a') : (n))
@@ -182,6 +183,7 @@ uint64_t my_getpid() {
 }
 
 uint64_t my_block_process(int16_t pid) {
+    printf("Blocking process %d\n", pid);
     return sys_block_process(pid);
 }
 

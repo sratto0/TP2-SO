@@ -157,7 +157,7 @@ void yield() {
 //static void cleanup_process_resources //es de sincro
 
 static void adopt_children(uint16_t pid){
-  for(int i = 0; ;)
+  for(int i = 0; i < MAX_PROCESSES; i++)  
     if(scheduler->processes[i] != NULL && scheduler->processes[i]->parent_pid == pid){
       scheduler->processes[i]->parent_pid = 0; //adoptado por init
     }
@@ -175,6 +175,7 @@ static void remove_process(uint16_t pid){
 
 int kill_process(uint16_t pid){
   if(scheduler == NULL || pid >= MAX_PROCESSES || scheduler->processes[pid] == NULL){
+    printf("en el kill tb entra aca\n");
     return -1;
   }
   adopt_children(pid);
@@ -204,11 +205,24 @@ int32_t kill_current_process(){
 }
 
 int block_process(uint16_t pid){
+  printf("llego a la block process de atras\n");
+
   if(scheduler == NULL || pid >= MAX_PROCESSES || scheduler->processes[pid] == NULL){
+    printf("en elde los tres\n");
     return -1;
   }
+
+  prinyf
   process_t * proc = scheduler->processes[pid];
-  if(proc->state != PROC_RUNNING && proc->state != PROC_READY){
+
+  if(proc->state == PROC_BLOCKED){
+    return 0;
+  }
+
+  if(proc->state == PROC_KILLED || proc->state == PROC_READY){
+    return -1;
+  }
+  if(proc->state != PROC_RUNNING){
     return -1;
   }
   uint8_t context_switch;
