@@ -12,7 +12,7 @@ typedef struct {
 /**
  * @brief Handler del timer tick
  */
-void timerHandler(uint64_t rsp);
+uint64_t timerHandler(uint64_t rsp);
 /**
  * @return Devuelve los ticks 
  */

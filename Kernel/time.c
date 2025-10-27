@@ -10,10 +10,11 @@ static sleeping_process_t sleeping_processes[MAX_PROCESSES];
 static uint64_t next_tick = UINT64_MAX;
 static void unblock_sleeping_processes();
 
-void timerHandler(uint64_t rsp) {
+uint64_t timerHandler(uint64_t rsp) {
 	ticks++;
 	unblock_sleeping_processes();
 	rsp = (uint64_t) schedule((void*) rsp);
+	return rsp;
 }
 
 uint64_t ticksElapsed() {

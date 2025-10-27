@@ -74,4 +74,6 @@ uint64_t test_prio(uint64_t argc, char *argv[]) {
 
   for (i = 0; i < TOTAL_PROCESSES; i++)
     my_wait_pid(pids[i], &exit_code);
+
+  printf("Finished");
 }
