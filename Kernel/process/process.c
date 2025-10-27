@@ -4,7 +4,7 @@
 #include "lib.h"
 
 static process_t proc_table[MAX_PROCESSES];
-static int32_t next_pid = 1;
+static int64_t next_pid = 1;
 
 void process_system_init(void) {
   memset(proc_table, 0, sizeof(proc_table));
@@ -21,7 +21,8 @@ static int count_from_argv(char ** argv);
 static uint32_t str_length(const char * str);
 static void free_partial_argv(char ** argv, int allocated);
 
-process_t * my_create_process(uint16_t pid, uint16_t parent_pid, entry_point_t entry_point, char ** argv, char * name, uint8_t no_kill, int * fds, uint8_t priority) {
+
+process_t * my_create_process(int64_t pid, int64_t parent_pid, entry_point_t entry_point, char ** argv, char * name, uint8_t no_kill, int * fds, uint8_t priority) {
   (void) no_kill;
   (void) fds;
   process_t * proc = memory_alloc(sizeof(process_t));
@@ -32,7 +33,7 @@ process_t * my_create_process(uint16_t pid, uint16_t parent_pid, entry_point_t e
 
   proc->pid = pid;
   proc->parent_pid = parent_pid;
-  proc->waiting_pid = NO_PID_U16;
+  proc->waiting_pid = NO_PID;
   proc->ticks = 0;
   proc->state = PROC_READY;
   proc->priority = priority;

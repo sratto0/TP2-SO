@@ -1,8 +1,8 @@
 #include "scheduler.h"
 #include "process.h"
 
-static void adopt_children(uint16_t pid);
-static void remove_process(uint16_t pid);
+static void adopt_children(int64_t pid);
+static void remove_process(int64_t pid);
 static process_t * get_next_process();
 
 static schedulerADT scheduler = NULL;
@@ -55,16 +55,19 @@ void * schedule(void * context) {
     return (void *) next->stack_pointer;
 }
 
+
+// pids[i] = my_create_process((uint64_t)zero_to_max, ztm_argv, "zero_to_max", 0, NULL);
+
 int64_t add_process(entry_point_t main, char ** argv, char * name, uint8_t no_kill, int * file_descriptors){
-  if(scheduler == NULL || scheduler->size >= MAX_PROCESSES || file_descriptors == NULL){
+  if(scheduler == NULL || scheduler->size >= MAX_PROCESSES){
     return -1;
   }
-  
-  uint16_t pid = -1;
-  uint16_t found = 0;
+
+  int64_t pid = NO_PID;
+  int64_t found = 0;
   for(int i = 0; i < MAX_PROCESSES; i++){
     if(scheduler->processes[i] == NULL){
-      pid = i;
+      pid = (int64_t)i;
       found = 1;
       break;
     }
@@ -73,12 +76,12 @@ int64_t add_process(entry_point_t main, char ** argv, char * name, uint8_t no_ki
   if(!found){
     return -1;
   }
-  uint16_t parent_pid;
+  int64_t parent_pid;
 
   if(scheduler->current == -1) {
-    parent_pid = -1;
+    parent_pid = NO_PID;
   } else {
-    parent_pid = scheduler->current;
+    parent_pid = (int64_t)scheduler->current;
   }
   
   process_t * new_process = my_create_process(pid, parent_pid, main, argv, name, no_kill, file_descriptors, DEFAULT_PRIORITY);
@@ -103,22 +106,22 @@ static process_t * get_next_process() {
 
   process_t * current_process = scheduler->processes[scheduler->current];
   
-  if(current_process != NULL && current_process->state == PROC_RUNNING && current_process->quantum > 0 && !force_reschedule){
+  if(current_process != NULL && current_process->quantum > 0 && !force_reschedule){
     current_process->quantum--;
     return current_process;
   }
 
-  int16_t next_index;
+  int64_t next_index;
   if(scheduler->current == -1){
     next_index = 0;
   } else {
     next_index = (scheduler->current + 1) % MAX_PROCESSES;
   }
-  int16_t start_index = next_index;
+  int64_t start_index = next_index;
 
     while (1) {
         process_t * candidate = scheduler->processes[next_index];
-        if (candidate != NULL && candidate->state == PROC_READY) {
+        if (candidate != NULL && candidate->state == PROC_READY || candidate->state == PROC_RUNNING) {
         force_reschedule = 0;
         candidate->quantum = candidate->priority; 
         return candidate;
@@ -142,9 +145,9 @@ void destroy_scheduler(){
   scheduler = NULL;
 }
 
-uint16_t get_current_pid() {
-  if (scheduler == NULL || scheduler->current == -1) {
-    return -1;
+int64_t get_current_pid() {
+  if (scheduler == NULL || scheduler->current < 0) {
+    return NO_PID;
   }
   return scheduler->current;
 }
@@ -156,15 +159,15 @@ void yield() {
 
 //static void cleanup_process_resources //es de sincro
 
-static void adopt_children(uint16_t pid){
+static void adopt_children(int64_t pid){
   for(int i = 0; i < MAX_PROCESSES; i++)  
     if(scheduler->processes[i] != NULL && scheduler->processes[i]->parent_pid == pid){
       scheduler->processes[i]->parent_pid = 0; //adoptado por init
     }
 }
 
-static void remove_process(uint16_t pid){
-  if(scheduler == NULL || pid >= MAX_PROCESSES || scheduler->processes[pid] == NULL){
+static void remove_process(int64_t pid){
+  if(scheduler == NULL || pid < 0 || pid >= MAX_PROCESSES || scheduler->processes[pid] == NULL){
     return;
   }
   destroy_process(scheduler->processes[pid]);
@@ -173,14 +176,16 @@ static void remove_process(uint16_t pid){
 }
 
 
-int kill_process(uint16_t pid){
-  if(scheduler == NULL || pid >= MAX_PROCESSES || scheduler->processes[pid] == NULL){
-    printf("en el kill tb entra aca\n");
+int kill_process(int64_t pid){
+  if(scheduler == NULL || pid < 0 || pid >= MAX_PROCESSES || scheduler->processes[pid] == NULL){
     return -1;
   }
   adopt_children(pid);
   process_t * proc = scheduler->processes[pid];
-  process_t * parent = scheduler->processes[proc->parent_pid];
+  process_t * parent = NULL;
+  if(proc->parent_pid >= 0 && proc->parent_pid < MAX_PROCESSES){
+    parent = scheduler->processes[proc->parent_pid];
+  }
   if(parent != NULL && parent->state == PROC_BLOCKED){
     //unblock process
   }
@@ -204,25 +209,35 @@ int32_t kill_current_process(){
   return kill_process(scheduler->current);
 }
 
-int block_process(uint16_t pid){
-  printf("llego a la block process de atras\n");
+int block_process(int64_t pid){
 
-  if(scheduler == NULL || pid >= MAX_PROCESSES || scheduler->processes[pid] == NULL){
-    printf("en elde los tres\n");
-    return -1;
-  }
+  // if(scheduler == NULL){
+  //   return -1;
+  // }
 
-  prinyf
+  // if(pid < 0 || pid >= MAX_PROCESSES){
+  //   return -1;
+  // }
+
+  // if(scheduler->processes[pid] == NULL){
+  //   return -1;
+  // }
+  
+    if(scheduler == NULL || pid >= MAX_PROCESSES || scheduler->processes[pid] == NULL){
+      return -1;
+    }
+
+  
   process_t * proc = scheduler->processes[pid];
-
+  
   if(proc->state == PROC_BLOCKED){
     return 0;
   }
 
-  if(proc->state == PROC_KILLED || proc->state == PROC_READY){
+  if(proc->state == PROC_KILLED){
     return -1;
   }
-  if(proc->state != PROC_RUNNING){
+  if(proc->state != PROC_READY && proc->state != PROC_RUNNING){
     return -1;
   }
   uint8_t context_switch;
@@ -240,8 +255,8 @@ int block_process(uint16_t pid){
   return 0;
 }
 
-int unblock_process(uint16_t pid){
-  if(scheduler == NULL || pid >= MAX_PROCESSES || scheduler->processes[pid] == NULL){
+int unblock_process(int64_t pid){
+  if(scheduler == NULL || pid < 0 || pid >= MAX_PROCESSES || scheduler->processes[pid] == NULL){
     return -1;
   }
   process_t * proc = scheduler->processes[pid];
@@ -263,8 +278,8 @@ int unblock_current_process(){
   return unblock_process(scheduler->current);
 }
 
-int set_process_priority(uint16_t pid, uint8_t priority){
-  if(scheduler == NULL || pid >= MAX_PROCESSES || scheduler->processes[pid] == NULL){
+int set_process_priority(int64_t pid, uint8_t priority){
+  if(scheduler == NULL || pid < 0 || pid >= MAX_PROCESSES || scheduler->processes[pid] == NULL){
     return -1;
   }
   process_t * proc = scheduler->processes[pid];
@@ -273,8 +288,8 @@ int set_process_priority(uint16_t pid, uint8_t priority){
   return 0;
 }
 
-int64_t wait_pid(uint16_t pid, int32_t * exit_code){
-  if(scheduler == NULL || pid >= MAX_PROCESSES || scheduler->processes[pid] == NULL){
+int64_t wait_pid(int64_t pid, int32_t * exit_code){
+  if(scheduler == NULL || pid < 0 || pid >= MAX_PROCESSES || scheduler->processes[pid] == NULL){
     return -1;
   }
 
@@ -293,7 +308,7 @@ int64_t wait_pid(uint16_t pid, int32_t * exit_code){
   current->waiting_pid = pid;
   block_current_process();
 
-  if(scheduler->processes[pid] != NULL){
+  if(pid >= 0 && pid < MAX_PROCESSES && scheduler->processes[pid] != NULL){
     proc = scheduler->processes[pid];
     if(proc->state == PROC_KILLED){
       if(exit_code) *exit_code = proc->return_value;
@@ -305,8 +320,8 @@ int64_t wait_pid(uint16_t pid, int32_t * exit_code){
   return -1;
 }
 
-int sleep_block(uint16_t pid, uint8_t sleep){
-  if(pid == 0 || scheduler == NULL || pid >= MAX_PROCESSES || scheduler->processes[pid] == NULL || scheduler->processes[pid]->state == PROC_KILLED){
+int sleep_block(int64_t pid, uint8_t sleep){
+  if(pid == 0 || pid < 0 || scheduler == NULL || pid >= MAX_PROCESSES || scheduler->processes[pid] == NULL || scheduler->processes[pid]->state == PROC_KILLED){
     return -1;
   }
   if(sleep == 0){
@@ -333,7 +348,10 @@ void my_exit(int64_t ret){
   current->return_value = ret;
   remove_sleeping_process(current->pid);
 
-  process_t * parent = scheduler->processes[current->parent_pid];
+  process_t * parent = NULL;
+  if(current->parent_pid >= 0 && current->parent_pid < MAX_PROCESSES){
+    parent = scheduler->processes[current->parent_pid];
+  }
   if(parent != NULL && parent->state == PROC_BLOCKED && parent->waiting_pid == current->pid){
     unblock_process(parent->pid);
   }
@@ -348,8 +366,8 @@ uint16_t total_ticks() {
   return scheduler->total_ticks;
 }
 
-uint8_t foreground_process(uint16_t pid){
-  if(scheduler == NULL || pid >= MAX_PROCESSES || scheduler->processes[pid] == NULL){
+uint8_t foreground_process(int64_t pid){
+  if(scheduler == NULL || pid < 0 || pid >= MAX_PROCESSES || scheduler->processes[pid] == NULL){
     return 0;
   }
   return scheduler->processes[SHELL_PID]->waiting_pid = pid;

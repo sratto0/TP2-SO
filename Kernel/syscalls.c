@@ -61,16 +61,16 @@ static void syscall_setFontColor(uint8_t r, uint8_t g, uint8_t b);
 static uint32_t syscall_getFontColor();
 static uint64_t syscall_malloc(uint64_t size);  
 static void syscall_free(void * ptr);
-static uint64_t syscall_create_process(uint64_t main, char ** argv, char * name, uint8_t no_kill, int * file_descriptors);
+static int64_t syscall_create_process(uint64_t main, char ** argv, char * name, uint8_t no_kill, int * file_descriptors);
 static void syscall_exit_process(int64_t exit_code);
 static void syscall_yield();
-static uint32_t syscall_get_pid();
-static int syscall_block_process(uint16_t pid);
-static int syscall_unblock_process(uint16_t pid);
-static int syscall_set_priority(uint16_t pid, uint8_t priority);
+static int64_t syscall_get_pid();
+static int syscall_block_process(int64_t pid);
+static int syscall_unblock_process(int64_t pid);
+static int syscall_set_priority(int64_t pid, uint8_t priority);
 static uint64_t syscall_get_processes_info();
-static int syscall_kill_process(uint16_t pid);
-static int syscall_wait_pid(uint16_t pid, int32_t * exit_code);
+static int syscall_kill_process(int64_t pid);
+static int64_t syscall_wait_pid(int64_t pid, int32_t * exit_code);
 static uint64_t syscall_total_ticks();
        
 
@@ -120,19 +120,19 @@ uint64_t syscallDispatcher(uint64_t nr, uint64_t arg0, uint64_t arg1, uint64_t a
             syscall_yield();
             break;
         case GET_PID:
-            return syscall_get_pid();
+            return (uint64_t) syscall_get_pid();
         case BLOCK_PROCESS:
-            return (uint64_t) syscall_block_process((uint16_t) arg0);
+            return (uint64_t) syscall_block_process((int64_t) arg0);
         case UNBLOCK_PROCESS:
-            return (uint64_t) syscall_unblock_process((uint16_t) arg0);
+            return (uint64_t) syscall_unblock_process((int64_t) arg0);
         case SET_PRIORITY:
-            return (uint64_t) syscall_set_priority((uint16_t) arg0, (uint8_t) arg1);
+            return (uint64_t) syscall_set_priority((int64_t) arg0, (uint8_t) arg1);
         case GET_PROCESSES_INFO:
             return (uint64_t) syscall_get_processes_info();
         case KILL_PROCESS:
-            return (uint64_t) syscall_kill_process((uint16_t) arg0);
+            return (uint64_t) syscall_kill_process((int64_t) arg0);
         case WAIT_PID:
-            return (uint64_t) syscall_wait_pid((uint16_t) arg0, (int32_t *) arg1);
+            return (uint64_t) syscall_wait_pid((int64_t) arg0, (int32_t *) arg1);
         case TOTAL_CPU_TICKS:
             return (uint64_t) syscall_total_ticks();
 	}
@@ -223,8 +223,8 @@ static void syscall_free(void * ptr){
 }
 
 //Create process
-static uint64_t syscall_create_process(uint64_t main, char ** argv, char * name, uint8_t no_kill, int * file_descriptors){
-    return (uint64_t) add_process((entry_point_t) main, argv, name, no_kill, file_descriptors);
+static int64_t syscall_create_process(uint64_t main, char ** argv, char * name, uint8_t no_kill, int * file_descriptors){
+    return add_process((entry_point_t) main, argv, name, no_kill, file_descriptors);
 }
 
 //Exit process
@@ -238,22 +238,22 @@ static void syscall_yield(){
 }
 
 //Get PID
-static uint32_t syscall_get_pid() {
+static int64_t syscall_get_pid() {
     return get_current_pid();
 }
 
 // Block process
-static int syscall_block_process(uint16_t pid) {
+static int syscall_block_process(int64_t pid) {
     return block_process(pid);
 }
 
 // Unblock process
-static int syscall_unblock_process(uint16_t pid) {
+static int syscall_unblock_process(int64_t pid) {
     return unblock_process(pid);
 }
 
 // Set priority
-static int syscall_set_priority(uint16_t pid, uint8_t priority) {
+static int syscall_set_priority(int64_t pid, uint8_t priority) {
     return set_process_priority(pid, priority);
 }
 
@@ -263,12 +263,12 @@ static uint64_t syscall_get_processes_info() {
 }
 
 // Kill process
-static int syscall_kill_process(uint16_t pid) {
+static int syscall_kill_process(int64_t pid) {
     return kill_process(pid);
 }
 
 // Wait PID
-static int syscall_wait_pid(uint16_t pid, int32_t * exit_code) {
+static int64_t syscall_wait_pid(int64_t pid, int32_t * exit_code) {
     return wait_pid(pid, exit_code);
 }
 

@@ -8,6 +8,7 @@
 #include <interrupts.h>
 #include <video.h>
 #include "memoryManager.h"
+#include "process.h"
 
 extern uint8_t text;
 extern uint8_t rodata;
@@ -48,6 +49,7 @@ void initializeKernelBinary()
 int main()
 {	
 	memory_init((void *)0XF00000, 0X100000);
+	process_system_init();
 	load_idt();
 
 	((EntryPoint)sampleCodeModuleAddress)();

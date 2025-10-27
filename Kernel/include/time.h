@@ -5,7 +5,7 @@
 #include "scheduler.h"
 
 typedef struct {
-	uint32_t pid;
+	int64_t pid;
 	uint64_t wake_up_tick;
 } sleeping_process_t;
 
@@ -23,7 +23,7 @@ uint64_t ticksElapsed(void);
  */
 int secondsElapsed(void);
 void init_sleeping_processes(void);
-void remove_sleeping_process(uint32_t pid);
+void remove_sleeping_process(int64_t pid);
 void sleep(uint32_t sleeping_ticks);
 
 #endif

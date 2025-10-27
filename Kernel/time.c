@@ -27,29 +27,35 @@ int secondsElapsed() {
 
 void init_sleeping_processes(){
 	for(int i = 0; i < MAX_PROCESSES; i++){
-		sleeping_processes[i].pid = -1;
+		sleeping_processes[i].pid = NO_PID;
 	}
 }
 
-void remove_sleeping_process(uint32_t pid){
-	sleeping_processes[pid].pid = -1;
+void remove_sleeping_process(int64_t pid){
+	if(pid < 0 || pid >= MAX_PROCESSES){
+		return;
+	}
+	sleeping_processes[pid].pid = NO_PID;
 }
 
 static void unblock_sleeping_processes(){
 	if(ticks < next_tick)
 		return;
 	for(int i = 0; i < MAX_PROCESSES; i++){
-		if(sleeping_processes[i].pid != -1 && sleeping_processes[i].wake_up_tick <= ticks){
+		if(sleeping_processes[i].pid != NO_PID && sleeping_processes[i].wake_up_tick <= ticks){
 			unblock_process(sleeping_processes[i].pid);
-			sleeping_processes[i].pid = -1;
-		}else if(sleeping_processes[i].pid != -1 && sleeping_processes[i].wake_up_tick < next_tick){
+			sleeping_processes[i].pid = NO_PID;
+		}else if(sleeping_processes[i].pid != NO_PID && sleeping_processes[i].wake_up_tick < next_tick){
 			next_tick = sleeping_processes[i].wake_up_tick;
 		}
 	}
 }
 
 void sleep(uint32_t sleeping_ticks){
-	uint32_t pid = get_current_pid();
+	int64_t pid = get_current_pid();
+	if(pid < 0 || pid >= MAX_PROCESSES){
+		return;
+	}
 	sleeping_processes[pid].wake_up_tick = ticks + sleeping_ticks;
 	sleeping_processes[pid].pid = pid;
 	if(sleeping_processes[pid].wake_up_tick < next_tick)

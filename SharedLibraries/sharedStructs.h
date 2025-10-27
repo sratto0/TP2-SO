@@ -3,15 +3,15 @@
 
 #include <stdint.h>
 
-#define NO_PID -1 
+#define NO_PID ((int64_t)-1)
 
 
 typedef enum { PROC_READY, PROC_RUNNING, PROC_BLOCKED, PROC_KILLED } process_state_t;
 
 typedef struct {
     char name[32];
-    uint16_t pid;
-    uint16_t parent_pid;
+    int64_t pid;
+    int64_t parent_pid;
     uint8_t priority;
     void * stack_base;
     void * stack_pointer;

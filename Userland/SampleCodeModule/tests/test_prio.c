@@ -5,7 +5,7 @@
 #include "stdlib.h"
 #include <stddef.h>
 
-#define TOTAL_PROCESSES 3
+#define TOTAL_PROCESSES 50
 
 #define LOWEST 0  // TODO: Change as required
 #define MEDIUM 1  // TODO: Change as required
@@ -75,5 +75,5 @@ uint64_t test_prio(uint64_t argc, char *argv[]) {
   for (i = 0; i < TOTAL_PROCESSES; i++)
     my_wait_pid(pids[i], &exit_code);
 
-  printf("Finished");
+  printf("Finished\n");
 }

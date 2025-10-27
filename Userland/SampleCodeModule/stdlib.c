@@ -159,14 +159,14 @@ static void print_int(int val, int width){
 static int calculate_total_ticks(process_info_t * process_array){
     int total = 0;
     process_info_t * current = process_array;
-    while (current->pid != -1) {
+    while (current->pid != NO_PID) {
         total += current->ticks;
         current++;
     }
     return total;
 }
 
-uint64_t my_create_process(uint64_t main, char ** argv, char * name, uint8_t no_kill, int * file_descriptors) {
+int64_t my_create_process(uint64_t main, char ** argv, char * name, uint8_t no_kill, int * file_descriptors) {
     return sys_create_process(main, argv, name, no_kill, file_descriptors);
 }
 
@@ -178,27 +178,26 @@ uint64_t my_yield() {
     return sys_yield();
 }
 
-uint64_t my_getpid() {
+int64_t my_getpid() {
     return sys_getpid();
 }
 
-uint64_t my_block_process(int16_t pid) {
-    printf("Blocking process %d\n", pid);
+int64_t my_block_process(int64_t pid) {
     return sys_block_process(pid);
 }
 
-uint64_t my_unblock_process(int16_t pid) {
+int64_t my_unblock_process(int64_t pid) {
     return sys_unblock_process(pid);
 }
 
-uint64_t my_nice(int16_t pid, uint8_t priority) {
+int64_t my_nice(int64_t pid, uint8_t priority) {
     return sys_set_priority(pid, priority);
 }
 
-uint64_t my_kill(int16_t pid) {
+int64_t my_kill(int64_t pid) {
     return sys_kill_process(pid);
 }
 
-uint64_t my_wait_pid(int pid, int * exit_code) {
+int64_t my_wait_pid(int64_t pid, int * exit_code) {
     return sys_wait_pid(pid, exit_code);
 }

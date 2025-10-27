@@ -3,14 +3,11 @@
 #include "test_util.h"
 #include "stdlib.h"
 #include <stddef.h>
-
-enum State { RUNNING,
-             BLOCKED,
-             KILLED };
+#include "../../../SharedLibraries/sharedStructs.h"
 
 typedef struct P_rq {
-  int32_t pid;
-  enum State state;
+  int64_t pid;
+  process_state_t state;
 } p_rq;
 
 int64_t test_processes(uint64_t argc, char *argv[]) {
@@ -38,7 +35,7 @@ int64_t test_processes(uint64_t argc, char *argv[]) {
         printf("test_processes: ERROR creating process\n");
         return -1;
       } else {
-        p_rqs[rq].state = RUNNING;
+        p_rqs[rq].state = PROC_RUNNING;
         alive++;
       }
     }
@@ -51,23 +48,23 @@ int64_t test_processes(uint64_t argc, char *argv[]) {
 
         switch (action) {
           case 0:
-            if (p_rqs[rq].state == RUNNING || p_rqs[rq].state == BLOCKED) {
+            if (p_rqs[rq].state == PROC_RUNNING || p_rqs[rq].state == PROC_BLOCKED) {
               if (my_kill(p_rqs[rq].pid) == -1) {
                 printf("test_processes: ERROR killing process\n");
                 return -1;
               }
-              p_rqs[rq].state = KILLED;
+              p_rqs[rq].state = PROC_KILLED;
               alive--;
             }
             break;
 
           case 1:
-            if (p_rqs[rq].state == RUNNING) {
+            if (p_rqs[rq].state == PROC_RUNNING) {
               if (my_block_process(p_rqs[rq].pid) == -1) {
                 printf("test_processes: ERROR blocking process\n");
                 return -1;
               }
-              p_rqs[rq].state = BLOCKED;
+              p_rqs[rq].state = PROC_BLOCKED;
             }
             break;
         }
@@ -75,12 +72,12 @@ int64_t test_processes(uint64_t argc, char *argv[]) {
 
       // Randomly unblocks processes
       for (rq = 0; rq < max_processes; rq++)
-        if (p_rqs[rq].state == BLOCKED && GetUniform(100) % 2) {
+        if (p_rqs[rq].state == PROC_BLOCKED && GetUniform(100) % 2) {
           if (my_unblock_process(p_rqs[rq].pid) == -1) {
             printf("test_processes: ERROR unblocking process\n");
             return -1;
           }
-          p_rqs[rq].state = RUNNING;
+          p_rqs[rq].state = PROC_RUNNING;
         }
     }
   }

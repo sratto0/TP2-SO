@@ -102,25 +102,25 @@ void * sys_malloc(uint64_t size);
 
 void sys_free(void * ptr);
 
-uint16_t sys_create_process(uint64_t main, char ** argv, char * name, uint8_t no_kill, int * file_descriptors);
+int64_t sys_create_process(uint64_t main, char ** argv, char * name, uint8_t no_kill, int * file_descriptors);
 
 uint64_t sys_exit_process(int64_t exit_code);
 
 uint64_t sys_yield();
 
-uint64_t sys_getpid();
+int64_t sys_getpid();
 
-uint64_t sys_block_process(int16_t pid);
+int64_t sys_block_process(int64_t pid);
 
-uint64_t sys_unblock_process(int16_t pid);
+int64_t sys_unblock_process(int64_t pid);
 
-uint64_t sys_set_priority(int16_t pid, uint8_t priority);
+int64_t sys_set_priority(int64_t pid, uint8_t priority);
     
 uint64_t sys_get_processes_info();
 
-uint64_t sys_kill_process(int16_t pid);
+int64_t sys_kill_process(int64_t pid);
 
-uint64_t sys_wait_pid(int16_t pid, int * ret);
+int64_t sys_wait_pid(int64_t pid, int * ret);
 
 uint64_t sys_total_cpu_ticks();
 
