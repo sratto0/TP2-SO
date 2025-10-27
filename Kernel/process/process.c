@@ -9,6 +9,7 @@ static int64_t next_pid = 1;
 void process_system_init(void) {
   memset(proc_table, 0, sizeof(proc_table));
   next_pid = 1;
+  init_sleeping_processes();
   scheduler_init();
 }
 
@@ -20,6 +21,7 @@ static char ** duplicate_argv(char ** argv);
 static int count_from_argv(char ** argv);
 static uint32_t str_length(const char * str);
 static void free_partial_argv(char ** argv, int allocated);
+static uint8_t initial_quantum(uint8_t priority);
 
 
 process_t * my_create_process(int64_t pid, int64_t parent_pid, entry_point_t entry_point, char ** argv, char * name, uint8_t no_kill, int * fds, uint8_t priority) {
@@ -37,7 +39,7 @@ process_t * my_create_process(int64_t pid, int64_t parent_pid, entry_point_t ent
   proc->ticks = 0;
   proc->state = PROC_READY;
   proc->priority = priority;
-  proc->quantum = priority;
+  proc->quantum = initial_quantum(priority);
   proc->entry_point = entry_point;
   proc->return_value = 0;
   
@@ -151,4 +153,12 @@ static void free_partial_argv(char ** argv, int allocated){
       memory_free(argv[i]);
     }
   }
+}
+
+static uint8_t initial_quantum(uint8_t priority){
+  uint16_t base = (uint16_t)priority + 1;
+  if (base > UINT8_MAX) {
+    base = UINT8_MAX;
+  }
+  return (uint8_t)base;
 }

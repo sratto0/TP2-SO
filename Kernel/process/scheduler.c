@@ -4,24 +4,28 @@
 static void adopt_children(int64_t pid);
 static void remove_process(int64_t pid);
 static process_t * get_next_process();
+static process_t * get_process(int64_t pid);
+static process_t * get_current_process(void);
+static void reset_quantum(process_t * proc);
+static uint8_t priority_to_quantum(uint8_t priority);
 
+static schedulerCDT scheduler_storage;
 static schedulerADT scheduler = NULL;
-uint8_t force_reschedule = 0;
+static uint8_t force_reschedule = 0;
 
-void scheduler_init(){
+void scheduler_init(void){
     if (scheduler != NULL) {
       return;
     }
     
-    scheduler = (schedulerADT) SCHEDULER_ADDRESS;
-    
+    scheduler = &scheduler_storage;
     for (int i = 0; i < MAX_PROCESSES; i++) {
       scheduler->processes[i] = NULL;
     }
     scheduler->size = 0;
     scheduler->current = -1;
-
     scheduler->total_ticks = 0;
+    force_reschedule = 0;
 
     //pipe
 }
@@ -31,22 +35,31 @@ schedulerADT get_scheduler() {
 }
 
 void * schedule(void * context) {
-    if(scheduler == NULL || scheduler->size == 0) {
+    if (scheduler == NULL || scheduler->size == 0) {
+      force_reschedule = 0;
       return context;
     }
 
-    if(scheduler->current != -1){
-        process_t * current_process = scheduler->processes[scheduler->current];
+    process_t * current_process = get_current_process();
+    if (current_process != NULL) {
         current_process->stack_pointer = context;
-        scheduler->processes[scheduler->current]->ticks++;
-        if(current_process->state == PROC_RUNNING){
+        current_process->ticks++;
+        scheduler->total_ticks++;
+        if (current_process->state == PROC_RUNNING) {
             current_process->state = PROC_READY;
+        }
+        if (current_process->state == PROC_READY) {
+            if (current_process->quantum > 0) {
+                current_process->quantum--;
+            }
+        } else {
+            current_process->quantum = 0;
         }
     }
     
-    process_t * next =  get_next_process();
-    if(next == NULL){
-        return context;
+    process_t * next = get_next_process();
+    if (next == NULL) {
+      return context;
     }
     
     scheduler->current = next->pid;
@@ -91,7 +104,7 @@ int64_t add_process(entry_point_t main, char ** argv, char * name, uint8_t no_ki
   }
   
   //pipe
-
+  reset_quantum(new_process);
   scheduler->processes[pid] = new_process;
   scheduler->size++;
   return pid;
@@ -104,52 +117,97 @@ static process_t * get_next_process() {
     return NULL;
   }
 
-  process_t * current_process = scheduler->processes[scheduler->current];
-  
-  if(current_process != NULL && current_process->quantum > 0 && !force_reschedule){
-    current_process->quantum--;
+  process_t * current_process = get_current_process();
+
+  if (!force_reschedule &&
+      current_process != NULL &&
+      current_process->state == PROC_READY &&
+      current_process->quantum > 0) {
+    force_reschedule = 0;
     return current_process;
   }
 
-  int64_t next_index;
-  if(scheduler->current == -1){
-    next_index = 0;
-  } else {
-    next_index = (scheduler->current + 1) % MAX_PROCESSES;
+  int64_t start_index = 0;
+  if (current_process != NULL) {
+    start_index = (scheduler->current + 1) % MAX_PROCESSES;
   }
-  int64_t start_index = next_index;
+  int64_t index = start_index;
 
-    while (1) {
-        process_t * candidate = scheduler->processes[next_index];
-        if (candidate != NULL && candidate->state == PROC_READY || candidate->state == PROC_RUNNING) {
-        force_reschedule = 0;
-        candidate->quantum = candidate->priority; 
-        return candidate;
-        }
-        next_index = (next_index + 1) % MAX_PROCESSES;
-        if (next_index == start_index) {
-        break;
-        }
+  do {
+    process_t * candidate = scheduler->processes[index];
+    if (candidate != NULL && (candidate->state == PROC_READY || candidate->state == PROC_RUNNING)) {
+      if (candidate->state == PROC_RUNNING) {
+        candidate->state = PROC_READY;
+      }
+      reset_quantum(candidate);
+      force_reschedule = 0;
+      return candidate;
+    }
+    index = (index + 1) % MAX_PROCESSES;
+  } while (index != start_index);
+
+  if (current_process != NULL && current_process->state == PROC_READY) {
+    if (current_process->quantum == 0) {
+      reset_quantum(current_process);
     }
     force_reschedule = 0;
+    return current_process;
+  }
+
+  force_reschedule = 0;
+  return NULL;
+}
+
+static process_t * get_process(int64_t pid) {
+  if (scheduler == NULL || pid < 0 || pid >= MAX_PROCESSES) {
     return NULL;
+  }
+  return scheduler->processes[pid];
+}
+
+static process_t * get_current_process(void) {
+  return get_process(scheduler != NULL ? scheduler->current : NO_PID);
+}
+
+static uint8_t priority_to_quantum(uint8_t priority) {
+  uint16_t base = (uint16_t)priority + 1;
+  if (base > UINT8_MAX) {
+    base = UINT8_MAX;
+  }
+  return (uint8_t)base;
+}
+
+static void reset_quantum(process_t * proc) {
+  if (proc == NULL) {
+    return;
+  }
+  proc->quantum = priority_to_quantum(proc->priority);
 }
 
 
 void destroy_scheduler(){
-  for(int i = 0; i < MAX_PROCESSES; i++){
-    if(scheduler->processes[i] != NULL){
+  if (scheduler == NULL) {
+    return;
+  }
+  for (int i = 0; i < MAX_PROCESSES; i++){
+    if (scheduler->processes[i] != NULL){
       destroy_process(scheduler->processes[i]); //FALTA HACERLO EN EL PROCESS.C
+      scheduler->processes[i] = NULL;
     }
   }
+  scheduler->size = 0;
+  scheduler->current = -1;
+  scheduler->total_ticks = 0;
+  force_reschedule = 0;
   scheduler = NULL;
 }
 
 int64_t get_current_pid() {
-  if (scheduler == NULL || scheduler->current < 0) {
+  process_t * current = get_current_process();
+  if (current == NULL) {
     return NO_PID;
   }
-  return scheduler->current;
+  return current->pid;
 }
 
 void yield() {
@@ -160,6 +218,9 @@ void yield() {
 //static void cleanup_process_resources //es de sincro
 
 static void adopt_children(int64_t pid){
+  if (scheduler == NULL) {
+    return;
+  }
   for(int i = 0; i < MAX_PROCESSES; i++)  
     if(scheduler->processes[i] != NULL && scheduler->processes[i]->parent_pid == pid){
       scheduler->processes[i]->parent_pid = 0; //adoptado por init
@@ -167,35 +228,34 @@ static void adopt_children(int64_t pid){
 }
 
 static void remove_process(int64_t pid){
-  if(scheduler == NULL || pid < 0 || pid >= MAX_PROCESSES || scheduler->processes[pid] == NULL){
+  process_t * proc = get_process(pid);
+  if (proc == NULL) {
     return;
   }
-  destroy_process(scheduler->processes[pid]);
+  remove_sleeping_process(pid);
+  destroy_process(proc);
   scheduler->processes[pid] = NULL;
-  scheduler->size--;
+  if (scheduler->size > 0) {
+    scheduler->size--;
+  }
+  if (scheduler->size == 0 || scheduler->current == pid) {
+    scheduler->current = -1;
+  }
 }
 
 
 int kill_process(int64_t pid){
-  if(scheduler == NULL || pid < 0 || pid >= MAX_PROCESSES || scheduler->processes[pid] == NULL){
+  process_t * proc = get_process(pid);
+  if (proc == NULL){
     return -1;
   }
   adopt_children(pid);
-  process_t * proc = scheduler->processes[pid];
-  process_t * parent = NULL;
-  if(proc->parent_pid >= 0 && proc->parent_pid < MAX_PROCESSES){
-    parent = scheduler->processes[proc->parent_pid];
+  process_t * parent = get_process(proc->parent_pid);
+  if(parent != NULL && parent->state == PROC_BLOCKED && parent->waiting_pid == pid){
+    unblock_process(parent->pid);
   }
-  if(parent != NULL && parent->state == PROC_BLOCKED){
-    //unblock process
-  }
-  uint8_t context_switch;
-  if(scheduler->current == pid){
-    context_switch = 1;
-  } else {
-    context_switch = 0;
-  }
-
+  uint8_t context_switch = (scheduler != NULL && scheduler->current == pid);
+  remove_sleeping_process(pid);
   proc->state = PROC_KILLED;
   remove_process(pid);
 
@@ -206,29 +266,18 @@ int kill_process(int64_t pid){
 }
 
 int32_t kill_current_process(){
-  return kill_process(scheduler->current);
+  int64_t pid = get_current_pid();
+  if (pid == NO_PID) {
+    return -1;
+  }
+  return kill_process(pid);
 }
 
 int block_process(int64_t pid){
-
-  // if(scheduler == NULL){
-  //   return -1;
-  // }
-
-  // if(pid < 0 || pid >= MAX_PROCESSES){
-  //   return -1;
-  // }
-
-  // if(scheduler->processes[pid] == NULL){
-  //   return -1;
-  // }
-  
-    if(scheduler == NULL || pid >= MAX_PROCESSES || scheduler->processes[pid] == NULL){
-      return -1;
-    }
-
-  
-  process_t * proc = scheduler->processes[pid];
+  process_t * proc = get_process(pid);
+  if (proc == NULL){
+    return -1;
+  }
   
   if(proc->state == PROC_BLOCKED){
     return 0;
@@ -248,6 +297,7 @@ int block_process(int64_t pid){
   }
 
   proc->state = PROC_BLOCKED;
+  proc->quantum = 0;
 
   if(context_switch){
     yield();
@@ -256,110 +306,127 @@ int block_process(int64_t pid){
 }
 
 int unblock_process(int64_t pid){
-  if(scheduler == NULL || pid < 0 || pid >= MAX_PROCESSES || scheduler->processes[pid] == NULL){
+  process_t * proc = get_process(pid);
+  if (proc == NULL){
     return -1;
   }
-  process_t * proc = scheduler->processes[pid];
   if(proc->state != PROC_BLOCKED){
     return -1;
   }
 
   remove_sleeping_process(pid); 
   proc->state = PROC_READY;
+  reset_quantum(proc);
 
   return 0;
 }
 
 int block_current_process(){
-  return block_process(scheduler->current);
+  int64_t pid = get_current_pid();
+  if (pid == NO_PID) {
+    return -1;
+  }
+  return block_process(pid);
 }
 
 int unblock_current_process(){
-  return unblock_process(scheduler->current);
+  int64_t pid = get_current_pid();
+  if (pid == NO_PID) {
+    return -1;
+  }
+  return unblock_process(pid);
 }
 
 int set_process_priority(int64_t pid, uint8_t priority){
-  if(scheduler == NULL || pid < 0 || pid >= MAX_PROCESSES || scheduler->processes[pid] == NULL){
+  process_t * proc = get_process(pid);
+  if (proc == NULL){
     return -1;
   }
-  process_t * proc = scheduler->processes[pid];
   proc->priority = priority;
-  proc->quantum = priority;
+  reset_quantum(proc);
   return 0;
 }
 
 int64_t wait_pid(int64_t pid, int32_t * exit_code){
-  if(scheduler == NULL || pid < 0 || pid >= MAX_PROCESSES || scheduler->processes[pid] == NULL){
+  process_t * child = get_process(pid);
+  process_t * current = get_current_process();
+  if (child == NULL || current == NULL){
     return -1;
   }
 
-  process_t * proc = scheduler->processes[pid];
-  if(proc->parent_pid != scheduler->current){
+  if(child->parent_pid != current->pid){
     return -1;
   }
 
-  if(proc->state == PROC_KILLED){
-    if(exit_code) *exit_code = proc->return_value;
+  if(child->state == PROC_KILLED){
+    if(exit_code) {
+      *exit_code = child->return_value;
+    }
     remove_process(pid);
+    current->waiting_pid = NO_PID;
     return pid;
   }
 
-  process_t * current = scheduler->processes[scheduler->current];
   current->waiting_pid = pid;
-  block_current_process();
-
-  if(pid >= 0 && pid < MAX_PROCESSES && scheduler->processes[pid] != NULL){
-    proc = scheduler->processes[pid];
-    if(proc->state == PROC_KILLED){
-      if(exit_code) *exit_code = proc->return_value;
-      remove_process(pid);
-      return pid;
-    }
+  if (block_current_process() != 0) {
+    current->waiting_pid = NO_PID;
+    return -1;
   }
 
+  child = get_process(pid);
+  if(child != NULL && child->state == PROC_KILLED){
+    if(exit_code) {
+      *exit_code = child->return_value;
+    }
+    remove_process(pid);
+    current->waiting_pid = NO_PID;
+    return pid;
+  }
+
+  current->waiting_pid = NO_PID;
   return -1;
 }
 
 int sleep_block(int64_t pid, uint8_t sleep){
-  if(pid == 0 || pid < 0 || scheduler == NULL || pid >= MAX_PROCESSES || scheduler->processes[pid] == NULL || scheduler->processes[pid]->state == PROC_KILLED){
+  process_t * proc = get_process(pid);
+  if(pid == 0 || proc == NULL || proc->state == PROC_KILLED){
     return -1;
   }
   if(sleep == 0){
     remove_sleeping_process(pid);
   }
 
-  scheduler->processes[pid]->state = PROC_BLOCKED;
+  proc->state = PROC_BLOCKED;
+  proc->quantum = 0;
 
-  if(pid == scheduler->current){
+  if(scheduler != NULL && scheduler->current == pid){
     yield();
   }
   return 0;
 }
 
 void my_exit(int64_t ret){
-  if(scheduler == NULL)
-  return;
-  process_t *current = scheduler->processes[scheduler->current];
+  process_t * current = get_current_process();
+  if(current == NULL) {
+    return;
+  }
   
 
   //pipes
 
   current->state = PROC_KILLED;
   current->return_value = ret;
+  current->quantum = 0;
   remove_sleeping_process(current->pid);
 
-  process_t * parent = NULL;
-  if(current->parent_pid >= 0 && current->parent_pid < MAX_PROCESSES){
-    parent = scheduler->processes[current->parent_pid];
-  }
+  process_t * parent = get_process(current->parent_pid);
   if(parent != NULL && parent->state == PROC_BLOCKED && parent->waiting_pid == current->pid){
     unblock_process(parent->pid);
   }
-  remove_process(current->pid);
   yield();
 }
 
-uint16_t total_ticks() {
+uint64_t total_ticks(void) {
   if (scheduler == NULL) {
     return 0;
   }
@@ -367,10 +434,14 @@ uint16_t total_ticks() {
 }
 
 uint8_t foreground_process(int64_t pid){
-  if(scheduler == NULL || pid < 0 || pid >= MAX_PROCESSES || scheduler->processes[pid] == NULL){
+  if(scheduler == NULL){
     return 0;
   }
-  return scheduler->processes[SHELL_PID]->waiting_pid = pid;
+  process_t * shell = get_process(SHELL_PID);
+  if(shell == NULL){
+    return 0;
+  }
+  return shell->waiting_pid == pid;
 }
 
 process_info_t * get_processes_info(){
@@ -395,7 +466,17 @@ process_info_t * get_processes_info(){
     }
   }
 
-  //
+  for(; idx < MAX_PROCESSES; idx++){
+    processes_info[idx].pid = NO_PID;
+    processes_info[idx].parent_pid = NO_PID;
+    processes_info[idx].priority = 0;
+    processes_info[idx].stack_pointer = NULL;
+    processes_info[idx].stack_base = NULL;
+    processes_info[idx].foreground = 0;
+    processes_info[idx].state = PROC_KILLED;
+    processes_info[idx].ticks = 0;
+    processes_info[idx].name[0] = '\0';
+  }
 
   return processes_info;
 }

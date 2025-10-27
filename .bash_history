@@ -399,3 +399,38 @@ make
 cd ..
 make 
 exit
+cd root
+make clear
+make clean
+make clean
+cd Toolchain
+make clean
+make
+cd ..
+make
+exit
+cd root
+make clean
+cd Toolchain
+make clean
+make
+cd ..
+make
+exit
+cd root
+make clean
+cd Toolchain
+make clean
+make
+cd ..
+make
+exit
+cd root
+make clean
+cd Tolchain
+cd Toolchain
+make clean
+make
+cd ..
+make
+exit

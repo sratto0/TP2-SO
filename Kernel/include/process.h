@@ -14,7 +14,7 @@ typedef struct process {
   int64_t pid;
   int64_t parent_pid;
   int64_t waiting_pid; // PID que este proceso esta esperando (o NO_PID)
-  uint16_t ticks;
+  uint64_t ticks;
   
   process_state_t state;
   uint8_t priority;

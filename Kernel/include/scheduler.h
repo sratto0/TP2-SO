@@ -1,6 +1,5 @@
 #ifndef SCHEDULER_H
 #define SCHEDULER_H
-#define SCHEDULER_ADDRESS 0x60000
 #define SHELL_PID 1
 
 #include "process.h"
@@ -8,20 +7,20 @@
 #include "lib.h"
 #include "time.h"
 
-#define MAX_PROCESSES 100
+#define MAX_PROCESSES 256
 
 typedef struct schedulerCDT {
-  process_t * processes[MAX_PROCESSES + 1];
+  process_t * processes[MAX_PROCESSES];
   int64_t current;
-  uint8_t size;
-  uint16_t total_ticks;
+  uint16_t size;
+  uint64_t total_ticks;
 } schedulerCDT;
 
 typedef struct schedulerCDT * schedulerADT; 
 
-void scheduler_init();
+void scheduler_init(void);
 schedulerADT get_scheduler();
-uint16_t total_ticks();
+uint64_t total_ticks(void);
 void * schedule(void * context);
 int64_t add_process(entry_point_t main, char ** argv, char * name, uint8_t no_kill, int * file_descriptors);
 void destroy_scheduler();
