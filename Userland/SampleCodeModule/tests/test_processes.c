@@ -38,6 +38,7 @@ int64_t test_processes(uint64_t argc, char *argv[]) {
         p_rqs[rq].state = PROC_RUNNING;
         alive++;
       }
+      printf("Created process with PID %d\n", p_rqs[rq].pid);
     }
 
     // Randomly kills, blocks or unblocks processes until every one has been killed
@@ -55,6 +56,7 @@ int64_t test_processes(uint64_t argc, char *argv[]) {
               }
               p_rqs[rq].state = PROC_KILLED;
               alive--;
+              printf("Killed process with PID %d\n", p_rqs[rq].pid);
             }
             break;
 
@@ -65,6 +67,7 @@ int64_t test_processes(uint64_t argc, char *argv[]) {
                 return -1;
               }
               p_rqs[rq].state = PROC_BLOCKED;
+              printf("Blocked process with PID %d\n", p_rqs[rq].pid);
             }
             break;
         }
@@ -78,6 +81,7 @@ int64_t test_processes(uint64_t argc, char *argv[]) {
             return -1;
           }
           p_rqs[rq].state = PROC_RUNNING;
+          printf("Unblocked process with PID %d\n", p_rqs[rq].pid);
         }
     }
   }

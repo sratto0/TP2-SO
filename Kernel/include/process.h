@@ -19,6 +19,8 @@ typedef struct process {
   process_state_t state;
   uint8_t priority;
   uint8_t quantum; // remaining quantum
+  uint8_t in_ready_queue;
+  uint8_t in_blocked_queue;
   
  
   void *stack_pointer; /* valor actual del SP guardado en el descriptor */

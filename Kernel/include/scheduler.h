@@ -5,14 +5,17 @@
 #include "process.h"
 #include "../../SharedLibraries/sharedStructs.h"
 #include "lib.h"
-#include "time.h"
+#include "doubleLinkedList.h"
 
-#define MAX_PROCESSES 256
+#define INITIAL_PROCESS_CAPACITY 32
 
 typedef struct schedulerCDT {
-  process_t * processes[MAX_PROCESSES];
+  process_t ** processes;
   int64_t current;
-  uint16_t size;
+  uint64_t size;
+  uint64_t capacity;
+  DListADT ready_queue;
+  DListADT blocked_queue;
   uint64_t total_ticks;
 } schedulerCDT;
 

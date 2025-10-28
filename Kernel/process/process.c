@@ -3,12 +3,7 @@
 #include "scheduler.h"
 #include "lib.h"
 
-static process_t proc_table[MAX_PROCESSES];
-static int64_t next_pid = 1;
-
 void process_system_init(void) {
-  memset(proc_table, 0, sizeof(proc_table));
-  next_pid = 1;
   init_sleeping_processes();
   scheduler_init();
 }
@@ -40,6 +35,8 @@ process_t * my_create_process(int64_t pid, int64_t parent_pid, entry_point_t ent
   proc->state = PROC_READY;
   proc->priority = priority;
   proc->quantum = initial_quantum(priority);
+  proc->in_ready_queue = 0;
+  proc->in_blocked_queue = 0;
   proc->entry_point = entry_point;
   proc->return_value = 0;
   
