@@ -6,6 +6,10 @@
 #define NO_PID ((int64_t)-1)
 
 
+typedef int (*entry_point_t)(int argc, char **argv);
+
+
+
 typedef enum { PROC_READY, PROC_RUNNING, PROC_BLOCKED, PROC_KILLED } process_state_t;
 
 typedef struct {

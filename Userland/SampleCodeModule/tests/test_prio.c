@@ -4,8 +4,9 @@
 #include "test_util.h"
 #include "stdlib.h"
 #include <stddef.h>
+#include "../../../SharedLibraries/sharedStructs.h"
 
-#define TOTAL_PROCESSES 50
+#define TOTAL_PROCESSES 3
 #define PRIOS 3
 
 #define LOWEST 0  // TODO: Change as required
@@ -16,12 +17,13 @@ int64_t prio[PRIOS] = {LOWEST, MEDIUM, HIGHEST};
 
 uint64_t max_value = 0;
 
-void zero_to_max() {
+int zero_to_max(int argc, char *argv[]) {
   uint64_t value = 0;
 
   while (value++ != max_value);
 
   printf("PROCESS %d DONE!\n", my_getpid());
+  return 0;
 }
 
 uint64_t test_prio(uint64_t argc, char *argv[]) {
@@ -39,7 +41,7 @@ uint64_t test_prio(uint64_t argc, char *argv[]) {
   printf("SAME PRIORITY...\n");
 
   for (i = 0; i < TOTAL_PROCESSES; i++)
-    pids[i] = my_create_process((uint64_t)zero_to_max, ztm_argv, "zero_to_max", 0, NULL);
+    pids[i] = my_create_process((entry_point_t)zero_to_max, ztm_argv, "zero_to_max", 0, NULL);
 
   // Expect to see them finish at the same time
 
@@ -49,7 +51,7 @@ uint64_t test_prio(uint64_t argc, char *argv[]) {
   printf("SAME PRIORITY, THEN CHANGE IT...\n");
 
   for (i = 0; i < TOTAL_PROCESSES; i++) {
-    pids[i] = my_create_process((uint64_t)zero_to_max, ztm_argv, "zero_to_max", 0, NULL);
+    pids[i] = my_create_process((entry_point_t)zero_to_max, ztm_argv, "zero_to_max", 0, NULL);
     my_nice(pids[i], prio[i%3]);
     printf("  PROCESS %d NEW PRIORITY: %d\n", pids[i], prio[i%3]);
   }
@@ -62,7 +64,7 @@ uint64_t test_prio(uint64_t argc, char *argv[]) {
   printf("SAME PRIORITY, THEN CHANGE IT WHILE BLOCKED...\n");
 
   for (i = 0; i < TOTAL_PROCESSES; i++) {
-    pids[i] = my_create_process((uint64_t)zero_to_max, ztm_argv, "zero_to_max", 0, NULL);
+    pids[i] = my_create_process((entry_point_t)zero_to_max, ztm_argv, "zero_to_max", 0, NULL);
     my_block_process(pids[i]);
     my_nice(pids[i], prio[i%3]);
     printf("  PROCESS %d NEW PRIORITY: %d\n", pids[i], prio[i%3]);
@@ -75,8 +77,6 @@ uint64_t test_prio(uint64_t argc, char *argv[]) {
 
   for (i = 0; i < TOTAL_PROCESSES; i++)
     my_wait_pid(pids[i], &exit_code);
-  
-
 
   printf("Finished\n");
 }

@@ -2,6 +2,7 @@
 #include "process.h"
 #include "scheduler.h"
 #include "lib.h"
+#include "../../SharedLibraries/sharedStructs.h"
 
 void process_system_init(void) {
   init_sleeping_processes();
@@ -63,7 +64,7 @@ process_t * my_create_process(int64_t pid, int64_t parent_pid, entry_point_t ent
   } else {
     proc->name[0] = 0;
   }
-  proc->stack_pointer = set_stack_frame(&process_caller, entry_point, proc->stack_pointer, (void *) proc->argv);
+  proc->stack_pointer = set_stack_frame(&process_caller, entry_point, proc->stack_pointer, proc->argv);
   return proc;
 }
 

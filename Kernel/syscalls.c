@@ -61,7 +61,7 @@ static void syscall_setFontColor(uint8_t r, uint8_t g, uint8_t b);
 static uint32_t syscall_getFontColor();
 static uint64_t syscall_malloc(uint64_t size);  
 static void syscall_free(void * ptr);
-static int64_t syscall_create_process(uint64_t main, char ** argv, char * name, uint8_t no_kill, int * file_descriptors);
+static int64_t syscall_create_process(entry_point_t main, char ** argv, char * name, uint8_t no_kill, int * file_descriptors);
 static void syscall_exit_process(int64_t exit_code);
 static void syscall_yield();
 static int64_t syscall_get_pid();
@@ -111,7 +111,7 @@ uint64_t syscallDispatcher(uint64_t nr, uint64_t arg0, uint64_t arg1, uint64_t a
             syscall_free((void *) arg0);
             break;
         case CREATE_PROCESS:
-            return (uint64_t) syscall_create_process((uint64_t) arg0, (char **) arg1, (char *) arg2, (uint8_t) arg3, (int *) arg4);
+            return (uint64_t) syscall_create_process((entry_point_t) arg0, (char **) arg1, (char *) arg2, (uint8_t) arg3, (int *) arg4);
             break;
         case EXIT_PROCESS:
             syscall_exit_process((int64_t) arg0);
@@ -223,7 +223,7 @@ static void syscall_free(void * ptr){
 }
 
 //Create process
-static int64_t syscall_create_process(uint64_t main, char ** argv, char * name, uint8_t no_kill, int * file_descriptors){
+static int64_t syscall_create_process(entry_point_t main, char ** argv, char * name, uint8_t no_kill, int * file_descriptors){
     return add_process((entry_point_t) main, argv, name, no_kill, file_descriptors);
 }
 

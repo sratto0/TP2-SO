@@ -8,7 +8,6 @@
 
 #define PROCESS_NAME_LEN 32
 #define DEFAULT_PRIORITY 1
-typedef int (*entry_point_t)(int argc, char **argv);
 
 typedef struct process {
   int64_t pid;
