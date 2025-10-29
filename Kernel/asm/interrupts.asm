@@ -19,6 +19,8 @@ GLOBAL _ex06Handler
 GLOBAL _ex0DHandler
 GLOBAL _ex0EHandler
 
+GLOBAL set_stack_frame
+
 EXTERN irqDispatcher
 EXTERN syscallDispatcher
 EXTERN exceptionDispatcher
@@ -26,8 +28,11 @@ EXTERN load_main
 
 SECTION .text
 
-%macro pushState 0
-	push rax
+%macro pushState 1
+	%if %1
+		push rax
+	%endif
+	; push rax
 	push rbx
 	push rcx
 	push rdx
@@ -44,7 +49,7 @@ SECTION .text
 	push r15
 %endmacro
 
-%macro popState 0
+%macro popState 1
 	pop r15
 	pop r14
 	pop r13
@@ -59,11 +64,33 @@ SECTION .text
 	pop rdx
 	pop rcx
 	pop rbx
-	pop rax
+	; pop rax
+	%if %1
+		pop rax
+	%endif
+
 %endmacro
 
+; %macro irqHandlerMaster 1
+; 	pushState 1
+
+; 	; pasar (irq, rsp) a irqDispatcher
+; 	mov rdi, %1
+; 	mov rsi, rsp
+; 	call irqDispatcher
+
+; 	; usar el rsp devuelto por irqDispatcher/schedule
+; 	mov rsp, rax
+
+; 	mov al, 20h
+; 	out 20h, al
+
+; 	popState 1
+; 	iretq
+; %endmacro
+
 %macro irqHandlerMaster 1
-	pushState
+	pushState 1
 
 	mov rdi, %1 ; pasaje de parametro
 	call irqDispatcher
@@ -72,14 +99,13 @@ SECTION .text
 	mov al, 20h
 	out 20h, al
 
-	popState
+	popState 1
 	iretq
 %endmacro
 
 
-
 %macro exceptionHandler 1
-	pushState ; Se cargan 15 registros en stack
+	pushState 1; Se cargan 15 registros en stack
 
 	mov rsi, rsp
 	add rsi, 15*8 ; RIP 
@@ -89,7 +115,7 @@ SECTION .text
 	mov rdi, %1 ; pasaje de parametro
 	call exceptionDispatcher
 
-	popState
+	popState 1
 	; El iretq necesita que le manden los valores de RIP|CS|RFLAGS|SP|SS de userland por stack
 	add rsp, 8
 	push load_main
@@ -153,7 +179,7 @@ _irq05Handler:
 
 ;Syscall
 _syscallHandler:
-	pushState
+	pushState 1
 	mov rbp, rsp
 
 	push r9
@@ -171,7 +197,7 @@ _syscallHandler:
 	out 20h, al
 
 	mov rsp, rbp
-	popState
+	popState 0
 	mov rax, [aux]
 	iretq
 
@@ -195,6 +221,33 @@ haltcpu:
 	cli
 	hlt
 	ret
+
+set_stack_frame:
+	; Entrada (sysv): rdi = arg1, rsi = arg2, rdx = stack_top, rcx = arg4
+	; Guardar stack actual
+	mov r8, rsp
+	mov r9, rbp
+	; Cambiar al nuevo stack
+	mov rsp, rdx
+	mov rbp, rdx
+	; Valores mínimos para un contexto: RIP(0) | rdx (saved) | RFLAGS | CS | saved rdi
+	push 0x0
+	push rdx
+	push 0x202
+	push 0x8
+	push rdi
+	; preparar argumentos para la función que ejecutará el proceso: rdi = antiguo rsi, rsi = antiguo rcx
+	mov rdi, rsi
+	mov rsi, rcx
+	; Guardar registros generales
+	pushState 1; macro definida en interrupts.asm (push rax .. push r15)
+	; rax = puntero al frame creado
+	mov rax, rsp
+	; Restaurar stack original
+	mov rsp, r8
+	mov rbp, r9
+	ret
+
 
 SECTION .bss
 	aux resq 1
