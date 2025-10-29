@@ -1,8 +1,3 @@
-cd root
-cd Toolchain
-make all
-cd ..
-make all
 exit
 cd root
 make clean
@@ -462,6 +457,42 @@ cd root
 make clean
 cd Toolchain
 make
+make clean
+make
+cd ..
+make
+exit
+cd root
+cd Toolchain
+make clean
+make
+cd ..
+make
+exit
+exit
+cd root
+cd Toolchain
+make clean
+make
+cd ..
+make
+exit
+cd root
+cd Toolchain
+make clean
+make
+cd ..
+make
+exit
+cd root
+cd Toolchain
+make clean
+make
+cd ..
+make
+exit
+cd root
+cd Toolchain
 make clean
 make
 cd ..
