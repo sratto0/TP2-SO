@@ -124,4 +124,12 @@ int64_t sys_wait_pid(int64_t pid, int * ret);
 
 uint64_t sys_total_cpu_ticks();
 
+int64_t sys_sem_open(char * name, uint64_t initialValue);
+
+int64_t sys_sem_wait(char * name);
+
+int64_t sys_sem_post(char * name);
+
+int64_t sys_sem_close(char * name);
+
 #endif

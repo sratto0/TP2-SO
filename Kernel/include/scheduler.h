@@ -16,7 +16,7 @@
 
 
 typedef struct schedulerCDT {
-  process_t * processes[MAX_PROCESSES];
+  process_t ** processes;
   int64_t current;
   uint64_t size;
   uint64_t capacity;

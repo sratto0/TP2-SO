@@ -57,4 +57,12 @@ int64_t my_nice(int64_t pid, uint8_t priority);
 
 int64_t my_kill(int64_t pid);
 
+int64_t my_sem_open(char * name, uint64_t initialValue);
+
+int64_t my_sem_wait(char * name);
+
+int64_t my_sem_post(char * name);
+
+int64_t my_sem_close(char * name);
+
 #endif

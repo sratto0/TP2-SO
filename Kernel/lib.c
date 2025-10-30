@@ -108,3 +108,11 @@ void my_strncpy(char * dest, const char * src, uint64_t n) {
 	}
 	dest[n - 1] = '\0'; 
 }
+
+int str_compare(const char * str1, const char * str2){
+	while(*str1 && (*str1 == *str2)){
+		str1++;
+		str2++;
+	}
+	return *(const unsigned char *)str1 - *(const unsigned char *)str2;
+}

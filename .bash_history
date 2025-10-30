@@ -21,19 +21,6 @@ make
 make
 make
 make
-make
-make
-make
-make
-make
-make
-make
-make
-make
-make
-make
-make
-make
 
 make
 make
@@ -497,4 +484,17 @@ cd Toolchain
 make
 cd ..
 make
+exit
+cd root
+make clean
+cd Toolchain
+make clean
+make
+cd ..
+make
+exit
+cd root
+make clean
+cd Toolchain
+make clean
 exit
