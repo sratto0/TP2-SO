@@ -19,7 +19,7 @@ set_stack_frame:
 	push rdi
 	; preparar argumentos para la función que ejecutará el proceso: rdi = antiguo rsi, rsi = antiguo rcx
 	mov rdi, rsi
-	mov rsi, rcx
+	; mov rsi, rcx
 	; Guardar registros generales
 	pushState ; macro definida en interrupts.asm (push rax .. push r15)
 	; rax = puntero al frame creado

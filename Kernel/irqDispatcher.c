@@ -22,8 +22,7 @@ uint64_t irqDispatcher(uint64_t irq, uint64_t rsp) {
 }
 
 uint64_t int_20(uint64_t rsp) {
-    rsp = timerHandler(rsp);
-    return rsp;
+    return timerHandler(rsp);
 }
 
 void int_21() {

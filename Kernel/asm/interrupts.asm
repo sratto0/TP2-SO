@@ -19,6 +19,8 @@ GLOBAL _ex06Handler
 GLOBAL _ex0DHandler
 GLOBAL _ex0EHandler
 
+GLOBAL timer_tick ;simula un tick del timer
+
 EXTERN irqDispatcher
 EXTERN syscallDispatcher
 EXTERN exceptionDispatcher
@@ -66,7 +68,9 @@ SECTION .text
 	pushState
 
 	mov rdi, %1 ; pasaje de parametro
+	mov rsi, rsp
 	call irqDispatcher
+	mov rsp, rax
 
 	; signal pic EOI (End of Interrupt)
 	mov al, 20h
@@ -174,6 +178,10 @@ _syscallHandler:
 	popState
 	mov rax, [aux]
 	iretq
+
+timer_tick:
+	int 20h
+	ret
 
 ;Zero Division Exception
 _ex00Handler:

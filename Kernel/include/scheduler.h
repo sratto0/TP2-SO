@@ -9,13 +9,19 @@
 
 #define INITIAL_PROCESS_CAPACITY 32
 
+#define MAX_PROCESSES
+// el arreglo de process_t hacerlo estatico
+// el chequeo de q no este lleno el array de procesor lo haces con el get_pid, si te devuelve -1 no lo creas
+
+
+
 typedef struct schedulerCDT {
-  process_t ** processes;
+  process_t * processes[MAX_PROCESSES];
   int64_t current;
   uint64_t size;
   uint64_t capacity;
   DListADT ready_queue;
-  DListADT blocked_queue;
+  DListADT blocked_queue; // 
   uint64_t total_ticks;
 } schedulerCDT;
 

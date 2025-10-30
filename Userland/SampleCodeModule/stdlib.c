@@ -166,7 +166,7 @@ static int calculate_total_ticks(process_info_t * process_array){
     return total;
 }
 
-int64_t my_create_process(uint64_t main, char ** argv, char * name, uint8_t no_kill, int * file_descriptors) {
+int64_t my_create_process(entry_point_t main, char ** argv, char * name, uint8_t no_kill, int * file_descriptors) {
     return sys_create_process(main, argv, name, no_kill, file_descriptors);
 }
 
