@@ -6,7 +6,7 @@
 
 void process_system_init(void) {
   // init_sleeping_processes();
-  init_scheduler();
+  // init_scheduler();
 }
 
 #define STACK_SIZE 0x1000

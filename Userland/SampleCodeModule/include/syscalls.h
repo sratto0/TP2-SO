@@ -102,7 +102,7 @@ void * sys_malloc(uint64_t size);
 
 void sys_free(void * ptr);
 
-int64_t sys_create_process(uint64_t main, char ** argv, char * name, int * file_descriptors);
+int64_t sys_create_process(entry_point_t main, char ** argv, char * name, int * file_descriptors);
 
 uint64_t sys_exit_process(int64_t exit_code);
 

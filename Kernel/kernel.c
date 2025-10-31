@@ -10,6 +10,7 @@
 #include "memoryManager.h"
 #include "process.h"
 #include "memoryMap.h"
+#include "scheduler.h"
 
 extern uint8_t text;
 extern uint8_t rodata;
@@ -42,28 +43,27 @@ void * getStackBase()
 	);
 }
 
-void initializeKernelBinary()
+void * initializeKernelBinary()
 {
 	void * moduleAddresses[] = { sampleCodeModuleAddress, sampleDataModuleAddress };
 	loadModules(&endOfKernelBinary, moduleAddresses);
 	clearBSS(&bss, &endOfKernel - &bss);
+	
+	return getStackBase();
+	
 }
 
 int main()
 {	
 	memory_init((void *)0XF00000, 0X100000);
-
 	// memory_init((void *)START_FREE_MEM, MEM_SIZE);
-
-	process_system_init();
+	
+	init_scheduler();	
+	
 	load_idt();
+	
+	// timer_tick();
 
-	timer_tick();
-
-	((EntryPoint)sampleCodeModuleAddress)();
-
-	// desp esto hay que sacarlo
-	while(1) _hlt();
 	return 0;
 }
 

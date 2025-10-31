@@ -5,6 +5,8 @@
 #include "time.h"
 #include "memoryMap.h"
 
+#include "video.h"
+
 extern void timer_tick();
 
 static void adopt_children(int64_t pid);
@@ -17,10 +19,12 @@ static void remove_from_ready_queue(process_t * proc);
 
 static schedulerADT scheduler = NULL;
 
-
+static int gola=1;
 
 static void init(int argc, char ** argv) {
   char ** shell_argv = {NULL};
+
+  print("llega a init");
 
   int shell_pid = add_process((entry_point_t) SHELL_ADDRESS, shell_argv, "shell", NULL);
 
@@ -50,17 +54,19 @@ static int add_init() {
   scheduler->processes[INIT_PID] = pcb_init;
 
   scheduler->process_count++;
+
+  timer_tick();
   
   return 0;
 }
 
 
 void init_scheduler(void){
-    if (scheduler != NULL) {
-        return;
-    }
+    // if (scheduler != NULL) {
+    //     return;
+    // }
 
-    scheduler = (schedulerADT) SCHEDULER_ADDRESS;
+    scheduler = (schedulerADT)SCHEDULER_ADDRESS;
 
     for (int i=0; i< MAX_PROCESSES; i++) {
       scheduler->processes[i] = NULL;
@@ -79,10 +85,6 @@ void init_scheduler(void){
     }
 }
 
-schedulerADT get_scheduler() {
-  return scheduler;
-}
-
 
 void * schedule(void * prev_rsp) {
     if (scheduler == NULL || scheduler->process_count == 0) {
@@ -92,10 +94,7 @@ void * schedule(void * prev_rsp) {
 
     process_t * current_process = get_current_process();
 
-    if (current_process == NULL) {
-      // VER!!: capaz habria que hacer scheduler->force_reschedule = 0; 
-      return prev_rsp;
-    }
+ 
 
     if (current_process != NULL) {
       current_process->stack_pointer = prev_rsp;

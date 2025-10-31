@@ -95,7 +95,7 @@ SECTION .text
 	popState
 	; El iretq necesita que le manden los valores de RIP|CS|RFLAGS|SP|SS de userland por stack
 	add rsp, 8
-	push load_main
+	push userland
 	iretq
 %endmacro
 
@@ -205,3 +205,6 @@ haltcpu:
 
 SECTION .bss
 	aux resq 1
+
+SECTION .rodata
+    userland equ 0x400000
