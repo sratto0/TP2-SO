@@ -9,6 +9,7 @@
 #include <video.h>
 #include "memoryManager.h"
 #include "process.h"
+#include "memoryMap.h"
 
 extern uint8_t text;
 extern uint8_t rodata;
@@ -48,11 +49,18 @@ void initializeKernelBinary()
 
 int main()
 {	
-	memory_init((void *)0XF00000, 0X100000);
+	// memory_init((void *)0XF00000, 0X100000);
+
+	memory_init((void *)START_FREE_MEM, MEM_SIZE);
+
 	process_system_init();
 	load_idt();
 
+	timer_tick();
+
 	((EntryPoint)sampleCodeModuleAddress)();
+
+	// desp esto hay que sacarlo
 	while(1) _hlt();
 	return 0;
 }

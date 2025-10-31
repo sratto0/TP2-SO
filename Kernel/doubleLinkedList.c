@@ -2,7 +2,7 @@
 #include "video.h"
 #include "memoryManager.h"
 
-DListADT createDList(){
+DListADT create_list(){
     DListADT list = (DListADT) memory_alloc(sizeof(struct DListCDT));
     if(list == NULL)
         return NULL;
@@ -12,7 +12,7 @@ DListADT createDList(){
     return list;
 }
 
-static TNode newNode(void * info){
+static TNode new_node(void * info){
     TNode node = (TNode) memory_alloc(sizeof(Node));
     if(node == NULL)
         return NULL;
@@ -23,7 +23,7 @@ static TNode newNode(void * info){
 }
 
 int add_first(DListADT list, void * info){
-    TNode node = newNode(info);
+    TNode node = new_node(info);
     if(node == NULL)
         return -1;
     if(list->head == NULL){ // lista vacia
@@ -39,7 +39,7 @@ int add_first(DListADT list, void * info){
 }
 
 int add_last(DListADT list, void * info){
-    TNode node = newNode(info);
+    TNode node = new_node(info);
     if(node == NULL)
         return -1;
     if(list->head == NULL){ // lista vacia

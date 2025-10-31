@@ -39,7 +39,7 @@ void * my_malloc(uint64_t size);
 
 void my_free(void * ptr);
 
-int64_t my_create_process(entry_point_t main, char ** argv, char * name, uint8_t no_kill, int * file_descriptors);
+int64_t my_create_process(entry_point_t main, char ** argv, char * name, int * file_descriptors);
 
 int64_t my_wait_pid(int64_t pid, int * exit_code);
 

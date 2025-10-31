@@ -64,7 +64,7 @@
 
 //   uint64_t i;
 //   for (i = 0; i < TOTAL_PAIR_PROCESSES; i++) {
-//     pids[i] = my_create_process("my_process_inc", 3, argvDec);
+//     pids[i] = ("my_process_inc", 3, argvDec);
 //     pids[i + TOTAL_PAIR_PROCESSES] = my_create_process("my_process_inc", 3, argvInc);
 //   }
 

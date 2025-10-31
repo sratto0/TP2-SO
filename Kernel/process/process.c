@@ -5,8 +5,8 @@
 #include "../../SharedLibraries/sharedStructs.h"
 
 void process_system_init(void) {
-  init_sleeping_processes();
-  scheduler_init();
+  // init_sleeping_processes();
+  init_scheduler();
 }
 
 #define STACK_SIZE 0x1000
@@ -20,9 +20,15 @@ static void free_partial_argv(char ** argv, int allocated);
 static uint8_t initial_quantum(uint8_t priority);
 
 
-process_t * my_create_process(int64_t pid, int64_t parent_pid, entry_point_t entry_point, char ** argv, char * name, uint8_t no_kill, int * fds, uint8_t priority) {
-  (void) no_kill;
+process_t * my_create_process(int64_t pid, entry_point_t entry_point, char ** argv, char * name, int * fds) {
   (void) fds;
+
+
+  if (entry_point==NULL || name==NULL){
+    return NULL;
+  } 
+
+
   process_t * proc = memory_alloc(sizeof(process_t));
 
   if (proc==NULL){
@@ -30,14 +36,10 @@ process_t * my_create_process(int64_t pid, int64_t parent_pid, entry_point_t ent
   } 
 
   proc->pid = pid;
-  proc->parent_pid = parent_pid;
+  proc->parent_pid = get_current_pid();
   proc->waiting_pid = NO_PID;
-  proc->ticks = 0;
   proc->state = PROC_READY;
-  proc->priority = priority;
-  proc->quantum = initial_quantum(priority);
   proc->in_ready_queue = 0;
-  proc->in_blocked_queue = 0;
   proc->entry_point = entry_point;
   proc->return_value = 0;
   
@@ -59,16 +61,16 @@ process_t * my_create_process(int64_t pid, int64_t parent_pid, entry_point_t ent
 
   proc->argc = count_from_argv(proc->argv);
 
-  if (name != NULL){
-    my_strncpy(proc->name, name, sizeof(proc->name));
-  } else {
-    proc->name[0] = 0;
-  }
+  my_strncpy(proc->name, name, sizeof(proc->name));
+  proc->name[MAX_NAME_LEN - 1] = '\0'; 
+
+  
   proc->stack_pointer = set_stack_frame(&process_caller, entry_point, proc->stack_pointer, proc->argv);
+  
   return proc;
 }
 
-void destroy_process(process_t * proc){
+void process_destroy(process_t * proc){
   if (proc==NULL){
     return;
   } 

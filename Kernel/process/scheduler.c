@@ -3,51 +3,79 @@
 #include "memoryManager.h"
 #include "doubleLinkedList.h"
 #include "time.h"
+#include "memoryMap.h"
+
+extern void timer_tick();
 
 static void adopt_children(int64_t pid);
-static void remove_process(int64_t pid);
+static int remove_process(int64_t pid);
 static process_t * get_process(int64_t pid);
 static process_t * get_current_process(void);
 static void enqueue_ready(process_t * proc);
 static process_t * dequeue_ready(void);
 static void remove_from_ready_queue(process_t * proc);
-static void add_blocked(process_t * proc);
-static void remove_from_blocked(process_t * proc);
-static void reset_quantum(process_t * proc);
-static uint8_t priority_to_quantum(uint8_t priority);
-static int64_t reserve_pid(void);
-static int ensure_capacity(uint64_t min_capacity);
-static int64_t find_free_slot(void);
 
-static schedulerCDT scheduler_storage;
 static schedulerADT scheduler = NULL;
-static uint8_t force_reschedule = 0;
 
-void scheduler_init(void){
+
+
+static void init(int argc, char ** argv) {
+  char ** shell_argv = {NULL};
+
+  int shell_pid = add_process((entry_point_t) SHELL_ADDRESS, shell_argv, "shell", NULL);
+
+  set_process_priority(shell_pid, MIN_PRIORITY);
+
+  while(1) {
+    _hlt();
+  }
+}
+
+static int add_init() {
+  if (!scheduler || scheduler->process_count != 0) {
+    return -1;
+  }
+
+  // VER!!: ACA EL NULL QUE PASE COMO FD probablemente cambie
+  process_t * pcb_init = my_create_process(INIT_PID, (entry_point_t) init, NULL, "init", NULL);
+
+  if (pcb_init == NULL) {
+    return -1;
+  }
+
+  pcb_init->priority = MIN_PRIORITY;
+  pcb_init->state = PROC_READY;
+  pcb_init->remaining_quantum = pcb_init->priority;
+  
+  scheduler->processes[INIT_PID] = pcb_init;
+
+  scheduler->process_count++;
+  
+  return 1;
+}
+
+
+void init_scheduler(void){
     if (scheduler != NULL) {
         return;
     }
 
-    scheduler = &scheduler_storage;
-    scheduler->processes = NULL;
-    scheduler->capacity = 0;
-    scheduler->size = 0;
-    scheduler->current = NO_PID;
-    scheduler->total_ticks = 0;
-    scheduler->ready_queue = createDList();
-    scheduler->blocked_queue = createDList();
-    force_reschedule = 0;
+    scheduler = (schedulerADT) SCHEDULER_ADDRESS;
 
-    if (scheduler->ready_queue == NULL || scheduler->blocked_queue == NULL || ensure_capacity(INITIAL_PROCESS_CAPACITY) != 0) {
-        if (scheduler->ready_queue != NULL) {
-            free_list(scheduler->ready_queue);
-            scheduler->ready_queue = NULL;
-        }
-        if (scheduler->blocked_queue != NULL) {
-            free_list(scheduler->blocked_queue);
-            scheduler->blocked_queue = NULL;
-        }
-        scheduler = NULL;
+    for (int i=0; i< MAX_PROCESSES; i++) {
+      scheduler->processes[i] = NULL;
+    }
+
+      scheduler->current_pid = NO_PID;
+      scheduler->process_count = 0;
+      scheduler->ready_queue = create_list();
+      scheduler->total_cpu_ticks = 0;
+      scheduler->force_reschedule = 0;
+
+      
+    if (add_init() != 1) {
+      memory_free(scheduler);
+      scheduler = NULL;
     }
 }
 
@@ -55,155 +83,132 @@ schedulerADT get_scheduler() {
   return scheduler;
 }
 
-void * schedule(void * context) {
-    if (scheduler == NULL || scheduler->size == 0) {
-      force_reschedule = 0;
-      return context;
+
+void * schedule(void * prev_rsp) {
+    if (scheduler == NULL || scheduler->process_count == 0) {
+      scheduler->force_reschedule = 0;
+      return prev_rsp;
     }
 
     process_t * current_process = get_current_process();
-    if (current_process != NULL) {
-        current_process->stack_pointer = context;
-        current_process->ticks++;
-        scheduler->total_ticks++;
 
-        if (current_process->state == PROC_RUNNING) {
-            current_process->state = PROC_READY;
-        }
-
-        if (current_process->state == PROC_READY &&
-            !force_reschedule &&
-            current_process->quantum > 0) {
-            current_process->quantum--;
-            if (current_process->quantum > 0) {
-                current_process->state = PROC_RUNNING;
-                force_reschedule = 0;
-                return context;
-            }
-        }
-
-        if (current_process->state == PROC_READY) {
-            reset_quantum(current_process);
-            enqueue_ready(current_process);
-        }
+    if (current_process == NULL) {
+      // VER!!: capaz habria que hacer scheduler->force_reschedule = 0; 
+      return prev_rsp;
     }
 
-    process_t * next = dequeue_ready();
-    if (next == NULL) {
-        scheduler->current = NO_PID;
-        force_reschedule = 0;
-        return context;
+    current_process->stack_pointer = prev_rsp;
+    current_process->ticks++;
+    scheduler->total_cpu_ticks++;
+
+    if (current_process->state == PROC_RUNNING && current_process->remaining_quantum > 0) {
+      current_process->remaining_quantum--;
     }
 
-    scheduler->current = next->pid;
-    next->state = PROC_RUNNING;
-    force_reschedule = 0;
-    return (void *) next->stack_pointer;
+    if (current_process->state == PROC_RUNNING && current_process->remaining_quantum > 0 && !scheduler->force_reschedule) {
+      return prev_rsp;
+    }
+
+    if (current_process->state == PROC_RUNNING) {
+      current_process->state = PROC_READY;
+    }
+
+    if (current_process->state == PROC_READY && current_process->pid != INIT_PID) {
+      enqueue_ready(current_process);
+      if (!current_process->in_ready_queue) { // Si no se pudo encolar (porque no habia espacio o no existia la lista), sigo corriendo el current_process
+        current_process->state = PROC_RUNNING;
+        current_process->remaining_quantum = current_process->priority;
+        scheduler->force_reschedule = 0;
+        return prev_rsp;
+      }
+    }
+
+    process_t * next_process = dequeue_ready();
+
+    if (next_process == NULL) {
+      next_process = scheduler->processes[INIT_PID];
+    }
+
+    scheduler->current_pid = next_process->pid;
+    next_process->state = PROC_RUNNING;
+    next_process->remaining_quantum = next_process->priority;
+    scheduler->force_reschedule = 0;
+    return next_process->stack_pointer;
 }
 
-static int64_t reserve_pid(void) {
-    int64_t pid = find_free_slot();
-    if (pid != NO_PID) {
-        return pid;
+
+int64_t add_process(entry_point_t main, char ** argv, char * name, int * file_descriptors){
+  if(scheduler == NULL || scheduler->process_count >= MAX_PROCESSES){
+    return -1;
+  }
+
+  int pid = NO_PID;
+  for (int i = 0; i < MAX_PROCESSES; i++){
+    if(scheduler->processes[i] == NULL){
+      pid = i;
+      break;
     }
-
-    uint64_t old_capacity = scheduler->capacity;
-    uint64_t target = (old_capacity == 0) ? INITIAL_PROCESS_CAPACITY : old_capacity * 2;
-    if (ensure_capacity(target) != 0) {
-        return NO_PID;
-    }
-    return (int64_t)old_capacity;
-}
-
-// pids[i] = my_create_process((uint64_t)zero_to_max, ztm_argv, "zero_to_max", 0, NULL);
-
-int64_t add_process(entry_point_t main, char ** argv, char * name, uint8_t no_kill, int * file_descriptors){
-  if(scheduler == NULL){
-    return -1;
   }
 
-  int64_t pid = reserve_pid();
-  if (pid == NO_PID) {
-    return -1;
-  }
-
-  int64_t parent_pid = (scheduler->current == NO_PID) ? NO_PID : scheduler->current;
-  
-  process_t * new_process = my_create_process(pid, parent_pid, main, argv, name, no_kill, file_descriptors, DEFAULT_PRIORITY);
-  
-  if(new_process == NULL){
+  if (pid == NO_PID){
     return -1;
   }
   
-  reset_quantum(new_process);
+  process_t * new_process = my_create_process(pid, main, argv, name, file_descriptors);
+  
+  if (new_process == NULL){
+    return NO_PID;
+  }
+
+  new_process->priority = DEFAULT_PRIORITY;
+  new_process->remaining_quantum = new_process->priority;
+  new_process->state = PROC_READY;
+  new_process->ticks = 0;
+
   scheduler->processes[pid] = new_process;
-  scheduler->size++;
+  scheduler->process_count++;
+
   enqueue_ready(new_process);
+
   return pid;
 }
 
 static process_t * get_process(int64_t pid) {
-  if (scheduler == NULL || scheduler->processes == NULL || pid < 0 || (uint64_t)pid >= scheduler->capacity) {
+  if (scheduler == NULL || pid < 0 || pid >= MAX_PROCESSES) {
     return NULL;
   }
   return scheduler->processes[pid];
 }
 
-static process_t * get_current_process(void) {
-  if (scheduler == NULL || scheduler->current == NO_PID) {
+static process_t * get_current_process() {
+  if (scheduler == NULL || scheduler->current_pid == NO_PID) {
     return NULL;
   }
-  return get_process(scheduler->current);
+  return get_process(scheduler->current_pid);
 }
 
-static uint8_t priority_to_quantum(uint8_t priority) {
-  uint16_t base = (uint16_t)priority + 1;
-  if (base > UINT8_MAX) {
-    base = UINT8_MAX;
-  }
-  return (uint8_t)base;
-}
 
-static void reset_quantum(process_t * proc) {
-  if (proc == NULL) {
-    return;
-  }
-  proc->quantum = priority_to_quantum(proc->priority);
-}
-
-void destroy_scheduler(){
-  if (scheduler == NULL) {
-    return;
-  }
-
-  if (scheduler->processes != NULL) {
-    for (uint64_t i = 0; i < scheduler->capacity; i++){
-      if (scheduler->processes[i] != NULL){
-        destroy_process(scheduler->processes[i]);
-        scheduler->processes[i] = NULL;
-      }
+void scheduler_destroy() {
+    if (scheduler == NULL) {
+        return;
     }
-    memory_free(scheduler->processes);
-    scheduler->processes = NULL;
-  }
 
-  if (scheduler->ready_queue != NULL) {
-    free_list(scheduler->ready_queue);
-    scheduler->ready_queue = NULL;
-  }
+    for (uint64_t i = 0; i < MAX_PROCESSES; i++) {
+        if (scheduler->processes[i] != NULL) {
+            process_destroy(scheduler->processes[i]);
+            scheduler->processes[i] = NULL;
+        }
+    }
 
-  if (scheduler->blocked_queue != NULL) {
-    free_list(scheduler->blocked_queue);
-    scheduler->blocked_queue = NULL;
-  }
+    if (scheduler->ready_queue != NULL) {
+        free_list(scheduler->ready_queue);
+        scheduler->ready_queue = NULL;
+    }
 
-  scheduler->capacity = 0;
-  scheduler->size = 0;
-  scheduler->current = NO_PID;
-  scheduler->total_ticks = 0;
-  force_reschedule = 0;
-  scheduler = NULL;
+    memory_free(scheduler);
+    scheduler = NULL;
 }
+
 
 int64_t get_current_pid() {
   process_t * current = get_current_process();
@@ -214,62 +219,87 @@ int64_t get_current_pid() {
 }
 
 void yield() {
-  force_reschedule = 1;
+  scheduler->force_reschedule = 1;
+  timer_tick();
 }
 
 static void adopt_children(int64_t pid){
-  if (scheduler == NULL || scheduler->processes == NULL) {
+  if (scheduler == NULL || pid < 0 || pid >= MAX_PROCESSES){
     return;
   }
-  for(uint64_t i = 0; i < scheduler->capacity; i++){
+
+  for(uint64_t i = 0; i < MAX_PROCESSES; i++){
+
     process_t * child = scheduler->processes[i];
-    if(child != NULL && child->parent_pid == pid){
-      child->parent_pid = 0; // adoptado por init
+
+    if (child != NULL && child->parent_pid == pid){
+      child->parent_pid = INIT_PID; // adoptado por init
     }
+
   }
 }
 
-static void remove_process(int64_t pid){
-  process_t * proc = get_process(pid);
-  if (proc == NULL) {
-    return;
-  }
 
-  remove_from_ready_queue(proc);
-  remove_from_blocked(proc);
-  remove_sleeping_process(pid);
-  destroy_process(proc);
-  scheduler->processes[pid] = NULL;
+static int remove_process(int64_t pid) {
 
-  if (scheduler->size > 0) {
-    scheduler->size--;
-  }
-  if (scheduler->size == 0 || scheduler->current == pid) {
-    scheduler->current = NO_PID;
-  }
-}
-
-int kill_process(int64_t pid){
-  process_t * proc = get_process(pid);
-  if (proc == NULL){
+  if(scheduler == NULL || pid < 0 || pid >= MAX_PROCESSES){ 
     return -1;
   }
-  adopt_children(pid);
-  process_t * parent = get_process(proc->parent_pid);
-  if(parent != NULL && parent->state == PROC_BLOCKED && parent->waiting_pid == pid){
-    unblock_process(parent->pid);
-  }
-  uint8_t context_switch = (scheduler != NULL && scheduler->current == pid);
-  proc->state = PROC_KILLED;
-  remove_process(pid);
 
-  if(context_switch){
+  process_t * proc = scheduler->processes[pid];
+
+  if(proc == NULL){
+    return -1;
+  }
+
+  if (proc->state == PROC_READY || proc->state == PROC_RUNNING) {
+    remove_from_ready_queue(proc);
+  }
+
+  scheduler->processes[pid] = NULL;
+  scheduler->process_count--;
+  process_destroy(proc);
+
+  if (scheduler->current_pid == pid) {
+    scheduler->current_pid = NO_PID;
     yield();
   }
+
+  return 0;
+
+}
+
+
+int kill_process(int64_t pid) {
+ 
+  if (get_process(pid) == NULL) {
+    return -1;
+  }
+
+  adopt_children(pid);
+
+  process_t * proc = scheduler->processes[pid];
+  process_t * parent = scheduler->processes[proc->parent_pid];
+
+  if(proc->parent_pid == INIT_PID) {
+    remove_process(pid);
+  } 
+  else if (proc->in_ready_queue) {
+      remove_from_ready_queue(proc);
+  }
+ 
+  if (proc != NULL && parent != NULL && parent->state == PROC_BLOCKED && parent->waiting_pid == pid) {
+    unblock_process(parent->pid);
+  }
+
+  if (pid == scheduler->current_pid) {
+    yield();
+  }
+
   return 0;
 }
 
-int32_t kill_current_process(){
+int kill_current_process(){
   int64_t pid = get_current_pid();
   if (pid == NO_PID) {
     return -1;
@@ -277,52 +307,44 @@ int32_t kill_current_process(){
   return kill_process(pid);
 }
 
-int block_process(int64_t pid){
-  process_t * proc = get_process(pid);
-  if (proc == NULL){
+
+int block_process(int64_t pid) {
+  if (get_process(pid) == NULL) {
     return -1;
-  }
-  
-  if(proc->state == PROC_BLOCKED){
-    return 0;
   }
 
-  if(proc->state == PROC_KILLED){
-    return -1;
-  }
+  process_t * proc = scheduler->processes[pid];
+
   if(proc->state != PROC_READY && proc->state != PROC_RUNNING){
     return -1;
   }
-  uint8_t context_switch = (scheduler->current == pid);
 
-  proc->state = PROC_BLOCKED;
-  proc->quantum = 0;
   remove_from_ready_queue(proc);
-  add_blocked(proc);
+  proc->state = PROC_BLOCKED;
 
-  if(context_switch){
+  if (pid == scheduler->current_pid) {
     yield();
   }
+  
   return 0;
 }
 
-int unblock_process(int64_t pid){
+int unblock_process(int64_t pid) {
   process_t * proc = get_process(pid);
-  if (proc == NULL){
-    return -1;
-  }
-  if(proc->state != PROC_BLOCKED){
-    return -1;
-  }
 
-  remove_sleeping_process(pid); 
+  if (proc == NULL || proc->state != PROC_BLOCKED) {
+    return -1;
+  }
+  
   proc->state = PROC_READY;
-  reset_quantum(proc);
-  remove_from_blocked(proc);
+  proc->remaining_quantum = proc->priority;
+
+  // VER!!: ver si tendriamos que verificar si la lista de readys no es null
   enqueue_ready(proc);
 
   return 0;
 }
+
 
 int block_current_process(){
   int64_t pid = get_current_pid();
@@ -341,24 +363,31 @@ int unblock_current_process(){
 }
 
 int set_process_priority(int64_t pid, uint8_t priority){
-  process_t * proc = get_process(pid);
-  if (proc == NULL){
+  if (scheduler == NULL || pid >= MAX_PROCESSES || scheduler->processes[pid] == NULL || priority < MIN_PRIORITY || priority > MAX_PRIORITY) {
     return -1;
   }
-  proc->priority = priority;
-  reset_quantum(proc);
+
+  scheduler->processes[pid]->priority = priority;
+  scheduler->processes[pid]->remaining_quantum = priority;
+
   return 0;
 }
 
 int64_t wait_pid(int64_t pid, int32_t * exit_code){
+  
   process_t * child = get_process(pid);
   process_t * current = get_current_process();
+
   if (child == NULL || current == NULL){
     return -1;
   }
 
   if(child->parent_pid != current->pid){
     return -1;
+  }
+
+  if (child->state != PROC_KILLED){
+    
   }
 
   if(child->state == PROC_KILLED){
@@ -390,120 +419,133 @@ int64_t wait_pid(int64_t pid, int32_t * exit_code){
   return -1;
 }
 
-int sleep_block(int64_t pid, uint8_t sleep){
-  process_t * proc = get_process(pid);
-  if(pid == 0 || proc == NULL || proc->state == PROC_KILLED){
-    return -1;
-  }
-  if(sleep == 0){
-    remove_sleeping_process(pid);
-  }
+// int sleep_block(int64_t pid, uint8_t sleep){
+//   process_t * proc = get_process(pid);
+//   if(pid == 0 || proc == NULL || proc->state == PROC_KILLED){
+//     return -1;
+//   }
+//   if(sleep == 0){
+//     remove_sleeping_process(pid);
+//   }
 
-  proc->state = PROC_BLOCKED;
-  proc->quantum = 0;
-  remove_from_ready_queue(proc);
-  add_blocked(proc);
+//   proc->state = PROC_BLOCKED;
+//   proc->quantum = 0;
+//   remove_from_ready_queue(proc);
+//   add_blocked(proc);
 
-  if(scheduler != NULL && scheduler->current == pid){
-    yield();
-  }
-  return 0;
-}
+//   if(scheduler != NULL && scheduler->current == pid){
+//     yield();
+//   }
+//   return 0;
+// }
 
-void my_exit(int64_t ret){
-  process_t * current = get_current_process();
-  if(current == NULL) {
+void my_exit(int64_t ret) {
+  if(scheduler == NULL) {
     return;
   }
-  
-  current->state = PROC_KILLED;
-  current->return_value = ret;
-  current->quantum = 0;
-  remove_from_ready_queue(current);
-  remove_from_blocked(current);
-  remove_sleeping_process(current->pid);
 
-  process_t * parent = get_process(current->parent_pid);
-  if(parent != NULL && parent->state == PROC_BLOCKED && parent->waiting_pid == current->pid){
-    unblock_process(parent->pid);
+  process_t * current = get_current_process();
+  adopt_children(current->pid);
+
+  if (scheduler->processes[scheduler->current_pid]->parent_pid == INIT_PID) {
+    remove_process(current->pid);
+  } 
+  else {
+
+    if (current->in_ready_queue || current->state == PROC_RUNNING)  {
+      remove_from_ready_queue(current);
+    }
+
+    current->state = PROC_KILLED;
+    current->return_value = ret;
+
+    process_t * parent = get_process(current->parent_pid);
+
+    if (parent->state == PROC_BLOCKED && parent->waiting_pid == current->pid) {
+      unblock_process(parent->pid);
+    }
+
   }
+
   yield();
+
+
 }
 
 uint64_t total_ticks(void) {
   if (scheduler == NULL) {
     return 0;
   }
-  return scheduler->total_ticks;
+  return scheduler->total_cpu_ticks;
 }
 
-uint8_t foreground_process(int64_t pid){
-  if(scheduler == NULL){
-    return 0;
-  }
-  process_t * shell = get_process(SHELL_PID);
-  if(shell == NULL){
-    return 0;
-  }
-  return shell->waiting_pid == pid;
-}
+// uint8_t foreground_process(int64_t pid){
+//   if(scheduler == NULL){
+//     return 0;
+//   }
+//   process_t * shell = get_process(SHELL_PID);
+//   if(shell == NULL){
+//     return 0;
+//   }
+//   return shell->waiting_pid == pid;
+// }
 
-process_info_t * get_processes_info(){
-  static process_info_t * processes_info = NULL;
-  static uint64_t info_capacity = 0;
+// process_info_t * get_processes_info(){
+//   static process_info_t * processes_info = NULL;
+//   static uint64_t info_capacity = 0;
 
-  if(scheduler == NULL){
-    return NULL;
-  }
+//   if(scheduler == NULL){
+//     return NULL;
+//   }
 
-  uint64_t needed = scheduler->size + 1;
-  if (needed == 0) {
-    needed = 1;
-  }
+//   uint64_t needed = scheduler->size + 1;
+//   if (needed == 0) {
+//     needed = 1;
+//   }
 
-  if (info_capacity < needed) {
-    process_info_t * new_info = memory_alloc(sizeof(process_info_t) * needed);
-    if (new_info == NULL) {
-      return NULL;
-    }
-    if (processes_info != NULL) {
-      memory_free(processes_info);
-    }
-    processes_info = new_info;
-    info_capacity = needed;
-  }
+//   if (info_capacity < needed) {
+//     process_info_t * new_info = memory_alloc(sizeof(process_info_t) * needed);
+//     if (new_info == NULL) {
+//       return NULL;
+//     }
+//     if (processes_info != NULL) {
+//       memory_free(processes_info);
+//     }
+//     processes_info = new_info;
+//     info_capacity = needed;
+//   }
 
-  uint64_t idx = 0;
-  for(uint64_t i = 0; i < scheduler->capacity; i++){
-    process_t * proc = scheduler->processes[i];
-    if(proc != NULL){
-      process_info_t * proc_info = &processes_info[idx++];
-      proc_info->pid = proc->pid;
-      proc_info->parent_pid = proc->parent_pid;
-      proc_info->ticks = proc->ticks;
-      proc_info->state = proc->state;
-      proc_info->priority = proc->priority;
-      proc_info->stack_pointer = proc->stack_pointer;
-      proc_info->stack_base = proc->stack_base;
-      my_strncpy(proc_info->name, proc->name, PROCESS_NAME_LEN);
-      proc_info->foreground = foreground_process(proc->pid);
-    }
-  }
+//   uint64_t idx = 0;
+//   for(uint64_t i = 0; i < scheduler->capacity; i++){
+//     process_t * proc = scheduler->processes[i];
+//     if(proc != NULL){
+//       process_info_t * proc_info = &processes_info[idx++];
+//       proc_info->pid = proc->pid;
+//       proc_info->parent_pid = proc->parent_pid;
+//       proc_info->ticks = proc->ticks;
+//       proc_info->state = proc->state;
+//       proc_info->priority = proc->priority;
+//       proc_info->stack_pointer = proc->stack_pointer;
+//       proc_info->stack_base = proc->stack_base;
+//       my_strncpy(proc_info->name, proc->name, PROCESS_NAME_LEN);
+//       proc_info->foreground = foreground_process(proc->pid);
+//     }
+//   }
 
-  for(uint64_t j = idx; j < info_capacity; j++) {
-    processes_info[j].pid = NO_PID;
-    processes_info[j].parent_pid = NO_PID;
-    processes_info[j].priority = 0;
-    processes_info[j].stack_pointer = NULL;
-    processes_info[j].stack_base = NULL;
-    processes_info[j].foreground = 0;
-    processes_info[j].state = PROC_KILLED;
-    processes_info[j].ticks = 0;
-    processes_info[j].name[0] = '\0';
-  }
+//   for(uint64_t j = idx; j < info_capacity; j++) {
+//     processes_info[j].pid = NO_PID;
+//     processes_info[j].parent_pid = NO_PID;
+//     processes_info[j].priority = 0;
+//     processes_info[j].stack_pointer = NULL;
+//     processes_info[j].stack_base = NULL;
+//     processes_info[j].foreground = 0;
+//     processes_info[j].state = PROC_KILLED;
+//     processes_info[j].ticks = 0;
+//     processes_info[j].name[0] = '\0';
+//   }
 
-  return processes_info;
-}
+//   return processes_info;
+// }
 
 static void enqueue_ready(process_t * proc){
   if (scheduler == NULL || scheduler->ready_queue == NULL || proc == NULL){
@@ -537,84 +579,12 @@ static process_t * dequeue_ready(void){
 }
 
 static void remove_from_ready_queue(process_t * proc){
-  if (scheduler == NULL || scheduler->ready_queue == NULL || proc == NULL){
+  if (scheduler == NULL || scheduler->ready_queue == NULL){
     return;
   }
-  if (!proc->in_ready_queue){
+  if (proc == NULL || !proc->in_ready_queue){
     return;
   }
   delete_element(scheduler->ready_queue, proc);
   proc->in_ready_queue = 0;
-}
-
-static void add_blocked(process_t * proc){
-  if (scheduler == NULL || scheduler->blocked_queue == NULL || proc == NULL){
-    return;
-  }
-  if (proc->in_blocked_queue){
-    return;
-  }
-  proc->in_blocked_queue = 1;
-  if (add_last(scheduler->blocked_queue, proc) == -1){
-    proc->in_blocked_queue = 0;
-  }
-}
-
-static void remove_from_blocked(process_t * proc){
-  if (scheduler == NULL || scheduler->blocked_queue == NULL || proc == NULL){
-    return;
-  }
-  if (!proc->in_blocked_queue){
-    return;
-  }
-  delete_element(scheduler->blocked_queue, proc);
-  proc->in_blocked_queue = 0;
-}
-
-static int ensure_capacity(uint64_t min_capacity){
-  if (scheduler == NULL){
-    return -1;
-  }
-
-  if (scheduler->capacity >= min_capacity){
-    return 0;
-  }
-
-  uint64_t new_capacity = (scheduler->capacity == 0) ? INITIAL_PROCESS_CAPACITY : scheduler->capacity;
-  while (new_capacity < min_capacity){
-    new_capacity *= 2;
-  }
-
-  process_t ** new_table = memory_alloc(sizeof(process_t *) * new_capacity);
-  if (new_table == NULL){
-    return -1;
-  }
-
-  for(uint64_t i = 0; i < new_capacity; i++){
-    new_table[i] = NULL;
-  }
-
-  if (scheduler->processes != NULL){
-    for(uint64_t i = 0; i < scheduler->capacity; i++){
-      new_table[i] = scheduler->processes[i];
-    }
-    memory_free(scheduler->processes);
-  }
-
-  scheduler->processes = new_table;
-  scheduler->capacity = new_capacity;
-  return 0;
-}
-
-static int64_t find_free_slot(void){
-  if (scheduler == NULL || scheduler->processes == NULL){
-    return NO_PID;
-  }
-
-  for(uint64_t i = 0; i < scheduler->capacity; i++){
-    if (scheduler->processes[i] == NULL){
-      return (int64_t)i;
-    }
-  }
-  return NO_PID;
 }

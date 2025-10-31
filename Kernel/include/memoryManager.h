@@ -13,7 +13,10 @@ typedef struct {
 } memory_info_t;
 
 #define BLOCKSIZE 64
-#define HEAP_SIZE 0x10000000
+// #define HEAP_SIZE 0x10000000 // esto lo comente recien (soy Jose) creo que se nos fue un 0 demas, aparte no se si lo usamos
+#define MEM_SIZE 0x100000
+
+
 
 typedef struct MemoryManagerCDT* MemoryManagerADT;
 

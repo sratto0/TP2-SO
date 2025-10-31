@@ -19,7 +19,7 @@ typedef struct DListCDT{
 
 typedef struct DListCDT * DListADT;
 
-DListADT createDList();
+DListADT create_list();
 
 int add_first(DListADT list, void * info);
 

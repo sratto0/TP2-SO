@@ -1,115 +1,3 @@
-make
-make
-make
-make
-make
-make
-make
-make
-make
-make
-make
-make
-make
-make
-make
-make
-make
-make
-make
-make
-make
-make
-make
-make
-make
-make
-make
-make
-make
-make
-make
-make
-make
-make
-make
-make
-
-make
-make
-make
-make
-exit
-cd root
-cd Toolchain
-make
-cd ..
-make
-exit
-cd root
-cd Toolchain
-make
-cd ..
-make
-exit
-cd root
-gdb
-cd root
-gdb
-cd root
-gdb
-cd root
-cd Toolchain
-make
-cd ..
-make
-exit
-cd root
-cd Toolchain
-make clean
-cd ..
-make clean
-cd Toolchain
-make
-cd ..
-make
-make
-cd Toolchain
-make clean
-make
-cd ..
-make
-make
-make
-make
-make
-make
-make
-cd ..
-make
-cd root
-cd Toolchain
-make
-cd ..
-make
-exit
-cd Toolchain
-make
-cd root
-cd Toolchain
-make
-cd make clean
-make clean
-cd ..
-make 
-ls
-cd Toolchain
-make
-cd ..
-make
-exit
-cd root
-make clean
 cd Toolchain
 make clean
 make
@@ -494,6 +382,118 @@ exit
 cd root
 cd Tooclhain
 cd Toolchain
+make
+cd ..
+make
+exit
+cd root 
+make clean
+cd Toolchain
+make clean
+exit
+cd Toolchain
+make
+cd root
+make clean
+cd ..
+make clean
+ls
+cd root
+make clean
+cd root
+cd Toolchain
+make 
+cd ..
+make
+make
+cd root
+make
+cd Toolchain
+make
+cd ..
+make
+make
+make
+make
+make
+make
+make
+make
+make
+make
+make
+make
+make
+make
+exit
+cd root
+cd Toolchain
+make
+make clean
+make
+cd ..
+make
+make
+make
+make
+make
+make
+make
+make
+make
+make
+make
+make
+make
+make
+make
+make
+make
+make
+make
+make
+make clean
+cd Toolchain
+make clean
+make
+cd ..
+make
+make
+exit
+cd root
+gdb
+gdb
+gdb
+gdb
+gdb
+gdbgdb
+gdb
+cd root
+cd root
+cd Toolchain
+make
+cd ..
+make
+exit
+cd root
+gdb
+gdb
+gdb
+cd rootgdb
+gdb
+cd root
+make
+gdb
+gdb
+cd root
+make clean
+cd ..
+make clean
+ls
+cd root
+make clean
+cd Toolchain
+make clean
 make
 cd ..
 make

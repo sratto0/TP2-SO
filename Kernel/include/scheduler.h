@@ -8,35 +8,36 @@
 #include "doubleLinkedList.h"
 
 #define INITIAL_PROCESS_CAPACITY 32
+#define MIN_PRIORITY 1
+#define MAX_PRIORITY 5
 
-#define MAX_PROCESSES
+#define MAX_PROCESSES 50
 // el arreglo de process_t hacerlo estatico
 // el chequeo de q no este lleno el array de procesor lo haces con el get_pid, si te devuelve -1 no lo creas
 
 
 
 typedef struct schedulerCDT {
-  process_t * processes[MAX_PROCESSES];
-  int64_t current;
-  uint64_t size;
-  uint64_t capacity;
-  DListADT ready_queue;
-  DListADT blocked_queue; // 
-  uint64_t total_ticks;
+  process_t * processes[MAX_PROCESSES];   // Array para acceso al PCB por PID
+  int64_t current_pid;                    // PID del proceso actual  
+  uint64_t process_count;                 // Cantidad total de procesos                            
+  DListADT ready_queue;                   // Lista de procesos PROC_READY
+  uint64_t total_cpu_ticks;               // Total de ticks de la CPU
+  uint8_t force_reschedule;               // Flag para forzar el cambio del proces corriendo
 } schedulerCDT;
 
 typedef struct schedulerCDT * schedulerADT; 
 
-void scheduler_init(void);
+void init_scheduler(void);
 schedulerADT get_scheduler();
 uint64_t total_ticks(void);
 void * schedule(void * context);
-int64_t add_process(entry_point_t main, char ** argv, char * name, uint8_t no_kill, int * file_descriptors);
+int64_t add_process(entry_point_t main, char ** argv, char * name, int * file_descriptors);
 void destroy_scheduler();
 int64_t get_current_pid();
 void yield();
 int kill_process(int64_t pid);
-int32_t kill_current_process();
+int kill_current_process();
 int block_process(int64_t pid);
 int unblock_process(int64_t pid);
 int block_current_process();
