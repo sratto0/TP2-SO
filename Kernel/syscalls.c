@@ -68,7 +68,7 @@ static int64_t syscall_get_pid();
 static int syscall_block_process(int64_t pid);
 static int syscall_unblock_process(int64_t pid);
 static int syscall_set_priority(int64_t pid, uint8_t priority);
-static uint64_t syscall_get_processes_info();
+// static uint64_t syscall_get_processes_info();
 static int syscall_kill_process(int64_t pid);
 static int64_t syscall_wait_pid(int64_t pid, int32_t * exit_code);
 static uint64_t syscall_total_ticks();

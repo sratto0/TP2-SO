@@ -51,7 +51,7 @@ static int add_init() {
 
   scheduler->process_count++;
   
-  return 1;
+  return 0;
 }
 
 
@@ -73,7 +73,7 @@ void init_scheduler(void){
       scheduler->force_reschedule = 0;
 
       
-    if (add_init() != 1) {
+    if (add_init() != 0) {
       memory_free(scheduler);
       scheduler = NULL;
     }
@@ -97,29 +97,31 @@ void * schedule(void * prev_rsp) {
       return prev_rsp;
     }
 
-    current_process->stack_pointer = prev_rsp;
-    current_process->ticks++;
-    scheduler->total_cpu_ticks++;
+    if (current_process != NULL) {
+      current_process->stack_pointer = prev_rsp;
+      current_process->ticks++;
+      scheduler->total_cpu_ticks++;
 
-    if (current_process->state == PROC_RUNNING && current_process->remaining_quantum > 0) {
-      current_process->remaining_quantum--;
-    }
+      if (current_process->state == PROC_RUNNING && current_process->remaining_quantum > 0) {
+        current_process->remaining_quantum--;
+      }
 
-    if (current_process->state == PROC_RUNNING && current_process->remaining_quantum > 0 && !scheduler->force_reschedule) {
-      return prev_rsp;
-    }
-
-    if (current_process->state == PROC_RUNNING) {
-      current_process->state = PROC_READY;
-    }
-
-    if (current_process->state == PROC_READY && current_process->pid != INIT_PID) {
-      enqueue_ready(current_process);
-      if (!current_process->in_ready_queue) { // Si no se pudo encolar (porque no habia espacio o no existia la lista), sigo corriendo el current_process
-        current_process->state = PROC_RUNNING;
-        current_process->remaining_quantum = current_process->priority;
-        scheduler->force_reschedule = 0;
+      if (current_process->state == PROC_RUNNING && current_process->remaining_quantum > 0 && !scheduler->force_reschedule) {
         return prev_rsp;
+      }
+
+      if (current_process->state == PROC_RUNNING) {
+        current_process->state = PROC_READY;
+      }
+
+      if (current_process->state == PROC_READY && current_process->pid != INIT_PID) {
+        enqueue_ready(current_process);
+        if (!current_process->in_ready_queue) { // Si no se pudo encolar (porque no habia espacio o no existia la lista), sigo corriendo el current_process
+          current_process->state = PROC_RUNNING;
+          current_process->remaining_quantum = current_process->priority;
+          scheduler->force_reschedule = 0;
+          return prev_rsp;
+        }
       }
     }
 
@@ -211,11 +213,10 @@ void scheduler_destroy() {
 
 
 int64_t get_current_pid() {
-  process_t * current = get_current_process();
-  if (current == NULL) {
-    return NO_PID;
+  if(scheduler == NULL) {
+    return -1;
   }
-  return current->pid;
+  return scheduler->current_pid;
 }
 
 void yield() {

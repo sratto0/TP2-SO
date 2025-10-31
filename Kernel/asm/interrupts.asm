@@ -25,7 +25,6 @@ EXTERN irqDispatcher
 EXTERN syscallDispatcher
 EXTERN exceptionDispatcher
 EXTERN load_main
-
 SECTION .text
 
 %macro pushState 0

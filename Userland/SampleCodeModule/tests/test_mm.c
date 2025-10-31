@@ -60,7 +60,7 @@ uint64_t test_mm(uint64_t argc, char *argv[]) {
 
     // Free
     for (i = 0; i < rq; i++){
-      printf("Freeing blockhhhhhhh of size %u\n", mm_rqs[i].size);
+      printf("Freeing block of size %u\n", mm_rqs[i].size);
       if (mm_rqs[i].address){
         printf("Freeing block of size %u\n", mm_rqs[i].size);
         my_free(mm_rqs[i].address);

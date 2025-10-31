@@ -23,6 +23,8 @@ static const uint64_t PageSize = 0x1000;
 static void * const sampleCodeModuleAddress = (void*)0x400000;
 static void * const sampleDataModuleAddress = (void*)0x500000;
 
+extern void timer_tick();
+
 typedef int (*EntryPoint)();
 
 
@@ -49,9 +51,9 @@ void initializeKernelBinary()
 
 int main()
 {	
-	// memory_init((void *)0XF00000, 0X100000);
+	memory_init((void *)0XF00000, 0X100000);
 
-	memory_init((void *)START_FREE_MEM, MEM_SIZE);
+	// memory_init((void *)START_FREE_MEM, MEM_SIZE);
 
 	process_system_init();
 	load_idt();
