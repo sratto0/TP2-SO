@@ -51,7 +51,7 @@ void semaphore_system_init(){
         semaphore_manager->semaphores[i].in_use = 0;
         semaphore_manager->semaphores[i].lock = 1;
         semaphore_manager->semaphores[i].using_count = 0;
-        semaphore_manager->semaphores[i].waiting_queue = createDList();
+        semaphore_manager->semaphores[i].waiting_queue = create_list();
         if(semaphore_manager->semaphores[i].waiting_queue == NULL){
             free_allocated_queues(i);
             memory_free(semaphore_manager);
