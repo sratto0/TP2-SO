@@ -76,6 +76,8 @@ void printf(char * fmt, ...);
 /* Deprecado */
 void printRegisters(const uint64_t * rsp);
 
+void set_cursor_enabled(uint8_t enabled);
+
 /**
  * @brief Analogo a printf pero permite asignar un color a la cadena de caracteres
  * @note La cantidad de parametros no es fija

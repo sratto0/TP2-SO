@@ -52,6 +52,7 @@ static void mm_test(char ** max_memory);
 static void my_test_processes();
 static void my_test_prio();
 static void my_test_sync();
+static void my_mvar(char * writers, char * readers);
 
 static Command commands[QTY_COMMANDS];
 
@@ -69,6 +70,7 @@ void init() {
     commands[10] = (Command){ "test-processes", "Corre el test de procesos",                                                          .f = (void*)&my_test_processes, NO_PARAMS };
     commands[11] = (Command){ "test-prio",      "Corre el test de prioridades",                                                       .f = (void*)&my_test_prio,   NO_PARAMS };
     commands[12] = (Command){ "test-sync",      "Corre el test de sincronizacion",                                                    .f = (void*)&my_test_sync,      NO_PARAMS };
+    commands[13] = (Command){ "mvar",           "Inicia el problema de lectores y escritores con variables compartidas",              .h = (void*)&my_mvar, DUAL_PARAM };
 
 }
 
@@ -218,4 +220,9 @@ static void my_test_sync() {
 
     char *argv_no_sem[] = { "2", "0", NULL };
     test_sync(2, argv_no_sem);
+}
+
+static void my_mvar(char * writers, char * readers) {
+    char *argv[] = { writers, readers, NULL };
+    mvar_command(2, argv);
 }

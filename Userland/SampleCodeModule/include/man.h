@@ -29,6 +29,8 @@ char * usages [QTY_COMMANDS] = { "Uso: help - muestra todos los comandos que exi
                               
                               "Uso: test-prio - corre el test de prioridades. No recibe parametros",
 
-                              "Uso: test-sync - corre el test de sincronizacion. No recibe parametros"
+                              "Uso: test-sync - corre el test de sincronizacion. No recibe parametros",
+
+                                "Uso: mvar [WRITERS] [READERS] - inicia el problema de lectores y escritores con variables compartidas\n"
                               };
 #endif

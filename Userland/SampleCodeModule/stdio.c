@@ -11,6 +11,7 @@
 
 #define CURSOR_FREQ 10  /* Frecuencia en Ticks del dibujo del cursor*/
 
+static volatile uint8_t cursor_enabled = 1;
 
 /**
  * @brief Funcion auxiliar para printf y printfc
@@ -99,6 +100,10 @@ void printfc(Color color, char * fmt, ...){
     setFontColor(prevColor.r, prevColor.g, prevColor.b);
 }
 
+void set_cursor_enabled(uint8_t enabled) {
+    cursor_enabled = enabled;
+}
+
 
 void printNChars(char c, int n) {
     for (int i = 0; i < n; i++)
@@ -116,7 +121,7 @@ int scanf(char * fmt, ...) {
     uint64_t bIdx = 0;
     while((c = getchar()) != '\n' && bIdx < MAX_CHARS-1){
         cursorTicks = getTicks() - ticks;
-         if(cursorTicks > CURSOR_FREQ){
+         if(cursor_enabled && cursorTicks > CURSOR_FREQ){
             ticks = getTicks();
             cursorTicks = 0;
             if(cursorDrawn)
@@ -126,7 +131,7 @@ int scanf(char * fmt, ...) {
             cursorDrawn = !cursorDrawn;
         }
         if (c != 0) {
-            if(cursorDrawn){
+            if(cursor_enabled && cursorDrawn){
                 putchar('\b');
                 cursorDrawn = !cursorDrawn;
             }
@@ -140,7 +145,7 @@ int scanf(char * fmt, ...) {
             }
         }
     }
-    if(cursorDrawn)
+    if(cursor_enabled && cursorDrawn)
         putchar('\b');
     putchar('\n');
     buffer[bIdx] = 0;
