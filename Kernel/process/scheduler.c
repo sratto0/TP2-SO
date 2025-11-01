@@ -292,15 +292,20 @@ int kill_process(int64_t pid) {
   process_t * proc = scheduler->processes[pid];
   process_t * parent = scheduler->processes[proc->parent_pid];
 
+  proc->state = PROC_KILLED;
+
+  if (proc->in_ready_queue || proc->state == PROC_READY || proc->state == PROC_RUNNING) {
+    remove_from_ready_queue(proc);
+  }
+
+  if (parent != NULL && parent->state == PROC_BLOCKED && parent->waiting_pid == pid) {
+    unblock_process(parent->pid);
+  }
+
   if(proc->parent_pid == INIT_PID) {
     remove_process(pid);
-  } 
-  else if (proc->in_ready_queue) {
-      remove_from_ready_queue(proc);
-  }
- 
-  if (proc != NULL && parent != NULL && parent->state == PROC_BLOCKED && parent->waiting_pid == pid) {
-    unblock_process(parent->pid);
+  } else if (parent == NULL || parent->waiting_pid != pid) {
+    remove_process(pid);
   }
 
   if (pid == scheduler->current_pid) {
