@@ -1,9 +1,9 @@
-GLOBAL acquire
-GLOBAL release
+GLOBAL acquire_lock
+GLOBAL release_lock
 
 section .text
 
-acquire:
+acquire_lock:
     mov al, 0
 .retry:
     xchg [rdi], al
@@ -11,6 +11,6 @@ acquire:
     jz .retry
     ret
 
-release:
+release_lock:
     mov byte [rdi], 1
     ret
