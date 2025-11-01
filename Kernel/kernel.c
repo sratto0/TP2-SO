@@ -48,6 +48,7 @@ void * initializeKernelBinary()
 	void * moduleAddresses[] = { sampleCodeModuleAddress, sampleDataModuleAddress };
 	loadModules(&endOfKernelBinary, moduleAddresses);
 	clearBSS(&bss, &endOfKernel - &bss);
+	load_idt();
 	
 	return getStackBase();
 	
@@ -56,13 +57,10 @@ void * initializeKernelBinary()
 int main()
 {	
 	memory_init((void *)0XF00000, 0X100000);
-	// memory_init((void *)START_FREE_MEM, MEM_SIZE);
 	
-	init_scheduler();	
+	init_scheduler();
 	
-	load_idt();
-	
-	// timer_tick();
+	timer_tick();
 
 	return 0;
 }

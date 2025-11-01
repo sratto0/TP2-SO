@@ -38,8 +38,6 @@ typedef struct process {
   
 } process_t;
 
-/* Inicialización del subsistema de procesos */
-void process_system_init(void);
 
 process_t * my_create_process(int64_t pid, entry_point_t entry_point, char ** argv, char * name, int * fds);
 void process_destroy(process_t * proc);

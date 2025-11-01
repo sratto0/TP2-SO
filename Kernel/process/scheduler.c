@@ -19,16 +19,18 @@ static void remove_from_ready_queue(process_t * proc);
 
 static schedulerADT scheduler = NULL;
 
-static int gola=1;
-
 static void init(int argc, char ** argv) {
-  char ** shell_argv = {NULL};
+  char * shell_argv[] = {NULL};
 
-  print("llega a init");
+  if (SHELL_ADDRESS == 0 || SHELL_ADDRESS == (void*)-1) {
+    while(1) _hlt();
+  }
 
   int shell_pid = add_process((entry_point_t) SHELL_ADDRESS, shell_argv, "shell", NULL);
 
-  set_process_priority(shell_pid, MIN_PRIORITY);
+  if (shell_pid < 0) {
+    while(1) _hlt();
+  }
 
   while(1) {
     _hlt();
@@ -50,39 +52,36 @@ static int add_init() {
   pcb_init->priority = MIN_PRIORITY;
   pcb_init->state = PROC_READY;
   pcb_init->remaining_quantum = pcb_init->priority;
+  pcb_init->ticks = 0;
   
   scheduler->processes[INIT_PID] = pcb_init;
-
   scheduler->process_count++;
-
-  timer_tick();
   
   return 0;
 }
 
 
 void init_scheduler(void){
-    // if (scheduler != NULL) {
-    //     return;
-    // }
+    if (scheduler != NULL) {
+        return;
+    }
 
     scheduler = (schedulerADT)SCHEDULER_ADDRESS;
 
-    for (int i=0; i< MAX_PROCESSES; i++) {
+    for (int i=0; i < MAX_PROCESSES; i++) {
       scheduler->processes[i] = NULL;
     }
 
-      scheduler->current_pid = NO_PID;
-      scheduler->process_count = 0;
-      scheduler->ready_queue = create_list();
-      scheduler->total_cpu_ticks = 0;
-      scheduler->force_reschedule = 0;
+    scheduler->current_pid = NO_PID;
+    scheduler->process_count = 0;
+    scheduler->ready_queue = create_list();
+    scheduler->total_cpu_ticks = 0;
+    scheduler->force_reschedule = 0;
 
       
-    if (add_init() != 0) {
-      memory_free(scheduler);
-      scheduler = NULL;
-    }
+  if (add_init() != 0) {
+    scheduler = NULL;
+  }
 }
 
 
@@ -93,8 +92,6 @@ void * schedule(void * prev_rsp) {
     }
 
     process_t * current_process = get_current_process();
-
- 
 
     if (current_process != NULL) {
       current_process->stack_pointer = prev_rsp;
@@ -238,7 +235,6 @@ static void adopt_children(int64_t pid){
 
   }
 }
-
 
 static int remove_process(int64_t pid) {
 

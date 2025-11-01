@@ -4,18 +4,27 @@
 
 DListADT create_list(){
     DListADT list = (DListADT) memory_alloc(sizeof(struct DListCDT));
-    if(list == NULL)
+    if(list == NULL) {
         return NULL;
+    }
+    
     list->head = NULL;
     list->tail = NULL;
     list->size = 0;
+    
     return list;
 }
 
 static TNode new_node(void * info){
-    TNode node = (TNode) memory_alloc(sizeof(Node));
-    if(node == NULL)
+    if(info == NULL) {
         return NULL;
+    }
+    
+    TNode node = (TNode) memory_alloc(sizeof(Node));
+    if(node == NULL) {
+        return NULL;
+    }
+    
     node->info = info;
     node->next = NULL;
     node->prev = NULL;
@@ -23,9 +32,18 @@ static TNode new_node(void * info){
 }
 
 int add_first(DListADT list, void * info){
+    if(list == NULL) {
+        return -1;
+    }
+    
+    if(info == NULL) {
+        return -1;
+    }
+    
     TNode node = new_node(info);
     if(node == NULL)
         return -1;
+        
     if(list->head == NULL){ // lista vacia
         list->head = node;
         list->tail = node;
@@ -39,9 +57,18 @@ int add_first(DListADT list, void * info){
 }
 
 int add_last(DListADT list, void * info){
+    if(list == NULL) {
+        return -1;
+    }
+    
+    if(info == NULL) {
+        return -1;
+    }
+    
     TNode node = new_node(info);
     if(node == NULL)
         return -1;
+        
     if(list->head == NULL){ // lista vacia
         list->head = node;
         list->tail = node;
@@ -54,10 +81,16 @@ int add_last(DListADT list, void * info){
     return 0;
 }
 
-int delete_first(DListADT list){    // elimina el primer elemento
+int delete_first(DListADT list){
+    if(list == NULL) {
+        return -1;
+    }
+    
     if(list->head == NULL) // lista vacia
         return -1;
+        
     TNode to_delete = list->head;
+    
     if(list->head == list->tail){ // un solo elemento
         list->head = NULL;
         list->tail = NULL;
@@ -65,15 +98,22 @@ int delete_first(DListADT list){    // elimina el primer elemento
         list->head = list->head->next;
         list->head->prev = NULL;
     }
+    
     memory_free(to_delete);
     list->size--;
     return 0;
 }
 
-int delete_last(DListADT list){     // elimina el ultimo elemento
+int delete_last(DListADT list){
+    if(list == NULL) {
+        return -1;
+    }
+    
     if(list->head == NULL) // lista vacia
         return -1;
+        
     TNode to_delete = list->tail;
+    
     if(list->head == list->tail){ // un solo elemento
         list->head = NULL;
         list->tail = NULL;
@@ -81,14 +121,24 @@ int delete_last(DListADT list){     // elimina el ultimo elemento
         list->tail = list->tail->prev;
         list->tail->next = NULL;
     }
+    
     memory_free(to_delete);
     list->size--;
     return 0;
 }
 
 int delete_element(DListADT list, void * info){
+    if(list == NULL) {
+        return -1;
+    }
+    
+    if(info == NULL) {
+        return -1;
+    }
+    
     if(list->head == NULL) // lista vacia
         return -1;
+        
     TNode current = list->head;
     while(current != NULL){
         if(current->info == info){
@@ -110,28 +160,44 @@ int delete_element(DListADT list, void * info){
 }
 
 void * get_first(DListADT list){
+
+    if(list == NULL) {
+        return NULL;
+    }
+    
     if(list->head == NULL) // lista vacia
         return NULL;
     return list->head->info;
 }
 
 void * get_last(DListADT list){
+    if(list == NULL) {
+        return NULL;
+    }
+    
     if(list->head == NULL) // lista vacia
         return NULL;
     return list->tail->info;
 }
 
 int get_size(DListADT list){
+    if(list == NULL) {
+        return 0;
+    }
     return list->size;
 }
 
 int is_empty(DListADT list){
+    if(list == NULL) {
+        return 1; 
+    }
     return list->size == 0;
 }
 
 void free_list(DListADT list){
     if(list == NULL)
         return;
+        
     TNode current = list->head;
     while(current != NULL){
         TNode to_delete = current;

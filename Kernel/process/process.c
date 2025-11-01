@@ -4,10 +4,6 @@
 #include "lib.h"
 #include "../../SharedLibraries/sharedStructs.h"
 
-void process_system_init(void) {
-  // init_sleeping_processes();
-  // init_scheduler();
-}
 
 #define STACK_SIZE 0x1000
 

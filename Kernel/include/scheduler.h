@@ -11,7 +11,7 @@
 #define MIN_PRIORITY 1
 #define MAX_PRIORITY 5
 
-#define MAX_PROCESSES 50
+#define MAX_PROCESSES 64
 
 
 typedef struct schedulerCDT {
@@ -26,7 +26,6 @@ typedef struct schedulerCDT {
 typedef struct schedulerCDT * schedulerADT; 
 
 void init_scheduler(void);
-// schedulerADT get_scheduler();
 uint64_t total_ticks(void);
 void * schedule(void * context);
 int64_t add_process(entry_point_t main, char ** argv, char * name, int * file_descriptors);

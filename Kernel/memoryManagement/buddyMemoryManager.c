@@ -10,7 +10,7 @@
 #define MINEXPONENT 4
 #define POW_2(x) ((uint64_t)1ULL << (x))
 // Fixed MAXEXPONENT and derived sizes to match the working reference
-#define MAXEXPONENT 28
+#define MAXEXPONENT 28 
 #define HEAPSIZE POW_2(MAXEXPONENT)
 #define CANTNODES (POW_2(MAXEXPONENT - MINEXPONENT + 1) - 1)
 

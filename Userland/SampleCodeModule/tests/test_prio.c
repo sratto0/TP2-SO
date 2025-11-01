@@ -6,7 +6,7 @@
 #include <stddef.h>
 #include "../../../SharedLibraries/sharedStructs.h"
 
-#define TOTAL_PROCESSES 3
+#define TOTAL_PROCESSES 60
 #define PRIOS 3
 
 #define LOWEST 0  // TODO: Change as required
