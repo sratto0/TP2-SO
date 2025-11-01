@@ -8,8 +8,9 @@
 #include "doubleLinkedList.h"
 
 #define INITIAL_PROCESS_CAPACITY 32
-#define MIN_PRIORITY 1
+#define MIN_PRIORITY 0
 #define MAX_PRIORITY 5
+#define PRIORITY_LEVELS (MAX_PRIORITY - MIN_PRIORITY + 1)
 
 #define MAX_PROCESSES 64
 
@@ -18,7 +19,7 @@ typedef struct schedulerCDT {
   process_t * processes[MAX_PROCESSES];   // Array para acceso al PCB por PID
   int64_t current_pid;                    // PID del proceso actual  
   uint64_t process_count;                 // Cantidad total de procesos                            
-  DListADT ready_queue;                   // Lista de procesos PROC_READY
+  DListADT ready_queues[PRIORITY_LEVELS]; // Listas de procesos PROC_READY por prioridad
   uint64_t total_cpu_ticks;               // Total de ticks de la CPU
   uint8_t force_reschedule;               // Flag para forzar el cambio del proces corriendo
 } schedulerCDT;

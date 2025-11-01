@@ -16,6 +16,9 @@ static process_t * get_current_process(void);
 static void enqueue_ready(process_t * proc);
 static process_t * dequeue_ready(void);
 static void remove_from_ready_queue(process_t * proc);
+static uint8_t quantum_for_priority(uint8_t priority);
+static int priority_to_index(uint8_t priority);
+static void free_ready_queues(void);
 
 static schedulerADT scheduler = NULL;
 
@@ -51,7 +54,7 @@ static int add_init() {
 
   pcb_init->priority = MIN_PRIORITY;
   pcb_init->state = PROC_READY;
-  pcb_init->remaining_quantum = pcb_init->priority;
+  pcb_init->remaining_quantum = quantum_for_priority(pcb_init->priority);
   pcb_init->ticks = 0;
   
   scheduler->processes[INIT_PID] = pcb_init;
@@ -71,15 +74,30 @@ void init_scheduler(void){
     for (int i=0; i < MAX_PROCESSES; i++) {
       scheduler->processes[i] = NULL;
     }
+    for (int i = 0; i < PRIORITY_LEVELS; i++) {
+      scheduler->ready_queues[i] = NULL;
+    }
 
     scheduler->current_pid = NO_PID;
     scheduler->process_count = 0;
-    scheduler->ready_queue = create_list();
+    for (int i = 0; i < PRIORITY_LEVELS; i++) {
+      scheduler->ready_queues[i] = create_list();
+      if (scheduler->ready_queues[i] == NULL) {
+        for (int j = 0; j < i; j++) {
+          if (scheduler->ready_queues[j] != NULL) {
+            free_list(scheduler->ready_queues[j]);
+            scheduler->ready_queues[j] = NULL;
+          }
+        }
+        scheduler = NULL;
+        return;
+      }
+    }
     scheduler->total_cpu_ticks = 0;
     scheduler->force_reschedule = 0;
 
-      
   if (add_init() != 0) {
+    free_ready_queues();
     scheduler = NULL;
   }
 }
@@ -114,7 +132,7 @@ void * schedule(void * prev_rsp) {
         enqueue_ready(current_process);
         if (!current_process->in_ready_queue) { // Si no se pudo encolar (porque no habia espacio o no existia la lista), sigo corriendo el current_process
           current_process->state = PROC_RUNNING;
-          current_process->remaining_quantum = current_process->priority;
+          current_process->remaining_quantum = quantum_for_priority(current_process->priority);
           scheduler->force_reschedule = 0;
           return prev_rsp;
         }
@@ -129,7 +147,7 @@ void * schedule(void * prev_rsp) {
 
     scheduler->current_pid = next_process->pid;
     next_process->state = PROC_RUNNING;
-    next_process->remaining_quantum = next_process->priority;
+    next_process->remaining_quantum = quantum_for_priority(next_process->priority);
     scheduler->force_reschedule = 0;
     return next_process->stack_pointer;
 }
@@ -159,7 +177,7 @@ int64_t add_process(entry_point_t main, char ** argv, char * name, int * file_de
   }
 
   new_process->priority = DEFAULT_PRIORITY;
-  new_process->remaining_quantum = new_process->priority;
+  new_process->remaining_quantum = quantum_for_priority(new_process->priority);
   new_process->state = PROC_READY;
   new_process->ticks = 0;
 
@@ -198,10 +216,7 @@ void scheduler_destroy() {
         }
     }
 
-    if (scheduler->ready_queue != NULL) {
-        free_list(scheduler->ready_queue);
-        scheduler->ready_queue = NULL;
-    }
+    free_ready_queues();
 
     memory_free(scheduler);
     scheduler = NULL;
@@ -333,7 +348,7 @@ int unblock_process(int64_t pid) {
   }
   
   proc->state = PROC_READY;
-  proc->remaining_quantum = proc->priority;
+  proc->remaining_quantum = quantum_for_priority(proc->priority);
 
   // VER!!: ver si tendriamos que verificar si la lista de readys no es null
   enqueue_ready(proc);
@@ -359,12 +374,26 @@ int unblock_current_process(){
 }
 
 int set_process_priority(int64_t pid, uint8_t priority){
-  if (scheduler == NULL || pid >= MAX_PROCESSES || scheduler->processes[pid] == NULL || priority < MIN_PRIORITY || priority > MAX_PRIORITY) {
+  if (scheduler == NULL || pid < 0 || pid >= MAX_PROCESSES || priority < MIN_PRIORITY || priority > MAX_PRIORITY) {
     return -1;
   }
 
-  scheduler->processes[pid]->priority = priority;
-  scheduler->processes[pid]->remaining_quantum = priority;
+  process_t * proc = scheduler->processes[pid];
+
+  if (proc == NULL) {
+    return -1;
+  }
+
+  uint8_t old_priority = proc->priority;
+  proc->priority = priority;
+  proc->remaining_quantum = quantum_for_priority(priority);
+
+  if (proc->state == PROC_READY && proc->in_ready_queue && old_priority != priority) {
+    remove_from_ready_queue(proc);
+    enqueue_ready(proc);
+  } else if (proc->state == PROC_RUNNING && old_priority != priority) {
+    scheduler->force_reschedule = 1;
+  }
 
   return 0;
 }
@@ -543,31 +572,70 @@ uint64_t total_ticks(void) {
 //   return processes_info;
 // }
 
+static uint8_t quantum_for_priority(uint8_t priority){
+  if (priority < MIN_PRIORITY){
+    priority = MIN_PRIORITY;
+  } else if (priority > MAX_PRIORITY){
+    priority = MAX_PRIORITY;
+  }
+  return (priority - MIN_PRIORITY) + 1;
+}
+
+static int priority_to_index(uint8_t priority){
+  if (priority < MIN_PRIORITY || priority > MAX_PRIORITY){
+    return -1;
+  }
+  return (int)(priority - MIN_PRIORITY);
+}
+
+static void free_ready_queues(void){
+  if (scheduler == NULL){
+    return;
+  }
+  for (int i = 0; i < PRIORITY_LEVELS; i++){
+    if (scheduler->ready_queues[i] != NULL){
+      free_list(scheduler->ready_queues[i]);
+      scheduler->ready_queues[i] = NULL;
+    }
+  }
+}
+
 static void enqueue_ready(process_t * proc){
-  if (scheduler == NULL || scheduler->ready_queue == NULL || proc == NULL){
+  if (scheduler == NULL || proc == NULL){
+    return;
+  }
+  int idx = priority_to_index(proc->priority);
+  if (idx < 0 || scheduler->ready_queues[idx] == NULL){
     return;
   }
   if (proc->in_ready_queue){
     return;
   }
-  proc->in_ready_queue = 1;
   proc->state = PROC_READY;
-  if (add_last(scheduler->ready_queue, proc) == -1){
+  if (add_last(scheduler->ready_queues[idx], proc) == -1){
     proc->in_ready_queue = 0;
+  } else {
+    proc->in_ready_queue = 1;
   }
 }
 
 static process_t * dequeue_ready(void){
-  if (scheduler == NULL || scheduler->ready_queue == NULL){
+  if (scheduler == NULL){
     return NULL;
   }
-  while (!is_empty(scheduler->ready_queue)){
-    process_t * proc = get_first(scheduler->ready_queue);
-    delete_first(scheduler->ready_queue);
-    if (proc != NULL){
-      proc->in_ready_queue = 0;
-      if (proc->state == PROC_READY){
-        return proc;
+  for (int idx = PRIORITY_LEVELS - 1; idx >= 0; idx--){
+    DListADT queue = scheduler->ready_queues[idx];
+    if (queue == NULL){
+      continue;
+    }
+    while (!is_empty(queue)){
+      process_t * proc = get_first(queue);
+      delete_first(queue);
+      if (proc != NULL){
+        proc->in_ready_queue = 0;
+        if (proc->state == PROC_READY){
+          return proc;
+        }
       }
     }
   }
@@ -575,12 +643,18 @@ static process_t * dequeue_ready(void){
 }
 
 static void remove_from_ready_queue(process_t * proc){
-  if (scheduler == NULL || scheduler->ready_queue == NULL){
+  if (scheduler == NULL || proc == NULL || !proc->in_ready_queue){
     return;
   }
-  if (proc == NULL || !proc->in_ready_queue){
-    return;
+  for (int idx = 0; idx < PRIORITY_LEVELS; idx++){
+    DListADT queue = scheduler->ready_queues[idx];
+    if (queue == NULL){
+      continue;
+    }
+    if (delete_element(queue, proc) == 0){
+      proc->in_ready_queue = 0;
+      return;
+    }
   }
-  delete_element(scheduler->ready_queue, proc);
   proc->in_ready_queue = 0;
 }

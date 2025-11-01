@@ -6,12 +6,12 @@
 #include <stddef.h>
 #include "../../../SharedLibraries/sharedStructs.h"
 
-#define TOTAL_PROCESSES 60
+#define TOTAL_PROCESSES 10
 #define PRIOS 3
 
 #define LOWEST 0  // TODO: Change as required
 #define MEDIUM 1  // TODO: Change as required
-#define HIGHEST 2 // TODO: Change as required
+#define HIGHEST 2  // TODO: Change as required
 
 int64_t prio[PRIOS] = {LOWEST, MEDIUM, HIGHEST};
 
