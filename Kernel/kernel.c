@@ -11,6 +11,7 @@
 #include "process.h"
 #include "memoryMap.h"
 #include "scheduler.h"
+#include "semaphore.h"
 
 extern uint8_t text;
 extern uint8_t rodata;
@@ -56,9 +57,11 @@ void * initializeKernelBinary()
 
 int main()
 {	
-	memory_init((void *)0XF00000, 0X100000);
+	memory_init((void *)START_FREE_MEM, MEM_SIZE);
 	
 	init_scheduler();
+
+	semaphore_system_init();
 	
 	timer_tick();
 

@@ -13,6 +13,7 @@
 #include "memoryManager.h"
 #include "scheduler.h"
 #include "process.h"
+#include "semaphore.h"
 
 /* File Descriptors*/
 #define STDIN 0

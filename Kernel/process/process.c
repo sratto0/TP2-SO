@@ -158,3 +158,4 @@ static uint8_t initial_quantum(uint8_t priority){
   }
   return (uint8_t)base;
 }
+
