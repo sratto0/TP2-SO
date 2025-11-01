@@ -46,6 +46,10 @@
 #define KILL_PROCESS 22
 #define WAIT_PID 23
 #define TOTAL_CPU_TICKS 24
+#define SEM_OPEN 25
+#define SEM_WAIT 26
+#define SEM_POST 27
+#define SEM_CLOSE 28
 
 
 static uint8_t syscall_read(uint32_t fd);
@@ -72,6 +76,10 @@ static int syscall_set_priority(int64_t pid, uint8_t priority);
 static int syscall_kill_process(int64_t pid);
 static int64_t syscall_wait_pid(int64_t pid, int32_t * exit_code);
 static uint64_t syscall_total_ticks();
+static int64_t syscall_sem_open(char * name, uint64_t initialValue);
+static int64_t syscall_sem_wait(char * name);
+static int64_t syscall_sem_post(char * name);
+static int64_t syscall_sem_close(char * name);
        
 
 
@@ -135,6 +143,14 @@ uint64_t syscallDispatcher(uint64_t nr, uint64_t arg0, uint64_t arg1, uint64_t a
             return (uint64_t) syscall_wait_pid((int64_t) arg0, (int32_t *) arg1);
         case TOTAL_CPU_TICKS:
             return (uint64_t) syscall_total_ticks();
+        case SEM_OPEN:
+            return (uint64_t) syscall_sem_open((char *) arg0, (uint64_t) arg1);
+        case SEM_WAIT:
+            return (uint64_t) syscall_sem_wait((char *) arg0);
+        case SEM_POST:
+            return (uint64_t) syscall_sem_post((char *) arg0);
+        case SEM_CLOSE:
+            return (uint64_t) syscall_sem_close((char *) arg0);
 	}
 	return 0;
 }
@@ -275,4 +291,24 @@ static int64_t syscall_wait_pid(int64_t pid, int32_t * exit_code) {
 // Total CPU ticks
 static uint64_t syscall_total_ticks() {
     return total_ticks();
+}
+
+// Semaphore open
+static int64_t syscall_sem_open(char * name, uint64_t initialValue){
+    return my_sem_open(name, initialValue);
+}
+
+// Semaphore wait
+static int64_t syscall_sem_wait(char * name){
+    return my_sem_wait(name);
+}
+
+// Semaphore post
+static int64_t syscall_sem_post(char * name){
+    return my_sem_post(name);
+}
+
+// Semaphore close
+static int64_t syscall_sem_close(char * name){
+    return my_sem_close(name);
 }

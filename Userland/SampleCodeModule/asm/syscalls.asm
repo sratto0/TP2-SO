@@ -25,6 +25,10 @@ GLOBAL sys_get_processes_info
 GLOBAL sys_kill_process
 GLOBAL sys_wait_pid
 GLOBAL sys_total_cpu_ticks
+GLOBAL sys_sem_open
+GLOBAL sys_sem_wait
+GLOBAL sys_sem_post
+GLOBAL sys_sem_close
 
 
 read:
@@ -151,5 +155,25 @@ sys_wait_pid:
 
 sys_total_cpu_ticks:
     mov rax, 24
+    int 80h
+    ret
+
+sys_sem_open:
+    mov rax, 25
+    int 80h
+    ret
+
+sys_sem_wait:
+    mov rax, 26
+    int 80h
+    ret
+
+sys_sem_post:
+    mov rax, 27
+    int 80h
+    ret
+
+sys_sem_close:
+    mov rax, 28
     int 80h
     ret
