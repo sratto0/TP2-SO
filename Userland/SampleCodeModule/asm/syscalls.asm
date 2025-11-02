@@ -29,6 +29,7 @@ GLOBAL sys_sem_open
 GLOBAL sys_sem_wait
 GLOBAL sys_sem_post
 GLOBAL sys_sem_close
+GLOBAL sys_memory_get_info
 
 
 read:
@@ -175,5 +176,10 @@ sys_sem_post:
 
 sys_sem_close:
     mov rax, 28
+    int 80h
+    ret
+
+sys_memory_get_info:
+    mov rax, 29
     int 80h
     ret

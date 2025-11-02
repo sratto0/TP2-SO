@@ -7,7 +7,6 @@
 #include <stdio.h>
 #include "../../SharedLibraries/sharedStructs.h"
 
-
 #define toLower(n) ((n) >= 'A' && (n) <= 'Z' ? (n) - ('A' - 'a') : (n))
 #define isNumber(n) ((n) >= '0' && (n) <= '9')
 #define isHex(n) ((n) >= 'a' && (n) <= 'f')
@@ -88,37 +87,7 @@ void my_free(void * ptr){
     sys_free(ptr);
 }
 
-// int ps(int argc, chat * argv[]) {
-//     if (argc != 0) {
-//         printf("ps: Invalid number of arguments.\n");
-//         return -1;
-//     }
 
-//     process_info_t * process_array = (process_info_t *) sys_get_processes_info();
-//     process_info_t * current  = process_array;
-    
-//     int total_cpu_ticks = calculate_total_ticks(process_array);
-//     ftab_print(GRAY, "PID", 4);
-//     ftab_print(GRAY, "PPID", 5);
-//     ftab_print(GRAY, "Prio", 5);
-//     ftab_print(GRAY, "Stat", 10);
-//     ftab_print(GRAY, "Name", 8);
-//     ftab_print(GRAY, "StackB", 9);
-//     ftab_print(GRAY, "StackP", 10);
-//     ftab_print(GRAY, "FG", 5);
-//     ftab_print(GRAY, "CPU%", 10);
-//     putchar('\n');
-
-    
-//     while(current->pid != NO_PID) {
-//         int CPU_percent = (total_cpu_ticks > 0) ? (current->ticks * 100) / total_cpu_ticks : 0;
-        
-//         if(current->p_pid < 0) {
-//             ftab_print("-", 5)
-//         }
-        
-//     }
-// }
 
 // static void ftab_print(int fd, char * buffer, int width) {
 //     int len = 0;
@@ -216,4 +185,16 @@ int64_t my_sem_post(char * name){
 
 int64_t my_sem_close(char * name){
     return sys_sem_close(name);
+}
+
+process_info_t * my_get_processes_info(){
+    return sys_get_processes_info();
+}
+
+int64_t my_total_cpu_ticks(){
+   return sys_total_cpu_ticks();
+}
+
+memory_info_t * my_memory_get_info(){
+    return sys_memory_get_info();
 }

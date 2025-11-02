@@ -116,7 +116,7 @@ int64_t sys_unblock_process(int64_t pid);
 
 int64_t sys_set_priority(int64_t pid, uint8_t priority);
     
-uint64_t sys_get_processes_info();
+process_info_t * sys_get_processes_info();
 
 int64_t sys_kill_process(int64_t pid);
 
@@ -131,5 +131,9 @@ int64_t sys_sem_wait(char * name);
 int64_t sys_sem_post(char * name);
 
 int64_t sys_sem_close(char * name);
+
+memory_info_t * sys_memory_get_info();
+
+
 
 #endif

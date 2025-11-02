@@ -65,4 +65,10 @@ int64_t my_sem_post(char * name);
 
 int64_t my_sem_close(char * name);
 
+int64_t my_total_cpu_ticks();
+
+process_info_t * my_get_processes_info();
+
+memory_info_t * my_memory_get_info();
+
 #endif

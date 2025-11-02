@@ -509,74 +509,6 @@ uint64_t total_ticks(void) {
   return scheduler->total_cpu_ticks;
 }
 
-// uint8_t foreground_process(int64_t pid){
-//   if(scheduler == NULL){
-//     return 0;
-//   }
-//   process_t * shell = get_process(SHELL_PID);
-//   if(shell == NULL){
-//     return 0;
-//   }
-//   return shell->waiting_pid == pid;
-// }
-
-// process_info_t * get_processes_info(){
-//   static process_info_t * processes_info = NULL;
-//   static uint64_t info_capacity = 0;
-
-//   if(scheduler == NULL){
-//     return NULL;
-//   }
-
-//   uint64_t needed = scheduler->size + 1;
-//   if (needed == 0) {
-//     needed = 1;
-//   }
-
-//   if (info_capacity < needed) {
-//     process_info_t * new_info = memory_alloc(sizeof(process_info_t) * needed);
-//     if (new_info == NULL) {
-//       return NULL;
-//     }
-//     if (processes_info != NULL) {
-//       memory_free(processes_info);
-//     }
-//     processes_info = new_info;
-//     info_capacity = needed;
-//   }
-
-//   uint64_t idx = 0;
-//   for(uint64_t i = 0; i < scheduler->capacity; i++){
-//     process_t * proc = scheduler->processes[i];
-//     if(proc != NULL){
-//       process_info_t * proc_info = &processes_info[idx++];
-//       proc_info->pid = proc->pid;
-//       proc_info->parent_pid = proc->parent_pid;
-//       proc_info->ticks = proc->ticks;
-//       proc_info->state = proc->state;
-//       proc_info->priority = proc->priority;
-//       proc_info->stack_pointer = proc->stack_pointer;
-//       proc_info->stack_base = proc->stack_base;
-//       my_strncpy(proc_info->name, proc->name, PROCESS_NAME_LEN);
-//       proc_info->foreground = foreground_process(proc->pid);
-//     }
-//   }
-
-//   for(uint64_t j = idx; j < info_capacity; j++) {
-//     processes_info[j].pid = NO_PID;
-//     processes_info[j].parent_pid = NO_PID;
-//     processes_info[j].priority = 0;
-//     processes_info[j].stack_pointer = NULL;
-//     processes_info[j].stack_base = NULL;
-//     processes_info[j].foreground = 0;
-//     processes_info[j].state = PROC_KILLED;
-//     processes_info[j].ticks = 0;
-//     processes_info[j].name[0] = '\0';
-//   }
-
-//   return processes_info;
-// }
-
 static uint8_t quantum_for_priority(uint8_t priority){
   if (priority < MIN_PRIORITY){
     priority = MIN_PRIORITY;
@@ -662,4 +594,44 @@ static void remove_from_ready_queue(process_t * proc){
     }
   }
   proc->in_ready_queue = 0;
+}
+
+uint8_t is_foreground_process(int64_t pid){
+  if(scheduler == NULL || pid < 0 || pid >= MAX_PROCESSES || scheduler->processes[pid] == NULL){
+    return 0;
+  }
+  return (scheduler->processes[SHELL_PID]->waiting_pid == pid);
+}
+
+// void kill_foreground_process(){
+//   if(scheduler == NULL){
+//     return;
+//   }
+//   for(int i = 0; i < MAX_PROCESSES; i++){
+//     if(scheduler->processes[i] != NULL && foreground_process(i)){
+//       kill_process(i);
+//       return;
+//     }
+//   }
+// }
+
+process_info_t * get_processes_info(){
+  static process_info_t processes_info[MAX_PROCESSES];
+  int j = 0;
+  for(int i = 0; i < MAX_PROCESSES; i++){
+    process_t * proc = scheduler->processes[i];
+    if (proc != NULL) {
+      process_info_t * proc_info = &processes_info[j++];
+      my_strncpy(proc->name, proc->name, MAX_NAME_LEN);
+      proc_info->pid = proc->pid;
+      proc_info->parent_pid = proc->parent_pid;
+      proc_info->priority = proc->priority;
+      proc_info->stack_base = proc->stack_base;
+      proc_info->stack_pointer = proc->stack_pointer;
+      proc_info->foreground = is_foreground_process(proc->pid);
+      proc_info->state = proc->state;
+      proc_info->ticks = proc->ticks;
+    }
+  }
+  return processes_info;
 }

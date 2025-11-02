@@ -84,12 +84,11 @@ void memory_free(void * ptr) {
 	buddy_info.free = memoryManager->size - memoryManager->used;
 }
 
-memory_info_t memory_get_info() {
-	buddy_info.size = memoryManager->size;
-	buddy_info.used = memoryManager->used;
-	buddy_info.free = memoryManager->size - memoryManager->used;
-	return buddy_info;
+memory_info_t * memory_get_info() {	
+    buddy_info.free = buddy_info.size - buddy_info.used;
+    return &buddy_info;
 }
+
 
 // ===== Helper implementations (mirroring reference) =====
 

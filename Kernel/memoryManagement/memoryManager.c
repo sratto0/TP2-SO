@@ -92,9 +92,8 @@
 //     }
 // }
 
-// memory_info_t memory_get_info(){
-//     memory_info.size = memory_manager.total_size;
-//     memory_info.used = memory_manager.used_size;
-//     memory_info.free = memory_manager.total_size - memory_manager.used_size;
-//     return memory_info;
-// } 
+
+// memory_info_t *mem_dump() {
+//     memory_info.free = memory_info.size - memory_info.used;
+//     return &memory_info;
+// }

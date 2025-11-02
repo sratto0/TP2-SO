@@ -24,4 +24,10 @@ typedef struct {
     uint64_t ticks;
 } process_info_t;
 
+typedef struct {
+    uint64_t size;
+    uint64_t used;
+    uint64_t free;
+} memory_info_t;
+
 #endif // SHARED_STRUCTS_H

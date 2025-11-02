@@ -51,6 +51,7 @@
 #define SEM_WAIT 26
 #define SEM_POST 27
 #define SEM_CLOSE 28
+#define MEMORY_INFO 29
 
 
 static uint8_t syscall_read(uint32_t fd);
@@ -73,7 +74,7 @@ static int64_t syscall_get_pid();
 static int syscall_block_process(int64_t pid);
 static int syscall_unblock_process(int64_t pid);
 static int syscall_set_priority(int64_t pid, uint8_t priority);
-// static uint64_t syscall_get_processes_info();
+static uint64_t syscall_get_processes_info();
 static int syscall_kill_process(int64_t pid);
 static int64_t syscall_wait_pid(int64_t pid, int32_t * exit_code);
 static uint64_t syscall_total_ticks();
@@ -81,7 +82,8 @@ static int64_t syscall_sem_open(char * name, uint64_t initialValue);
 static int64_t syscall_sem_wait(char * name);
 static int64_t syscall_sem_post(char * name);
 static int64_t syscall_sem_close(char * name);
-       
+static uint64_t syscall_memeory_get_info();
+
 
 
 uint64_t syscallDispatcher(uint64_t nr, uint64_t arg0, uint64_t arg1, uint64_t arg2, uint64_t arg3, uint64_t arg4, uint64_t arg5) {
@@ -136,8 +138,8 @@ uint64_t syscallDispatcher(uint64_t nr, uint64_t arg0, uint64_t arg1, uint64_t a
             return (uint64_t) syscall_unblock_process((int64_t) arg0);
         case SET_PRIORITY:
             return (uint64_t) syscall_set_priority((int64_t) arg0, (uint8_t) arg1);
-        // case GET_PROCESSES_INFO:
-        //     return (uint64_t) syscall_get_processes_info();
+        case GET_PROCESSES_INFO:
+            return (uint64_t) syscall_get_processes_info();
         case KILL_PROCESS:
             return (uint64_t) syscall_kill_process((int64_t) arg0);
         case WAIT_PID:
@@ -152,6 +154,8 @@ uint64_t syscallDispatcher(uint64_t nr, uint64_t arg0, uint64_t arg1, uint64_t a
             return (uint64_t) syscall_sem_post((char *) arg0);
         case SEM_CLOSE:
             return (uint64_t) syscall_sem_close((char *) arg0);
+        case MEMORY_INFO:
+            return (uint64_t) syscall_memeory_get_info();
 	}
 	return 0;
 }
@@ -275,9 +279,9 @@ static int syscall_set_priority(int64_t pid, uint8_t priority) {
 }
 
 //Get process info
-// static uint64_t syscall_get_processes_info() {
-//     return (uint64_t) get_processes_info();
-// }
+static uint64_t syscall_get_processes_info() {
+    return (uint64_t) get_processes_info();
+}
 
 // Kill process
 static int syscall_kill_process(int64_t pid) {
@@ -312,4 +316,8 @@ static int64_t syscall_sem_post(char * name){
 // Semaphore close
 static int64_t syscall_sem_close(char * name){
     return my_sem_close(name);
+}
+
+static uint64_t syscall_memeory_get_info(){
+   return (uint64_t) memory_get_info();
 }

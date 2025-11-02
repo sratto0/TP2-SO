@@ -12,6 +12,8 @@
 #include <libasm.h>
 #include "./include/test_functions.h"
 #include <stddef.h>
+#include "./include/shellCommands.h"
+#include "../../SharedLibraries/sharedStructs.h"
 
 /* Enum para la cantidad de argumentos recibidos */
 typedef enum { NO_PARAMS = 0, SINGLE_PARAM, DUAL_PARAM } functionType;
@@ -21,7 +23,7 @@ typedef enum { NO_PARAMS = 0, SINGLE_PARAM, DUAL_PARAM } functionType;
 #define MIN_FONT_SIZE 1
 #define MAX_FONT_SIZE 3
 
-#define WELCOME "Bienvenido a Cactiland OS!\n"
+#define WELCOME "Bienvenido a Nuestro SO!\n"
 #define INVALID_COMMAND "Comando invalido!\n"
 #define WRONG_PARAMS "La cantidad de parametros ingresada es invalida\n"
 #define INVALID_FONT_SIZE "Dimension invalida de fuente\n"
@@ -52,6 +54,8 @@ static void mm_test(char ** max_memory);
 static void my_test_processes();
 static void my_test_prio();
 static void my_test_sync();
+static int cmd_ps_wrapper(char **argv);
+static int cmd_mem_wrapper(char **argv);
 
 static Command commands[QTY_COMMANDS];
 
@@ -69,7 +73,8 @@ void init() {
     commands[10] = (Command){ "test-processes", "Corre el test de procesos",                                                          .f = (void*)&my_test_processes, NO_PARAMS };
     commands[11] = (Command){ "test-prio",      "Corre el test de prioridades",                                                       .f = (void*)&my_test_prio,   NO_PARAMS };
     commands[12] = (Command){ "test-sync",      "Corre el test de sincronizacion",                                                    .f = (void*)&my_test_sync,      NO_PARAMS };
-
+    commands[13] = (Command){ "ps",             "Muestra informacion de los procesos",                                                .f = (void*)&cmd_ps_wrapper, NO_PARAMS };
+    commands[14] = (Command){ "mem",            "Muestra informacion del uso de memoria",                                             .f = (void*)&cmd_mem_wrapper, NO_PARAMS };
 }
 
 void run_shell() {
@@ -218,4 +223,14 @@ static void my_test_sync() {
 
     char *argv_no_sem[] = { "2", "0", NULL };
     test_sync(2, argv_no_sem);
+}
+
+static int cmd_ps_wrapper(char **argv){
+    char *args[] = { "ps", NULL};
+    return cmd_ps(1, args);
+}
+
+static int cmd_mem_wrapper(char **argv){
+    char *args[] = { "mem", NULL};
+    return cmd_mem(1, args);
 }

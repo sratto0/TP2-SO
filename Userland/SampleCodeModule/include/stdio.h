@@ -12,6 +12,8 @@
 #include <stdint.h>
 #include <stdarg.h>
 #include <color.h>
+#include "../../../SharedLibraries/sharedStructs.h"
+
 /**
  * @brief Imprime un caracter en STDOUT
  * @param c: Caracter a imprimir
@@ -84,5 +86,6 @@ void printRegisters(const uint64_t * rsp);
  * @param ... 
  */
 void printfc(Color color, char * fmt, ...);    
+const char *state_to_str(process_state_t st);
 
 #endif

@@ -186,3 +186,13 @@ void printRegisters(const uint64_t * rsp) {
     for (int i = 0; i < sizeof(_regNames)/sizeof(char *); i++)
         printf("%s: 0x%x\n", _regNames[i], rsp[sizeof(_regNames)/sizeof(char *)-i-1]);
 }
+
+const char *state_to_str(process_state_t st) {
+    switch (st) {
+        case PROC_READY:   return "READY";
+        case PROC_RUNNING: return "RUN";
+        case PROC_BLOCKED: return "BLOCK";
+        case PROC_KILLED:  return "KILLED";
+    }
+    return "UNK";
+}
