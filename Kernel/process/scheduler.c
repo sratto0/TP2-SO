@@ -617,21 +617,33 @@ uint8_t is_foreground_process(int64_t pid){
 
 process_info_t * get_processes_info(){
   static process_info_t processes_info[MAX_PROCESSES];
+  for(int k = 0; k < MAX_PROCESSES; k++){
+    processes_info[k].pid = NO_PID;
+    processes_info[k].name[0] = '\0';
+  }
+  
   int j = 0;
   for(int i = 0; i < MAX_PROCESSES; i++){
     process_t * proc = scheduler->processes[i];
     if (proc != NULL) {
       process_info_t * proc_info = &processes_info[j++];
-      my_strncpy(proc->name, proc->name, MAX_NAME_LEN);
+      my_strncpy(proc_info->name, proc->name, MAX_NAME_LEN);
       proc_info->pid = proc->pid;
       proc_info->parent_pid = proc->parent_pid;
       proc_info->priority = proc->priority;
       proc_info->stack_base = proc->stack_base;
       proc_info->stack_pointer = proc->stack_pointer;
+      if(proc->stack_pointer != NULL){
+        uint64_t * stack = (uint64_t *)proc->stack_pointer;
+        proc_info->rip = (void *)stack[15];
+      }else{
+        proc_info->rip = NULL;
+      }
       proc_info->foreground = is_foreground_process(proc->pid);
       proc_info->state = proc->state;
       proc_info->ticks = proc->ticks;
     }
   }
+  processes_info[j].pid = NO_PID;
   return processes_info;
 }
