@@ -71,4 +71,6 @@ process_info_t * my_get_processes_info();
 
 memory_info_t * my_memory_get_info();
 
+void my_sleep(uint64_t seconds);
+
 #endif

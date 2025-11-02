@@ -56,6 +56,7 @@ static void my_test_prio();
 static void my_test_sync();
 static int cmd_ps_wrapper(char **argv);
 static int cmd_mem_wrapper(char **argv);
+static int cmd_loop_wrapper(char **argv);
 
 static Command commands[QTY_COMMANDS];
 
@@ -75,6 +76,7 @@ void init() {
     commands[12] = (Command){ "test-sync",      "Corre el test de sincronizacion",                                                    .f = (void*)&my_test_sync,      NO_PARAMS };
     commands[13] = (Command){ "ps",             "Muestra informacion de los procesos",                                                .f = (void*)&cmd_ps_wrapper, NO_PARAMS };
     commands[14] = (Command){ "mem",            "Muestra informacion del uso de memoria",                                             .f = (void*)&cmd_mem_wrapper, NO_PARAMS };
+    commands[15] = (Command){ "loop",           "Imprime su ID con un saludo cada una determinada cantidad de segundos",                              .s = (void*)&cmd_loop_wrapper, SINGLE_PARAM };
 }
 
 void run_shell() {
@@ -233,4 +235,9 @@ static int cmd_ps_wrapper(char **argv){
 static int cmd_mem_wrapper(char **argv){
     char *args[] = { "mem", NULL};
     return cmd_mem(1, args);
+}
+
+static int cmd_loop_wrapper(char **argv){
+    char *loop_argv[3] = { "loop", argv[0], NULL};
+    return cmd_loop(2, loop_argv);
 }

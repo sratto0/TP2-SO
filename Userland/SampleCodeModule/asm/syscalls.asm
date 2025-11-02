@@ -30,6 +30,7 @@ GLOBAL sys_sem_wait
 GLOBAL sys_sem_post
 GLOBAL sys_sem_close
 GLOBAL sys_memory_get_info
+GLOBAL sys_sleep
 
 
 read:
@@ -181,5 +182,10 @@ sys_sem_close:
 
 sys_memory_get_info:
     mov rax, 29
+    int 80h
+    ret
+
+sys_sleep:
+    mov rax, 30
     int 80h
     ret

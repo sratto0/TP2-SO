@@ -58,5 +58,21 @@ int cmd_mem(int argc, char **argv) {
     return 0;
 }
 
-
+int cmd_loop(int argc, char *argv[]){
+    if(argc != 2){
+        printf("Necesita un argumento numerico que representa la cantidad de segundos\n");
+        return -1;
+    }
+    int seconds = atoi(argv[1]);
+    if(seconds <= 0){
+        printf("El argumento debe ser un numero positivo\n");
+        return -1;
+    }
+    int64_t pid = my_getpid();
+    while (1) {
+        printf("Buenas, soy el proceso %d y voy a dormir por %d segundos en un loop infinito\n", (int)pid, seconds);
+        my_sleep(seconds);
+    }
+    return 0;
+}
 

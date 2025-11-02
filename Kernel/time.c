@@ -79,6 +79,7 @@ void sleep(uint32_t sleeping_ticks){
 	if(sleeping_processes[pid].wake_up_tick < next_tick)
 		next_tick = sleeping_processes[pid].wake_up_tick;
 	// sleep_block(pid, 1);
+	block_current_process();
 }
 
 static int ensure_sleeping_capacity(uint64_t pid_index){
