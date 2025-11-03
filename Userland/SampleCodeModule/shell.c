@@ -2,9 +2,12 @@
 // PVS-Studio Static Code Analyzer for C, C++, C#, and Java:
 // https://pvs-studio.com
 
-#include <stdio.h>
-#include <stdlib.h>
+// #include <stdio.h>
+// #include <stdlib.h>
 #include <string.h>
+#include "stdio.h"
+#include "string.h"
+#include "stdlib.h"
 #include "./include/shell.h"
 #include <stdint.h>
 #include "./include/syscalls.h"
@@ -14,6 +17,7 @@
 #include <stddef.h>
 #include "./include/shellCommands.h"
 #include "../../SharedLibraries/sharedStructs.h"
+#include "./include/inputParser.h"
 
 /* Enum para la cantidad de argumentos recibidos */
 typedef enum { NO_PARAMS = 0, SINGLE_PARAM, DUAL_PARAM } functionType;
@@ -33,22 +37,16 @@ typedef enum { NO_PARAMS = 0, SINGLE_PARAM, DUAL_PARAM } functionType;
 typedef struct {
     char * name;                    // Nombre del comando
     char * description;             // Descripcion del comando (para help)
-    union {                         // Puntero a la funcion
-       int  (*f)(void);
-       int  (*g)(char *);
-       int  (*h)(char *, char *);
-       void (*s)(char **);          // Variante que recibe char** (argv)
-    };
-    functionType ftype;             // Cantidad de argumentos del comando
+    entry_point_t f;                
 } Command;
 
 static void help();
-static void man(char * command);
+static void man(int argc, char ** argv);
 static void printInfoReg();
 static void time();
-static int div(char * num, char * div);
-static void fontSize(char * size);
-static void printMem(char * pos);
+static void div(int argc, char ** argv);
+static void fontSize(int argc, char ** argv);
+static void printMem(int argc, char ** argv);
 static int getCommandIndex(char * command);
 static void mm_test(char ** max_memory);
 static void my_test_processes();
@@ -56,79 +54,67 @@ static void my_test_prio();
 static void my_test_sync();
 static int cmd_ps_wrapper(char **argv);
 static int cmd_mem_wrapper(char **argv);
+static void create_single_process(input_parser_t * parser);
 
-static Command commands[QTY_COMMANDS];
 
-void init() {
-    commands[0]  = (Command){ "help",           "Listado de comandos",                                                                 .f = (void*)&help,        NO_PARAMS };
-    commands[1]  = (Command){ "man",            "Manual de uso de los comandos",                                                       .g = (void*)&man,         SINGLE_PARAM };
-    commands[2]  = (Command){ "inforeg",        "Informacion de los registos capturados",                                             .f = (void*)&printInfoReg, NO_PARAMS };
-    commands[3]  = (Command){ "time",           "Despliega la hora actual UTC - 3",                                                   .f = (void*)&time,        NO_PARAMS };
-    commands[4]  = (Command){ "div",            "Division entera de dos numeros naturales",                                           .h = (void*)&div,         DUAL_PARAM };
-    commands[5]  = (Command){ "kaboom",         "Ejecuta una excepcion de Invalid Opcode",                                            .f = (void*)&kaboom,      NO_PARAMS };
-    commands[6]  = (Command){ "font-size",      "Cambia dimensiones de la fuente",                                                    .g = (void*)&fontSize,    SINGLE_PARAM };
-    commands[7]  = (Command){ "printmem",       "Vuelco de memoria de 32 bytes desde direccion dada",                                 .g = (void*)&printMem,    SINGLE_PARAM };
-    commands[8]  = (Command){ "clear",          "Limpia toda la pantalla",                                                            .f = (void*)&clear,       NO_PARAMS };
-    commands[9]  = (Command){ "test-mm",        "Corre el test del memory manager",                                                   .s = (void*)&mm_test,     SINGLE_PARAM };
-    commands[10] = (Command){ "test-processes", "Corre el test de procesos",                                                          .f = (void*)&my_test_processes, NO_PARAMS };
-    commands[11] = (Command){ "test-prio",      "Corre el test de prioridades",                                                       .f = (void*)&my_test_prio,   NO_PARAMS };
-    commands[12] = (Command){ "test-sync",      "Corre el test de sincronizacion",                                                    .f = (void*)&my_test_sync,      NO_PARAMS };
-    commands[13] = (Command){ "ps",             "Muestra informacion de los procesos",                                                .f = (void*)&cmd_ps_wrapper, NO_PARAMS };
-    commands[14] = (Command){ "mem",            "Muestra informacion del uso de memoria",                                             .f = (void*)&cmd_mem_wrapper, NO_PARAMS };
-}
+const static Command commands[] = {
+    {"help", "Listado de comandos", (entry_point_t) help},
+    {"man", "Manual de uso de los comandos", (entry_point_t) man},
+    {"inforeg", "Informacion de los registos capturados", (entry_point_t) printInfoReg},
+    {"time", "Despliega la hora actual UTC - 3", (entry_point_t) time},
+    {"div", "Division entera de dos numeros naturales", (entry_point_t) div},
+    {"kaboom", "Ejecuta una excepcion de Invalid Opcode", (entry_point_t) kaboom},
+    {"font-size", "Cambia dimensiones de la fuente", (entry_point_t) fontSize},
+    {"printmem", "Vuelco de memoria de 32 bytes desde direccion dada", (entry_point_t) printMem},
+    {"clear", "Limpia toda la pantalla", (entry_point_t) clear},
+    {"test-mm", "Corre el test del memory manager", (entry_point_t) test_mm},
+    {"test-processes", "Corre el test de procesos", (entry_point_t) test_processes},
+    {"test-prio", "Corre el test de prioridades", (entry_point_t) test_prio},
+    {"test-sync", "Corre el test de sincronizacion", (entry_point_t) test_sync},
+    {"ps", "Muestra informacion de los procesos", (entry_point_t) cmd_ps},
+    {"mem", "Muestra informacion del uso de memoria", (entry_point_t) cmd_mem}
+};
 
-void run_shell() {
-    init();
-    int index;
+
+void run_shell(){
     puts(WELCOME);
-    while (1) {
+    while(1) {
         putchar('>');
-        char command[MAX_CHARS] = {0};
-        char arg1[MAX_CHARS] = {0};
-        char arg2[MAX_CHARS] = {0};
-
-        int qtyParams = scanf("%s %s %s", command, arg1, arg2);
-        if (qtyParams <= 0) {
+        char raw_input[MAX_CHARS] = {0};
+        scanf("%S", raw_input);
+        input_parser_t * parser = parse_input(raw_input);
+        if(parser == NULL) {
+            printErr(INVALID_COMMAND);
             continue;
         }
-
-        index = getCommandIndex(command);
-        if (index == -1) {
-            if (command[0] != 0)
-                printErr(INVALID_COMMAND);
-            continue;
+        
+        if(parser->qty_shell_programs == 1) {
+            create_single_process(parser);
         }
-
-        int funcParams = commands[index].ftype;
-        if (qtyParams - 1 != funcParams) {
-            printErr(WRONG_PARAMS);
-            printf(CHECK_MAN, command);
-            continue;
+        else if (parser->qty_shell_programs == 2) {
+            // create_piped_processes(parser);
         }
-
-        switch (commands[index].ftype) {
-            case NO_PARAMS:
-                commands[index].f();
-                break;
-
-            case SINGLE_PARAM: {
-                // Si el comando fue registrado con .s (char**),
-                // armamos argv con un único parámetro y lo pasamos.
-                if (commands[index].s != NULL) {
-                    char *argv1[2] = { arg1, NULL };
-                    commands[index].s(argv1);
-                } else {
-                    commands[index].g(arg1);
-                }
-                break;
-            }
-
-            case DUAL_PARAM:
-                commands[index].h(arg1, arg2);
-                break;
-        }
+        free_parser(parser);
     }
 }
+
+static void create_single_process(input_parser_t * parser) {
+    shell_program_t * program = parser->shell_programs[0];
+    int idx = getCommandIndex(program->name);
+    if (idx == -1) {
+        printErr(INVALID_COMMAND);
+        return; 
+    }
+    if(parser->background) {
+        // VER!!
+    }
+    else {
+        int16_t pid = my_create_process((entry_point_t)commands[idx].f, program->params, program->name, NULL);
+        my_wait_pid(pid, NULL);
+    }
+}
+
+
 
 /**
  * @brief  Devuelve el indice del vector de comandos dado su nombre
@@ -144,36 +130,53 @@ static int getCommandIndex(char * command) {
     return -1;
 }
 
-static void help() {
+static void help(int argc, char **argv) {
+    if (argc != 1) {
+	    printErr(WRONG_PARAMS);
+    	return;
+	}
     for (int i = 0; i < QTY_COMMANDS; i++)
         printf("%s: %s\r\n", commands[i].name, commands[i].description);
 }
 
-static int div(char * num, char * div) {
+static void div(int argc, char ** argv) {
+    if (argc != 3) {
+        printErr(WRONG_PARAMS);
+        return;
+    }
+    char * num = argv[1];
+    char * div = argv[2];
     printf("%s/%s=%d\r\n", num, div, atoi(num)/atoi(div));
-    return 1;
 }
 
-static void time() {
+static void time(int argc, char ** argv) {
     uint32_t secs = getSeconds();
     uint32_t h = secs / 3600, m = secs % 3600 / 60, s = secs % 3600 % 60;
     printf("%2d:%2d:%2d\r\n", h, m, s);
 }
 
-static void fontSize(char * size) {
-    int s = atoi(size);
+static void fontSize(int argc, char ** argv) {
+    if (argc != 2) {
+        printErr(WRONG_PARAMS);
+        return;
+    }
+    int s = atoi(argv[1]);
     if (s >= MIN_FONT_SIZE && s <= MAX_FONT_SIZE)
-        setFontSize((uint8_t)atoi(size));
+        setFontSize((uint8_t)s);
     else {
         printErr(INVALID_FONT_SIZE);
         puts(CHECK_MAN_FONT);
     }
 }
 
-static void printMem(char * pos) {
+static void printMem(int argc, char ** argv) {
+    if (argc != 2) {
+        printErr(WRONG_PARAMS);
+        return;
+    }
     uint8_t resp[QTY_BYTES];
     char * end;
-    getMemory(strtoh(pos, &end), resp);
+    getMemory(strtoh(argv[1], &end), resp);
     for (int i = 0; i < QTY_BYTES; i++) {
         printf("0x%2x ", resp[i]);
         if (i % 4 == 3)
@@ -182,7 +185,7 @@ static void printMem(char * pos) {
 }
 
 static char * _regNames[] = {"RIP", "RSP", "RAX", "RBX", "RCX", "RDX", "RBP", "RDI", "RSI", "R8", "R9", "R10", "R11", "R12", "R13", "R14", "R15"};
-static void printInfoReg() {
+static void printInfoReg(int argc, char ** argv) {
     int len = sizeof(_regNames)/sizeof(char *);
     uint64_t regSnapshot[len];
     getInfoReg(regSnapshot);
@@ -190,8 +193,12 @@ static void printInfoReg() {
         printf("%s: 0x%x\n", _regNames[i], regSnapshot[i]);
 }
 
-static void man(char * command) {
-    int idx = getCommandIndex(command);
+static void man(int argc, char ** argv) {
+    if (argc != 2) {
+        printErr(WRONG_PARAMS);
+        return;
+    }
+    int idx = getCommandIndex(argv[1]);
     if (idx != -1)
         printf("%s\n", usages[idx]);
     else
@@ -207,23 +214,14 @@ static void mm_test(char ** max_memory) {
     test_mm(1, max_memory);
 }
 
-static void my_test_processes() {
-    char *argv[] = { "10", NULL }; // número por defecto de procesos
-    test_processes(1, argv);
-}
 
-static void my_test_prio() {
-    char *argv[] = { "1000000", NULL }; // valor por defecto para el bucle
-    test_prio(1, argv);
-}
+// static void my_test_sync() {
+//     char *argv[] = { "2", "1", NULL };
+//     test_sync(2, argv);
 
-static void my_test_sync() {
-    char *argv[] = { "2", "1", NULL };
-    test_sync(2, argv);
-
-    char *argv_no_sem[] = { "2", "0", NULL };
-    test_sync(2, argv_no_sem);
-}
+//     char *argv_no_sem[] = { "2", "0", NULL };
+//     test_sync(2, argv_no_sem);
+// }
 
 static int cmd_ps_wrapper(char **argv){
     char *args[] = { "ps", NULL};
@@ -234,3 +232,4 @@ static int cmd_mem_wrapper(char **argv){
     char *args[] = { "mem", NULL};
     return cmd_mem(1, args);
 }
+

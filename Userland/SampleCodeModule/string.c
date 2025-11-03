@@ -25,3 +25,13 @@ int strcpychar(char * dest, const char * origin, char limit) {
     dest[idx] = 0;
     return idx;
 }
+
+int strcpychar_n(char *dest, const char * origin, char limit, int n) {
+    int idx = 0;
+    while (origin[idx] != limit && origin[idx] != '\0' && idx < n) {
+        dest[idx] = origin[idx];
+        idx++;
+    }
+    dest[idx] = 0;
+    return idx;
+}

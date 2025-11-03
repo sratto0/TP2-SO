@@ -17,10 +17,11 @@ int64_t test_processes(uint64_t argc, char *argv[]) {
   uint64_t max_processes;
   char *argvAux[] = {0};
 
-  if (argc != 1)
+  if (argc != 2)
     return -1;
 
-  if ((max_processes = satoi(argv[0])) <= 0)
+
+  if ((max_processes = satoi(argv[1])) <= 0)
     return -1;
 
   p_rq p_rqs[max_processes];

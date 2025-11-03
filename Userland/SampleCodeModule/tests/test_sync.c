@@ -61,11 +61,11 @@ uint64_t test_sync(uint64_t argc, char *argv[]) { //{n, use_sem, 0}
   uint64_t pids[2 * TOTAL_PAIR_PROCESSES];
   int exit_code;
 
-  if (argc != 2)
+  if (argc != 3)
     return -1;
 
-  char *argvDec[] = {argv[0], "-1", argv[1], NULL};
-  char *argvInc[] = {argv[0], "1", argv[1], NULL};
+  char *argvDec[] = {"my_process_dec", argv[1], "-1", argv[2], NULL};
+  char *argvInc[] = {"my_process_inc", argv[1], "1", argv[2], NULL};
 
   global = 0;
 
