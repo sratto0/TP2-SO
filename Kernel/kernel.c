@@ -62,6 +62,8 @@ int main()
 	init_scheduler();
 
 	semaphore_system_init();
+
+	keyboard_init();
 	
 	timer_tick();
 
