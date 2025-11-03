@@ -487,3 +487,10 @@ make
 make
 make
 exit
+cd root
+make clean
+cd Toolchain
+make
+cd ..
+make
+exit

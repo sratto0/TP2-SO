@@ -3,5 +3,6 @@
 
 int cmd_ps(int argc, char **argv);
 int cmd_mem(int argc, char **argv);
+int cmd_loop(int argc, char *argv[]);
 
 #endif
