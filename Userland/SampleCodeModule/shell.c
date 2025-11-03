@@ -72,7 +72,8 @@ const static Command commands[] = {
     {"test-prio", "Corre el test de prioridades", (entry_point_t) test_prio},
     {"test-sync", "Corre el test de sincronizacion", (entry_point_t) test_sync},
     {"ps", "Muestra informacion de los procesos", (entry_point_t) cmd_ps},
-    {"mem", "Muestra informacion del uso de memoria", (entry_point_t) cmd_mem}
+    {"mem", "Muestra informacion del uso de memoria", (entry_point_t) cmd_mem},
+    {"loop", "???", (entry_point_t) cmd_loop}
 };
 
 

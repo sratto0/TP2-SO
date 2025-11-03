@@ -1,14 +1,3 @@
-cd root
-make clean
-cd Toolchain
-make clean
-make
-cd ..
-make
-make
-exit
-cd root
-make clean
 cd Toolchain
 make clean
 make
@@ -484,6 +473,28 @@ cd Toolchain
 make
 cd ..
 make
+make
+make
+exit
+cd root
+gdb
+gdb
+gfb
+gdb
+cd root
+cd Toolchain
+make
+cd ..
+make
+exit
+cd root
+cd Toolchain
+make
+cd ..
+make
+cd Toolchain
+make
+cd ..
 make
 make
 exit
