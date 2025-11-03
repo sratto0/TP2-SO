@@ -286,14 +286,12 @@ int kill_process(int64_t pid) {
   if (get_process(pid) == NULL) {
     return -1;
   }
-
   adopt_children(pid);
 
   process_t * proc = scheduler->processes[pid];
   process_t * parent = scheduler->processes[proc->parent_pid];
 
   proc->state = PROC_KILLED;
-
   if (proc->in_ready_queue || proc->state == PROC_READY || proc->state == PROC_RUNNING) {
     remove_from_ready_queue(proc);
   }
@@ -307,11 +305,9 @@ int kill_process(int64_t pid) {
   } else if (parent == NULL || parent->waiting_pid != pid) {
     remove_process(pid);
   }
-
   if (pid == scheduler->current_pid) {
     yield();
   }
-
   return 0;
 }
 

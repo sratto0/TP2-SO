@@ -76,6 +76,49 @@ int cmd_loop(int argc, char *argv[]){
     return 0;
 }
 
+int cmd_kill(int argc, char **argv){
+    if(argc != 2){
+        printf("Necesita un argumento: el PID del proceso\n");
+        return -1;
+    }
+    int pid = atoi(argv[1]);
+    if(pid <= 1){
+        printf("El PID debe ser un numero mayor a 1\n");
+        return -1;
+    }
+    process_info_t *info = my_get_processes_info();
+    if(info != NULL){
+        int found = 0;
+        for (process_info_t *p = info; p->pid != NO_PID; p++) {
+            if(p->pid == pid){
+                found = 1;
+                break;
+            }
+        }
+        if(!found){
+            printf("No existe un proceso con PID %d\n", pid);
+            return -1;
+        }
+    }else {
+        printf("DEBUG: my_get_processes_info() devolvió NULL, intentaré matar igual\n");
+    }
+
+    printf("DEBUG: llamando a my_kill(%d)\n", pid);
+    int result = my_kill(pid);
+    printf("DEBUG: my_kill retornó %d\n", result);
+
+    if(result == -1){
+        printf("Error al matar el proceso. Verifique que el PID sea correcto.\n");
+        return -1;
+    } else if (result == 0) {
+        printf("Proceso %d matado exitosamente\n", pid);
+        return 0;
+    } else {
+        printf("my_kill devolvió código inesperado %d\n", result);
+        return -1;
+    }
+}
+
 int cmd_nice(int argc, char **argv){
     if(argc != 3){
         printf("Necesita dos argumentos: el PID del proceso y la nueva prioridad\n");

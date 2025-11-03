@@ -37,6 +37,8 @@ char * usages [QTY_COMMANDS] = { "Uso: help - muestra todos los comandos que exi
 
                               "Uso: loop [SEGUNDOS] - imprime su ID con un saludo cada una determinada cantidad de segundos\n",
 
+                              "Uso: kill [PID] - mata un proceso dado su ID\n",
+
                               "Uso: nice [PID] [NUEVA_PRIO] - cambia la prioridad de un proceso dado su ID y la nueva prioridad\n"
                               };
 #endif
