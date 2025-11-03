@@ -23,14 +23,15 @@ uint64_t my_process_inc(uint64_t argc, char *argv[]) {
   int8_t inc;
   int8_t use_sem;
 
-  if (argc != 3)
+  if (argc != 4){
     return -1;
+  }
 
-  if ((n = satoi(argv[0])) <= 0)
+  if ((n = satoi(argv[1])) <= 0)
     return -1;
-  if ((inc = satoi(argv[1])) == 0)
+  if ((inc = satoi(argv[2])) == 0)
     return -1;
-  if ((use_sem = satoi(argv[2])) < 0)
+  if ((use_sem = satoi(argv[3])) < 0)
     return -1;
 
   if (use_sem)
