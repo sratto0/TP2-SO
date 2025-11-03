@@ -19,6 +19,7 @@ typedef struct {
     uint8_t priority;
     void * stack_base;
     void * stack_pointer;
+    void * rip;
     uint8_t foreground; 
     process_state_t state;
     uint64_t ticks;

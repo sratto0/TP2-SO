@@ -52,6 +52,7 @@
 #define SEM_POST 27
 #define SEM_CLOSE 28
 #define MEMORY_INFO 29
+#define SLEEP 30
 
 
 static uint8_t syscall_read(uint32_t fd);
@@ -83,6 +84,7 @@ static int64_t syscall_sem_wait(char * name);
 static int64_t syscall_sem_post(char * name);
 static int64_t syscall_sem_close(char * name);
 static uint64_t syscall_memeory_get_info();
+static void syscall_sleep(uint64_t seconds);
 
 
 
@@ -156,6 +158,9 @@ uint64_t syscallDispatcher(uint64_t nr, uint64_t arg0, uint64_t arg1, uint64_t a
             return (uint64_t) syscall_sem_close((char *) arg0);
         case MEMORY_INFO:
             return (uint64_t) syscall_memeory_get_info();
+        case SLEEP:
+            syscall_sleep((uint64_t) arg0);
+            break;
 	}
 	return 0;
 }
@@ -320,4 +325,9 @@ static int64_t syscall_sem_close(char * name){
 
 static uint64_t syscall_memeory_get_info(){
    return (uint64_t) memory_get_info();
+}
+
+static void syscall_sleep(uint64_t seconds){
+    uint32_t sleeping_ticks = (uint32_t)(seconds * 18);
+    sleep(sleeping_ticks);
 }

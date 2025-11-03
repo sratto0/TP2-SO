@@ -198,3 +198,7 @@ int64_t my_total_cpu_ticks(){
 memory_info_t * my_memory_get_info(){
     return sys_memory_get_info();
 }
+
+void my_sleep(uint64_t seconds){
+    sys_sleep(seconds);
+}

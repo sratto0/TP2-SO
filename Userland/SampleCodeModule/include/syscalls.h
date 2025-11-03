@@ -134,6 +134,8 @@ int64_t sys_sem_close(char * name);
 
 memory_info_t * sys_memory_get_info();
 
+void sys_sleep(uint64_t seconds);
+
 
 
 #endif
