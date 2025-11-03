@@ -171,3 +171,41 @@ int cmd_block(int argc, char **argv){
         return -1;
     }
 }
+
+int cmd_unblock(int argc, char **argv){
+    if(argc != 2){
+        printf("Necesita un argumento: el PID del proceso\n");
+        return -1;
+    }
+    int pid = atoi(argv[1]);
+    if(pid <= 1){
+        printf("El PID debe ser un numero mayor a 1\n");
+        return -1;
+    }
+    process_info_t *info = my_get_processes_info();
+    if(info != NULL){
+        int found = 0;
+        for (process_info_t *p = info; p->pid != NO_PID; p++) {
+            if(p->pid == pid){
+                found = 1;
+                break;
+            }
+        }
+        if(!found){
+            printf("No existe un proceso con PID %d\n", pid);
+            return -1;
+        }
+    }
+    
+    int result = my_unblock_process(pid);
+    if(result == -1){
+        printf("Error al desbloquear el proceso. Verifique que el PID sea correcto.\n");
+        return -1;
+    } else if (result == 0) {
+        printf("Proceso %d desbloqueado exitosamente\n", pid);
+        return 0;
+    } else {
+        printf("my_unblock devolvió código inesperado %d\n", result);
+        return -1;
+    }
+}

@@ -1,6 +1,6 @@
 #ifndef _SHELL_H
 #define _SHELL_H
-#define QTY_COMMANDS 19
+#define QTY_COMMANDS 20
 #define PROMPT "user@vsls:~$ "
 /**
  * @brief Corre la terminal

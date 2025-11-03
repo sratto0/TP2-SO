@@ -41,6 +41,8 @@ char * usages [QTY_COMMANDS] = { "Uso: help - muestra todos los comandos que exi
 
                               "Uso: nice [PID] [NUEVA_PRIO] - cambia la prioridad de un proceso dado su ID y la nueva prioridad\n",
 
-                              "Uso: block [PID] - bloquea o desbloquea un proceso dado su ID\n"
+                              "Uso: block [PID] - bloquea o desbloquea un proceso dado su ID\n",
+
+                              "Uso: unblock [PID] - desbloquea un proceso dado su ID\n"
                               };
 #endif
