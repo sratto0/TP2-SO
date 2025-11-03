@@ -29,7 +29,7 @@ char * usages [QTY_COMMANDS] = { "Uso: help - muestra todos los comandos que exi
                               
                               "Uso: test-prio - corre el test de prioridades. No recibe parametros",
 
-                              "Uso: test-sync - corre el test de sincronizacion. No recibe parametros"
+                              "Uso: test-sync - corre el test de sincronizacion. No recibe parametros",
 
                               "Uso: ps - muestra informacion de los procesos. No recibe parametros",
 
@@ -39,6 +39,8 @@ char * usages [QTY_COMMANDS] = { "Uso: help - muestra todos los comandos que exi
 
                               "Uso: kill [PID] - mata un proceso dado su ID\n",
 
-                              "Uso: nice [PID] [NUEVA_PRIO] - cambia la prioridad de un proceso dado su ID y la nueva prioridad\n"
+                              "Uso: nice [PID] [NUEVA_PRIO] - cambia la prioridad de un proceso dado su ID y la nueva prioridad\n",
+
+                              "Uso: block [PID] - bloquea o desbloquea un proceso dado su ID\n"
                               };
 #endif

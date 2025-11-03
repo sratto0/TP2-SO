@@ -57,6 +57,7 @@ static int cmd_mem_wrapper(char **argv);
 static int cmd_loop_wrapper(char **argv);
 static int cmd_kill_wrapper(char **argv);
 static int cmd_nice_wrapper(char **argv);
+static int cmd_block_wrapper(char **argv);
 static void create_single_process(input_parser_t * parser);
 
 
@@ -78,7 +79,8 @@ const static Command commands[] = {
     {"mem", "Muestra informacion del uso de memoria", (entry_point_t) cmd_mem},
     {"loop", "Imprime su ID con un saludo cada una determinada cantidad de segundos", (entry_point_t) cmd_loop},
     {"kill", "Mata un proceso dado su ID", (entry_point_t) cmd_kill},
-    {"nice", "Cambia la prioridad de un proceso dado su ID y la nueva prioridad", (entry_point_t) cmd_nice}
+    {"nice", "Cambia la prioridad de un proceso dado su ID y la nueva prioridad", (entry_point_t) cmd_nice},
+    {"block", "Bloquea o desbloquea un proceso dado su ID", (entry_point_t) cmd_block}
 };
 
 
@@ -252,4 +254,9 @@ static int cmd_kill_wrapper(char **argv){
 static int cmd_nice_wrapper(char **argv){
     char *nice_argv[4] = { "nice", argv[0], argv[1], NULL};
     return cmd_nice(3, nice_argv);
+}
+
+static int cmd_block_wrapper(char **argv){
+    char *block_argv[3] = { "block", argv[0], NULL};
+    return cmd_block(2, block_argv);
 }
