@@ -55,6 +55,7 @@ static void my_test_sync();
 static int cmd_ps_wrapper(char **argv);
 static int cmd_mem_wrapper(char **argv);
 static int cmd_loop_wrapper(char **argv);
+static int cmd_nice_wrapper(char **argv);
 static void create_single_process(input_parser_t * parser);
 
 
@@ -74,7 +75,8 @@ const static Command commands[] = {
     {"test-sync", "Corre el test de sincronizacion", (entry_point_t) test_sync},
     {"ps", "Muestra informacion de los procesos", (entry_point_t) cmd_ps},
     {"mem", "Muestra informacion del uso de memoria", (entry_point_t) cmd_mem},
-    {"loop", "Imprime su ID con un saludo cada una determinada cantidad de segundos", (entry_point_t) cmd_loop}
+    {"loop", "Imprime su ID con un saludo cada una determinada cantidad de segundos", (entry_point_t) cmd_loop},
+    {"nice", "Cambia la prioridad de un proceso dado su ID y la nueva prioridad", (entry_point_t) cmd_nice}
 };
 
 
@@ -238,4 +240,9 @@ static int cmd_mem_wrapper(char **argv){
 static int cmd_loop_wrapper(char **argv){
     char *loop_argv[3] = { "loop", argv[0], NULL};
     return cmd_loop(2, loop_argv);
+}
+
+static int cmd_nice_wrapper(char **argv){
+    char *nice_argv[4] = { "nice", argv[0], argv[1], NULL};
+    return cmd_nice(3, nice_argv);
 }

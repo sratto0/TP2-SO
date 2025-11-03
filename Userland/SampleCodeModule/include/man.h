@@ -35,6 +35,8 @@ char * usages [QTY_COMMANDS] = { "Uso: help - muestra todos los comandos que exi
 
                               "Uso: mem - muestra informacion del uso de memoria. No recibe parametros",
 
-                              "Uso: loop [SEGUNDOS] - imprime su ID con un saludo cada una determinada cantidad de segundos\n"
+                              "Uso: loop [SEGUNDOS] - imprime su ID con un saludo cada una determinada cantidad de segundos\n",
+
+                              "Uso: nice [PID] [NUEVA_PRIO] - cambia la prioridad de un proceso dado su ID y la nueva prioridad\n"
                               };
 #endif

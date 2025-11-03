@@ -76,3 +76,22 @@ int cmd_loop(int argc, char *argv[]){
     return 0;
 }
 
+int cmd_nice(int argc, char **argv){
+    if(argc != 3){
+        printf("Necesita dos argumentos: el PID del proceso y la nueva prioridad\n");
+        return -1;
+    }
+    int pid = atoi(argv[1]);
+    int new_priority = atoi(argv[2]);
+    if(pid <= 0 || new_priority < 0){
+        printf("El PID debe ser un numero positivo y la prioridad un numero no negativo\n");
+        return -1;
+    }
+    int result = my_nice(pid, new_priority);
+    if(result == -1){
+        printf("Error al cambiar la prioridad. Verifique que el PID sea correcto.\n");
+        return -1;
+    }
+    printf("Prioridad del proceso %d cambiada a %d exitosamente\n", pid, new_priority);
+    return 0;
+}
