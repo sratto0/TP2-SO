@@ -59,6 +59,7 @@ static int cmd_kill_wrapper(char **argv);
 static int cmd_nice_wrapper(char **argv);
 static int cmd_block_wrapper(char **argv);
 static int cmd_unblock_wrapper(char **argv);
+static int cmd_cat_wrapper(char **argv);
 static void create_single_process(input_parser_t * parser);
 
 
@@ -82,7 +83,8 @@ const static Command commands[] = {
     {"kill", "Mata un proceso dado su ID", (entry_point_t) cmd_kill},
     {"nice", "Cambia la prioridad de un proceso dado su ID y la nueva prioridad", (entry_point_t) cmd_nice},
     {"block", "Bloquea o desbloquea un proceso dado su ID", (entry_point_t) cmd_block},
-    {"unblock", "Desbloquea un proceso dado su ID", (entry_point_t) cmd_unblock}
+    {"unblock", "Desbloquea un proceso dado su ID", (entry_point_t) cmd_unblock},
+    {"cat", "Imprime el stdin tal como lo recibe", (entry_point_t) cmd_cat}
 };
 
 
@@ -266,4 +268,9 @@ static int cmd_block_wrapper(char **argv){
 static int cmd_unblock_wrapper(char **argv){
     char *unblock_argv[3] = { "unblock", argv[0], NULL};
     return cmd_unblock(2, unblock_argv);
+}
+
+static int cmd_cat_wrapper(char **argv){
+    char *cat_argv[2] = { "cat", NULL};
+    return cmd_cat(1, cat_argv);
 }

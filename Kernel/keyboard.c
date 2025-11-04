@@ -11,8 +11,10 @@
 
 #define BUFFER_CAPACITY 256
 #define HOTKEY 29
+#define CTRL_D_SCANCODE 0x20  // Scancode para 'd' sin modificar
 #define KEYBOARD_SEM_ID 999  // ID único para el semáforo del teclado
 
+static uint8_t ctrl_pressed = 0;
 static uint8_t _bufferStart = 0;
 static uint16_t _bufferSize = 0;
 static uint8_t _buffer[BUFFER_CAPACITY] = {0};
@@ -36,17 +38,31 @@ void keyboard_init() {
 void keyboardHandler(){
     uint8_t key = getKeyPressed();
     
-    if (!(key & 0x80)) {  // Solo teclas presionadas (no releases)
-        if (key == HOTKEY) {
-            saveRegisters();
+    // Detectar Ctrl press/release
+    if (key == HOTKEY) {
+        ctrl_pressed = 1;
+        saveRegisters();
+        return;
+    }
+    if (key == (HOTKEY | 0x80)) {  // Ctrl release
+        ctrl_pressed = 0;
+        return;
+    }
+    
+    if (!(key & 0x80)) {  // Solo teclas presionadas
+        // Ctrl+D = EOF
+        if (ctrl_pressed && key == CTRL_D_SCANCODE) {
+            if (_bufferSize < BUFFER_CAPACITY) {
+                _buffer[getBufferIndex(_bufferSize)] = 0x04;  // ASCII EOF
+                _bufferSize++;
+                my_sem_post(KEYBOARD_SEM_ID);
+            }
             return;
         }
         
         if (_bufferSize < BUFFER_CAPACITY) {
             _buffer[getBufferIndex(_bufferSize)] = key;
             _bufferSize++;
-            
-            // Signal: hay una tecla disponible
             my_sem_post(KEYBOARD_SEM_ID);
         }
     }
@@ -65,5 +81,9 @@ char getScancode() {
 }
 
 char getAscii(){
-    return charHexMap[(int) getScancode()];
+    char scancode = getScancode();
+    if (scancode == 0x04) {  // EOF
+        return -1;  // O 0x04, según cómo manejes EOF
+    }
+    return charHexMap[(int) scancode];
 }

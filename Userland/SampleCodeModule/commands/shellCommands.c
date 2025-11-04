@@ -209,3 +209,38 @@ int cmd_unblock(int argc, char **argv){
         return -1;
     }
 }
+
+int cmd_cat(int argc, char **argv) {
+    (void)argc;
+    (void)argv;
+    
+    printf("cat: leyendo desde stdin (Ctrl+D para terminar)\n");
+    
+    char c;
+    while (1) {
+        c = getchar();
+        
+        // Detectar EOF (Ctrl+D)
+        if (c == -1 || c == 0x04) {
+            printf("\n");
+            break;
+        }
+        
+        // Enter = nueva línea
+        if (c == '\n') {
+            printf("\n");
+            continue;
+        }
+        
+        // Backspace
+        if (c == '\b') {
+            printf("\b \b");
+            continue;
+        }
+        
+        // Carácter normal
+        printf("%c", c);
+    }
+    
+    return 0;
+}

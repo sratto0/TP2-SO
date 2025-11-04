@@ -43,6 +43,8 @@ char * usages [QTY_COMMANDS] = { "Uso: help - muestra todos los comandos que exi
 
                               "Uso: block [PID] - bloquea o desbloquea un proceso dado su ID\n",
 
-                              "Uso: unblock [PID] - desbloquea un proceso dado su ID\n"
+                              "Uso: unblock [PID] - desbloquea un proceso dado su ID\n",
+
+                              "Uso: cat - imprime el stdin tal como lo recibe. No recibe parametros"
                               };
 #endif

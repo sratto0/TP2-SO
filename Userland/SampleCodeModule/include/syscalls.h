@@ -136,6 +136,9 @@ memory_info_t * sys_memory_get_info();
 
 void sys_sleep(uint64_t seconds);
 
+int sys_read_stdin(char * buffer, uint64_t size);
+
+int sys_write_stdout(char * buffer, uint64_t size);
 
 
 #endif
