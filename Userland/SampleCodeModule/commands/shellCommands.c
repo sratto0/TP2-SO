@@ -220,26 +220,57 @@ int cmd_cat(int argc, char **argv) {
     while (1) {
         c = getchar();
         
-        // Detectar EOF (Ctrl+D)
         if (c == -1 || c == 0x04) {
             printf("\n");
             break;
         }
         
-        // Enter = nueva línea
         if (c == '\n') {
             printf("\n");
             continue;
         }
         
-        // Backspace
         if (c == '\b') {
             printf("\b \b");
             continue;
         }
         
-        // Carácter normal
         printf("%c", c);
+    }
+    
+    return 0;
+}
+
+int cmd_filter(int argc, char **argv) {
+    if(argc != 1){
+        printf("No son necesarios argumentos para este comando.\n");
+        return -1;
+    }
+    
+    printf("filter: escriba texto (Enter en linea vacia para terminar)\n");
+    
+    while (1) {
+        char c = getchar();
+        
+        if (c == -1 || c == 0x04) {
+            printf("\n");
+            break;
+        }
+        
+        if (c == '\n') {
+            printf("\n");
+            break;
+        }
+        
+        if (c == '\b') {
+            printf("\b \b");
+            continue;
+        }
+        
+        if (c != 'a' && c != 'e' && c != 'i' && c != 'o' && c != 'u' &&
+            c != 'A' && c != 'E' && c != 'I' && c != 'O' && c != 'U') {
+            printf("%c", c);
+        }
     }
     
     return 0;
