@@ -60,6 +60,7 @@ static int cmd_nice_wrapper(char **argv);
 static int cmd_block_wrapper(char **argv);
 static int cmd_unblock_wrapper(char **argv);
 static int cmd_cat_wrapper(char **argv);
+static int cmd_wc_wrapper(char **argv);
 static int cmd_filter_wrapper(char **argv);
 static void create_single_process(input_parser_t * parser);
 
@@ -86,6 +87,7 @@ const static Command commands[] = {
     {"block", "Bloquea o desbloquea un proceso dado su ID", (entry_point_t) cmd_block},
     {"unblock", "Desbloquea un proceso dado su ID", (entry_point_t) cmd_unblock},
     {"cat", "Imprime el stdin tal como lo recibe", (entry_point_t) cmd_cat},
+    {"wc", "Cuenta la cantidad de líneas del input", (entry_point_t) cmd_wc},
     {"filter", "Filtra las vocales del input", (entry_point_t) cmd_filter}
 };
 
@@ -280,4 +282,9 @@ static int cmd_cat_wrapper(char **argv){
 static int cmd_filter_wrapper(char **argv){
     char *filter_argv[2] = { "filter", NULL};
     return cmd_filter(1, filter_argv);
+}
+
+static int cmd_wc_wrapper(char **argv){
+    char *wc_argv[2] = { "wc", NULL};
+    return cmd_wc(1, wc_argv);
 }

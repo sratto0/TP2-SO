@@ -275,3 +275,47 @@ int cmd_filter(int argc, char **argv) {
     
     return 0;
 }
+
+int cmd_wc(int argc, char **argv) {
+    if(argc != 1){
+        printf("No son necesarios argumentos para este comando.\n");
+        return -1;
+    }
+    
+    printf("wc: escriba texto (Ctrl+D para terminar)\n");
+    
+    int line_count = 0;
+    int has_content = 0;  
+    
+    while (1) {
+        char c = getchar();
+        
+        if (c == -1 || c == 0x04) {
+            if (has_content) {
+                line_count++;
+            }
+            printf("\n");
+            break;
+        }
+        
+        if (c == '\n') {
+            line_count++;
+            has_content = 0;  
+            printf("\n");
+            continue;
+        }
+        
+        if (c == '\b') {
+            printf("\b \b");
+            continue;
+        }
+        
+        if (c >= 32 && c <= 126) {
+            printf("%c", c);
+            has_content = 1; 
+        }
+    }
+    
+    printf("Cantidad de lineas: %d\n", line_count);
+    return 0;
+}

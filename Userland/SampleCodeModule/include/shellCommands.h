@@ -9,6 +9,7 @@ int cmd_nice(int argc, char **argv);
 int cmd_block(int argc, char **argv);
 int cmd_unblock(int argc, char **argv);
 int cmd_cat(int argc, char **argv);
+int cmd_wc(int argc, char **argv);
 int cmd_filter(int argc, char **argv);
 
 #endif
