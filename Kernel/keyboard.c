@@ -13,7 +13,9 @@
 #define HOTKEY 29
 #define CTRL_D_SCANCODE 0x20  // Scancode para 'd' sin modificar
 #define CTRL_C_SCANCODE 0x2E  // Scancode para 'c' sin modificar
+#define ASCII_EOF 0x04
 #define KEYBOARD_SEM_ID 999  // ID único para el semáforo del teclado
+#define KBD_EOF_MARKER 0xFF
 
 static uint8_t ctrl_pressed = 0;
 static uint8_t _bufferStart = 0;
@@ -60,7 +62,7 @@ void keyboardHandler(){
         // Ctrl+D = EOF
         if (ctrl_pressed && key == CTRL_D_SCANCODE) {
             if (_bufferSize < BUFFER_CAPACITY) {
-                _buffer[getBufferIndex(_bufferSize)] = 0x04;  // ASCII EOF
+                _buffer[getBufferIndex(_bufferSize)] = KBD_EOF_MARKER;  // ASCII EOF
                 _bufferSize++;
                 my_sem_post(KEYBOARD_SEM_ID);
             }
@@ -87,10 +89,10 @@ char getScancode() {
     return c;
 }
 
-char getAscii(){
+int getAscii(){
     char scancode = getScancode();
-    if (scancode == 0x04) {  // EOF
-        return -1;  // O 0x04, según cómo manejes EOF
+    if ((unsigned char)scancode == KBD_EOF_MARKER) {  // EOF
+        return ASCII_EOF;  // O 0x04, según cómo manejes EOF
     }
-    return charHexMap[(int) scancode];
+    return charHexMap[(unsigned char) scancode];
 }
