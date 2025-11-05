@@ -9,7 +9,7 @@ else
 endif
 
 
-SOURCES=$(wildcard *.c) $(wildcard memoryManagement/*.c) $(wildcard process/*.c) $(wildcard semaphores/*.c)
+SOURCES=$(wildcard *.c) $(wildcard memoryManagement/*.c) $(wildcard process/*.c) $(wildcard semaphores/*.c) $(wildcard pipes/*.c)
 SOURCES_ASM=$(wildcard asm/*.asm)
 OBJECTS=$(SOURCES:.c=.o)
 OBJECTS_ASM=$(SOURCES_ASM:.asm=.o)
@@ -34,7 +34,7 @@ $(LOADEROBJECT):
 	$(ASM) $(ASMFLAGS) $(LOADERSRC) -o $(LOADEROBJECT)
 
 clean:
-	rm -rf asm/*.o *.o ./memoryManagement/*.o *.bin ./process/*.o
+	rm -rf asm/*.o *.o ./memoryManagement/*.o *.bin ./process/*.o ./semaphores/*.o ./pipes/*.o
 
 .PHONY: all clean
 

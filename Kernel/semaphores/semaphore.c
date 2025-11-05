@@ -42,7 +42,7 @@ void semaphore_system_init(){
         return;
     }
 
-    semaphore_manager = memory_alloc(sizeof(semaphoreManagerCDT));
+    semaphore_manager = (semaphoreManagerADT) memory_alloc(sizeof(semaphoreManagerCDT));
     if(semaphore_manager == NULL){
         return;
     }
