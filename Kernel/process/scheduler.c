@@ -643,3 +643,25 @@ process_info_t * get_processes_info(){
   processes_info[j].pid = NO_PID;
   return processes_info;
 }
+
+void kill_foreground_process(){
+  if(scheduler == NULL){
+    return;
+  }
+  
+  // Buscar el proceso en foreground
+  for(int i = 0; i < MAX_PROCESSES; i++){
+    process_t * proc = scheduler->processes[i];
+    
+    if(proc != NULL && is_foreground_process(proc->pid)){
+      // No matar la shell ni init
+      if(proc->pid == SHELL_PID || proc->pid == INIT_PID){
+        continue;
+      }
+      
+      printf("\n^C\n");  // Mostrar ^C en pantalla
+      kill_process(proc->pid);
+      return;
+    }
+  }
+}

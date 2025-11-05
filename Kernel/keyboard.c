@@ -12,12 +12,15 @@
 #define BUFFER_CAPACITY 256
 #define HOTKEY 29
 #define CTRL_D_SCANCODE 0x20  // Scancode para 'd' sin modificar
+#define CTRL_C_SCANCODE 0x2E  // Scancode para 'c' sin modificar
 #define KEYBOARD_SEM_ID 999  // ID único para el semáforo del teclado
 
 static uint8_t ctrl_pressed = 0;
 static uint8_t _bufferStart = 0;
 static uint16_t _bufferSize = 0;
 static uint8_t _buffer[BUFFER_CAPACITY] = {0};
+
+extern void kill_foreground_process();
 
 static const char charHexMap[256] = {
     0, 0, '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '=', '\b', ' ',
@@ -50,6 +53,10 @@ void keyboardHandler(){
     }
     
     if (!(key & 0x80)) {  // Solo teclas presionadas
+        if (ctrl_pressed && key == CTRL_C_SCANCODE) {
+            kill_foreground_process();
+            return;
+        }
         // Ctrl+D = EOF
         if (ctrl_pressed && key == CTRL_D_SCANCODE) {
             if (_bufferSize < BUFFER_CAPACITY) {

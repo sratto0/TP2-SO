@@ -45,7 +45,7 @@ int sleep_block(int64_t pid, uint8_t sleep);
 void my_exit(int64_t ret);
 uint8_t is_foreground_process(int64_t pid);
 process_info_t * get_processes_info();
-// void kill_foreground_process(){
+void kill_foreground_process();
 
 
 #endif // SCHEDULER_H
