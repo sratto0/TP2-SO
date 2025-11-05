@@ -202,3 +202,11 @@ memory_info_t * my_memory_get_info(){
 void my_sleep(uint64_t seconds){
     sys_sleep(seconds);
 }
+
+int my_read_stdin(char * buffer, uint64_t size){
+    return sys_read_stdin(buffer, size);
+}
+
+int my_write_stdout(char * buffer, uint64_t size){
+    return sys_write_stdout(buffer, size);
+}

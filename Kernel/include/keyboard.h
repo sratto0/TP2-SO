@@ -8,4 +8,6 @@ char getAscii();
 
 /* Devuelve el scancode del ultimo caracter en el buffer de teclado */
 char getScancode();
+
+void keyboard_init();
 #endif

@@ -29,12 +29,26 @@ char * usages [QTY_COMMANDS] = { "Uso: help - muestra todos los comandos que exi
                               
                               "Uso: test-prio - corre el test de prioridades. No recibe parametros",
 
-                              "Uso: test-sync - corre el test de sincronizacion. No recibe parametros"
+                              "Uso: test-sync - corre el test de sincronizacion. No recibe parametros",
 
                               "Uso: ps - muestra informacion de los procesos. No recibe parametros",
 
                               "Uso: mem - muestra informacion del uso de memoria. No recibe parametros",
 
-                              "Uso: loop [SEGUNDOS] - imprime su ID con un saludo cada una determinada cantidad de segundos\n"
+                              "Uso: loop [SEGUNDOS] - imprime su ID con un saludo cada una determinada cantidad de segundos\n",
+
+                              "Uso: kill [PID] - mata un proceso dado su ID\n",
+
+                              "Uso: nice [PID] [NUEVA_PRIO] - cambia la prioridad de un proceso dado su ID y la nueva prioridad\n",
+
+                              "Uso: block [PID] - bloquea o desbloquea un proceso dado su ID\n",
+
+                              "Uso: unblock [PID] - desbloquea un proceso dado su ID\n",
+
+                              "Uso: cat - imprime el stdin tal como lo recibe. No recibe parametros",
+
+                              "Uso: filter - filtra las vocales del input. No recibe parametros",
+
+                              "Uso: wc - cuenta la cantidad de lineas del input. No recibe parametros"
                               };
 #endif

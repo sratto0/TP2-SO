@@ -31,6 +31,8 @@ GLOBAL sys_sem_post
 GLOBAL sys_sem_close
 GLOBAL sys_memory_get_info
 GLOBAL sys_sleep
+GLOBAL sys_read_stdin
+GLOBAL sys_write_stdout
 
 
 read:
@@ -187,5 +189,15 @@ sys_memory_get_info:
 
 sys_sleep:
     mov rax, 30
+    int 80h
+    ret
+
+sys_read_stdin:
+    mov rax, 31
+    int 80h
+    ret
+
+sys_write_stdout:
+    mov rax, 32
     int 80h
     ret

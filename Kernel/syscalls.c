@@ -53,6 +53,8 @@
 #define SEM_CLOSE 28
 #define MEMORY_INFO 29
 #define SLEEP 30
+#define READ_STDIN 31
+#define WRITE_STDOUT 32
 
 
 static uint8_t syscall_read(uint32_t fd);
@@ -85,6 +87,8 @@ static int64_t syscall_sem_post(char * name);
 static int64_t syscall_sem_close(char * name);
 static uint64_t syscall_memeory_get_info();
 static void syscall_sleep(uint64_t seconds);
+static int syscall_read_stdin(char * buffer, uint64_t size);
+static int syscall_write_stdout(char * buffer, uint64_t size);
 
 
 
@@ -161,6 +165,10 @@ uint64_t syscallDispatcher(uint64_t nr, uint64_t arg0, uint64_t arg1, uint64_t a
         case SLEEP:
             syscall_sleep((uint64_t) arg0);
             break;
+        case READ_STDIN:
+            return (uint64_t) syscall_read_stdin((char *) arg0, (uint64_t) arg1);
+        case WRITE_STDOUT:
+            return (uint64_t) syscall_write_stdout((char *) arg0, (uint64_t) arg1);
 	}
 	return 0;
 }
@@ -330,4 +338,25 @@ static uint64_t syscall_memeory_get_info(){
 static void syscall_sleep(uint64_t seconds){
     uint32_t sleeping_ticks = (uint32_t)(seconds * 18);
     sleep(sleeping_ticks);
+}
+
+static int syscall_read_stdin(char * buffer, uint64_t size){
+    uint64_t bytesRead = 0;
+    while (bytesRead < size) {
+        char c = syscall_read(STDIN);
+        if (c == '\n' || c == '\r') {
+            buffer[bytesRead++] = '\n';
+            break;
+        }
+        buffer[bytesRead++] = c;
+    }
+    return (int) bytesRead;
+}
+
+static int syscall_write_stdout(char * buffer, uint64_t size){
+    uint64_t bytesWritten = 0;
+    while (bytesWritten < size) {
+        syscall_write(STDOUT, buffer[bytesWritten++]);
+    }
+    return (int) bytesWritten;
 }

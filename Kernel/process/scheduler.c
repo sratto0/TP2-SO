@@ -274,14 +274,12 @@ int kill_process(int64_t pid) {
   if (get_process(pid) == NULL) {
     return -1;
   }
-
   adopt_children(pid);
 
   process_t * proc = scheduler->processes[pid];
   process_t * parent = scheduler->processes[proc->parent_pid];
 
   proc->state = PROC_KILLED;
-
   if (proc->in_ready_queue || proc->state == PROC_READY || proc->state == PROC_RUNNING) {
     remove_from_ready_queue(proc);
   }
@@ -295,11 +293,9 @@ int kill_process(int64_t pid) {
   } else if (parent == NULL || parent->waiting_pid != pid) {
     remove_process(pid);
   }
-
   if (pid == scheduler->current_pid) {
     yield();
   }
-
   return 0;
 }
 
@@ -609,4 +605,26 @@ process_info_t * get_processes_info(){
   }
   processes_info[j].pid = NO_PID;
   return processes_info;
+}
+
+void kill_foreground_process(){
+  if(scheduler == NULL){
+    return;
+  }
+  
+  // Buscar el proceso en foreground
+  for(int i = 0; i < MAX_PROCESSES; i++){
+    process_t * proc = scheduler->processes[i];
+    
+    if(proc != NULL && is_foreground_process(proc->pid)){
+      // No matar la shell ni init
+      if(proc->pid == SHELL_PID || proc->pid == INIT_PID){
+        continue;
+      }
+      
+      printf("\n^C\n");  // Mostrar ^C en pantalla
+      kill_process(proc->pid);
+      return;
+    }
+  }
 }

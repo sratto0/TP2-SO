@@ -76,3 +76,246 @@ int cmd_loop(int argc, char *argv[]){
     return 0;
 }
 
+int cmd_kill(int argc, char **argv){
+    if(argc != 2){
+        printf("Necesita un argumento: el PID del proceso\n");
+        return -1;
+    }
+    int pid = atoi(argv[1]);
+    if(pid <= 1){
+        printf("El PID debe ser un numero mayor a 1\n");
+        return -1;
+    }
+    process_info_t *info = my_get_processes_info();
+    if(info != NULL){
+        int found = 0;
+        for (process_info_t *p = info; p->pid != NO_PID; p++) {
+            if(p->pid == pid){
+                found = 1;
+                break;
+            }
+        }
+        if(!found){
+            printf("No existe un proceso con PID %d\n", pid);
+            return -1;
+        }
+    }
+    int result = my_kill(pid);
+
+    if(result == -1){
+        printf("Error al matar el proceso. Verifique que el PID sea correcto.\n");
+        return -1;
+    } else if (result == 0) {
+        printf("Proceso %d matado exitosamente\n", pid);
+        return 0;
+    } else {
+        printf("my_kill devolvió código inesperado %d\n", result);
+        return -1;
+    }
+}
+
+int cmd_nice(int argc, char **argv){
+    if(argc != 3){
+        printf("Necesita dos argumentos: el PID del proceso y la nueva prioridad\n");
+        return -1;
+    }
+    int pid = atoi(argv[1]);
+    int new_priority = atoi(argv[2]);
+    if(pid <= 0 || new_priority < 0){
+        printf("El PID debe ser un numero positivo y la prioridad un numero no negativo\n");
+        return -1;
+    }
+    int result = my_nice(pid, new_priority);
+    if(result == -1){
+        printf("Error al cambiar la prioridad. Verifique que el PID sea correcto.\n");
+        return -1;
+    }
+    printf("Prioridad del proceso %d cambiada a %d exitosamente\n", pid, new_priority);
+    return 0;
+}
+
+int cmd_block(int argc, char **argv){
+    if(argc != 2){
+        printf("Necesita un argumento: el PID del proceso\n");
+        return -1;
+    }
+    int pid = atoi(argv[1]);
+    if(pid <= 1){
+        printf("El PID debe ser un numero mayor a 1\n");
+        return -1;
+    }
+    process_info_t *info = my_get_processes_info();
+    if(info != NULL){
+        int found = 0;
+        for (process_info_t *p = info; p->pid != NO_PID; p++) {
+            if(p->pid == pid){
+                found = 1;
+                break;
+            }
+        }
+        if(!found){
+            printf("No existe un proceso con PID %d\n", pid);
+            return -1;
+        }
+    }
+    
+    int result = my_block_process(pid);
+    if(result == -1){
+        printf("Error al bloquear/desbloquear el proceso. Verifique que el PID sea correcto.\n");
+        return -1;
+    } else if (result == 0) {
+        printf("Proceso %d bloqueado/desbloqueado exitosamente\n", pid);
+        return 0;
+    } else {
+        printf("my_block devolvió código inesperado %d\n", result);
+        return -1;
+    }
+}
+
+int cmd_unblock(int argc, char **argv){
+    if(argc != 2){
+        printf("Necesita un argumento: el PID del proceso\n");
+        return -1;
+    }
+    int pid = atoi(argv[1]);
+    if(pid <= 1){
+        printf("El PID debe ser un numero mayor a 1\n");
+        return -1;
+    }
+    process_info_t *info = my_get_processes_info();
+    if(info != NULL){
+        int found = 0;
+        for (process_info_t *p = info; p->pid != NO_PID; p++) {
+            if(p->pid == pid){
+                found = 1;
+                break;
+            }
+        }
+        if(!found){
+            printf("No existe un proceso con PID %d\n", pid);
+            return -1;
+        }
+    }
+    
+    int result = my_unblock_process(pid);
+    if(result == -1){
+        printf("Error al desbloquear el proceso. Verifique que el PID sea correcto.\n");
+        return -1;
+    } else if (result == 0) {
+        printf("Proceso %d desbloqueado exitosamente\n", pid);
+        return 0;
+    } else {
+        printf("my_unblock devolvió código inesperado %d\n", result);
+        return -1;
+    }
+}
+
+int cmd_cat(int argc, char **argv) {
+    (void)argc;
+    (void)argv;
+    
+    printf("cat: leyendo desde stdin (Ctrl+D para terminar)\n");
+    
+    char c;
+    while (1) {
+        c = getchar();
+        
+        if (c == -1 || c == 0x04) {
+            printf("\n");
+            break;
+        }
+        
+        if (c == '\n') {
+            printf("\n");
+            continue;
+        }
+        
+        if (c == '\b') {
+            printf("\b \b");
+            continue;
+        }
+        
+        printf("%c", c);
+    }
+    
+    return 0;
+}
+
+int cmd_filter(int argc, char **argv) {
+    if(argc != 1){
+        printf("No son necesarios argumentos para este comando.\n");
+        return -1;
+    }
+    
+    printf("filter: escriba texto (Enter en linea vacia para terminar)\n");
+    
+    while (1) {
+        char c = getchar();
+        
+        if (c == -1 || c == 0x04) {
+            printf("\n");
+            break;
+        }
+        
+        if (c == '\n') {
+            printf("\n");
+            break;
+        }
+        
+        if (c == '\b') {
+            printf("\b \b");
+            continue;
+        }
+        
+        if (c != 'a' && c != 'e' && c != 'i' && c != 'o' && c != 'u' &&
+            c != 'A' && c != 'E' && c != 'I' && c != 'O' && c != 'U') {
+            printf("%c", c);
+        }
+    }
+    
+    return 0;
+}
+
+int cmd_wc(int argc, char **argv) {
+    if(argc != 1){
+        printf("No son necesarios argumentos para este comando.\n");
+        return -1;
+    }
+    
+    printf("wc: escriba texto (Ctrl+D para terminar)\n");
+    
+    int line_count = 0;
+    int has_content = 0;  
+    
+    while (1) {
+        char c = getchar();
+        
+        if (c == -1 || c == 0x04) {
+            if (has_content) {
+                line_count++;
+            }
+            printf("\n");
+            break;
+        }
+        
+        if (c == '\n') {
+            line_count++;
+            has_content = 0;  
+            printf("\n");
+            continue;
+        }
+        
+        if (c == '\b') {
+            printf("\b \b");
+            continue;
+        }
+        
+        if (c >= 32 && c <= 126) {
+            printf("%c", c);
+            has_content = 1; 
+        }
+    }
+    
+    printf("Cantidad de lineas: %d\n", line_count);
+    return 0;
+}

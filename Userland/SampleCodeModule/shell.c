@@ -54,6 +54,14 @@ static void my_test_prio();
 static void my_test_sync();
 static int cmd_ps_wrapper(char **argv);
 static int cmd_mem_wrapper(char **argv);
+static int cmd_loop_wrapper(char **argv);
+static int cmd_kill_wrapper(char **argv);
+static int cmd_nice_wrapper(char **argv);
+static int cmd_block_wrapper(char **argv);
+static int cmd_unblock_wrapper(char **argv);
+static int cmd_cat_wrapper(char **argv);
+static int cmd_wc_wrapper(char **argv);
+static int cmd_filter_wrapper(char **argv);
 static void create_single_process(input_parser_t * parser);
 
 
@@ -73,7 +81,14 @@ const static Command commands[] = {
     {"test-sync", "Corre el test de sincronizacion", (entry_point_t) test_sync},
     {"ps", "Muestra informacion de los procesos", (entry_point_t) cmd_ps},
     {"mem", "Muestra informacion del uso de memoria", (entry_point_t) cmd_mem},
-    {"loop", "???", (entry_point_t) cmd_loop}
+    {"loop", "Imprime su ID con un saludo cada una determinada cantidad de segundos", (entry_point_t) cmd_loop},
+    {"kill", "Mata un proceso dado su ID", (entry_point_t) cmd_kill},
+    {"nice", "Cambia la prioridad de un proceso dado su ID y la nueva prioridad", (entry_point_t) cmd_nice},
+    {"block", "Bloquea o desbloquea un proceso dado su ID", (entry_point_t) cmd_block},
+    {"unblock", "Desbloquea un proceso dado su ID", (entry_point_t) cmd_unblock},
+    {"cat", "Imprime el stdin tal como lo recibe", (entry_point_t) cmd_cat},
+    {"wc", "Cuenta la cantidad de líneas del input", (entry_point_t) cmd_wc},
+    {"filter", "Filtra las vocales del input", (entry_point_t) cmd_filter}
 };
 
 
@@ -234,3 +249,42 @@ static int cmd_mem_wrapper(char **argv){
     return cmd_mem(1, args);
 }
 
+static int cmd_loop_wrapper(char **argv){
+    char *loop_argv[3] = { "loop", argv[0], NULL};
+    return cmd_loop(2, loop_argv);
+}
+
+static int cmd_kill_wrapper(char **argv){
+    char *kill_argv[3] = { "kill", argv[0], NULL};
+    return cmd_kill(2, kill_argv);
+}
+
+static int cmd_nice_wrapper(char **argv){
+    char *nice_argv[4] = { "nice", argv[0], argv[1], NULL};
+    return cmd_nice(3, nice_argv);
+}
+
+static int cmd_block_wrapper(char **argv){
+    char *block_argv[3] = { "block", argv[0], NULL};
+    return cmd_block(2, block_argv);
+}
+
+static int cmd_unblock_wrapper(char **argv){
+    char *unblock_argv[3] = { "unblock", argv[0], NULL};
+    return cmd_unblock(2, unblock_argv);
+}
+
+static int cmd_cat_wrapper(char **argv){
+    char *cat_argv[2] = { "cat", NULL};
+    return cmd_cat(1, cat_argv);
+}
+
+static int cmd_filter_wrapper(char **argv){
+    char *filter_argv[2] = { "filter", NULL};
+    return cmd_filter(1, filter_argv);
+}
+
+static int cmd_wc_wrapper(char **argv){
+    char *wc_argv[2] = { "wc", NULL};
+    return cmd_wc(1, wc_argv);
+}
