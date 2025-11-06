@@ -82,4 +82,6 @@ void saveRegisters();
  */
 void _hlt();
 
+int str_compare(const char *str1, const char *str2);
+
 #endif

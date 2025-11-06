@@ -1,20 +1,4 @@
 make
-exit
-cd root
-cd Toolchain
-make
-cd ..
-make
-make
-make
-exit
-cd root
-cd Toolchain
-make
-cd ..
-make
-make
-make
 make
 make
 make
@@ -497,4 +481,20 @@ make
 make format
 make clean
 make
+exit
+cd root
+make clean
+cd Toolchain
+make clean
+make
+cd ..
+make
+make clean
+exit
+make
+cd root
+make
+make clean
+make
+make clean
 exit
