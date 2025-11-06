@@ -40,28 +40,28 @@ typedef struct {
     entry_point_t f;                
 } Command;
 
-static void help();
+static void help(int argc, char ** argv);
 static void man(int argc, char ** argv);
-static void printInfoReg();
-static void time();
+static void printInfoReg(int argc, char ** argv);
+static void time(int argc, char ** argv);
 static void div(int argc, char ** argv);
 static void fontSize(int argc, char ** argv);
 static void printMem(int argc, char ** argv);
 static int getCommandIndex(char * command);
-static void mm_test(char ** max_memory);
-static void my_test_processes();
-static void my_test_prio();
-static void my_test_sync();
-static int cmd_ps_wrapper(char **argv);
-static int cmd_mem_wrapper(char **argv);
-static int cmd_loop_wrapper(char **argv);
-static int cmd_kill_wrapper(char **argv);
-static int cmd_nice_wrapper(char **argv);
-static int cmd_block_wrapper(char **argv);
-static int cmd_unblock_wrapper(char **argv);
-static int cmd_cat_wrapper(char **argv);
-static int cmd_wc_wrapper(char **argv);
-static int cmd_filter_wrapper(char **argv);
+// static void mm_test(char ** max_memory);
+// static void my_test_processes();
+// static void my_test_prio();
+// static void my_test_sync();
+// static int cmd_ps_wrapper(char **argv);
+// static int cmd_mem_wrapper(char **argv);
+// static int cmd_loop_wrapper(char **argv);
+// static int cmd_kill_wrapper(char **argv);
+// static int cmd_nice_wrapper(char **argv);
+// static int cmd_block_wrapper(char **argv);
+// static int cmd_unblock_wrapper(char **argv);
+// static int cmd_cat_wrapper(char **argv);
+// static int cmd_wc_wrapper(char **argv);
+// static int cmd_filter_wrapper(char **argv);
 static void create_single_process(input_parser_t * parser);
 
 
@@ -221,14 +221,14 @@ static void man(int argc, char ** argv) {
         printErr(INVALID_COMMAND);
 }
 
-// Wrapper que adapta (char**) para test_mm(argc, argv)
-static void mm_test(char ** max_memory) {
-    if(atoi(max_memory[0]) <= 0) {
-        printErr("El parametro debe ser un numero positivo\n");
-        return;
-    }
-    test_mm(1, max_memory);
-}
+// // Wrapper que adapta (char**) para test_mm(argc, argv)
+// static void mm_test(char ** max_memory) {
+//     if(atoi(max_memory[0]) <= 0) {
+//         printErr("El parametro debe ser un numero positivo\n");
+//         return;
+//     }
+//     test_mm(1, max_memory);
+// }
 
 
 // static void my_test_sync() {
@@ -239,52 +239,52 @@ static void mm_test(char ** max_memory) {
 //     test_sync(2, argv_no_sem);
 // }
 
-static int cmd_ps_wrapper(char **argv){
-    char *args[] = { "ps", NULL};
-    return cmd_ps(1, args);
-}
+// static int cmd_ps_wrapper(char **argv){
+//     char *args[] = { "ps", NULL};
+//     return cmd_ps(1, args);
+// }
 
-static int cmd_mem_wrapper(char **argv){
-    char *args[] = { "mem", NULL};
-    return cmd_mem(1, args);
-}
+// static int cmd_mem_wrapper(char **argv){
+//     char *args[] = { "mem", NULL};
+//     return cmd_mem(1, args);
+// }
 
-static int cmd_loop_wrapper(char **argv){
-    char *loop_argv[3] = { "loop", argv[0], NULL};
-    return cmd_loop(2, loop_argv);
-}
+// static int cmd_loop_wrapper(char **argv){
+//     char *loop_argv[3] = { "loop", argv[0], NULL};
+//     return cmd_loop(2, loop_argv);
+// }
 
-static int cmd_kill_wrapper(char **argv){
-    char *kill_argv[3] = { "kill", argv[0], NULL};
-    return cmd_kill(2, kill_argv);
-}
+// static int cmd_kill_wrapper(char **argv){
+//     char *kill_argv[3] = { "kill", argv[0], NULL};
+//     return cmd_kill(2, kill_argv);
+// }
 
-static int cmd_nice_wrapper(char **argv){
-    char *nice_argv[4] = { "nice", argv[0], argv[1], NULL};
-    return cmd_nice(3, nice_argv);
-}
+// static int cmd_nice_wrapper(char **argv){
+//     char *nice_argv[4] = { "nice", argv[0], argv[1], NULL};
+//     return cmd_nice(3, nice_argv);
+// }
 
-static int cmd_block_wrapper(char **argv){
-    char *block_argv[3] = { "block", argv[0], NULL};
-    return cmd_block(2, block_argv);
-}
+// static int cmd_block_wrapper(char **argv){
+//     char *block_argv[3] = { "block", argv[0], NULL};
+//     return cmd_block(2, block_argv);
+// }
 
-static int cmd_unblock_wrapper(char **argv){
-    char *unblock_argv[3] = { "unblock", argv[0], NULL};
-    return cmd_unblock(2, unblock_argv);
-}
+// static int cmd_unblock_wrapper(char **argv){
+//     char *unblock_argv[3] = { "unblock", argv[0], NULL};
+//     return cmd_unblock(2, unblock_argv);
+// }
 
-static int cmd_cat_wrapper(char **argv){
-    char *cat_argv[2] = { "cat", NULL};
-    return cmd_cat(1, cat_argv);
-}
+// static int cmd_cat_wrapper(char **argv){
+//     char *cat_argv[2] = { "cat", NULL};
+//     return cmd_cat(1, cat_argv);
+// }
 
-static int cmd_filter_wrapper(char **argv){
-    char *filter_argv[2] = { "filter", NULL};
-    return cmd_filter(1, filter_argv);
-}
+// static int cmd_filter_wrapper(char **argv){
+//     char *filter_argv[2] = { "filter", NULL};
+//     return cmd_filter(1, filter_argv);
+// }
 
-static int cmd_wc_wrapper(char **argv){
-    char *wc_argv[2] = { "wc", NULL};
-    return cmd_wc(1, wc_argv);
-}
+// static int cmd_wc_wrapper(char **argv){
+//     char *wc_argv[2] = { "wc", NULL};
+//     return cmd_wc(1, wc_argv);
+// }

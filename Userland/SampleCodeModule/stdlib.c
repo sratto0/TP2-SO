@@ -11,8 +11,6 @@
 #define isNumber(n) ((n) >= '0' && (n) <= '9')
 #define isHex(n) ((n) >= 'a' && (n) <= 'f')
 
-static int calculate_total_ticks(process_info_t * process_array);
-
 static unsigned int log(uint64_t n, int base) {
     unsigned int count = 1;
     while (n /= base)
@@ -111,29 +109,6 @@ void my_free(void * ptr){
     
 // }
 
-static void print_int(int val, int width){
-    int len = 0, tmp = (val < 0) ? -val : val;
-    if(val == 0) len = 1;
-    else{
-        while(tmp){
-            len++;
-            tmp /= 10;
-        }
-    }
-    if(val < 0) len++;
-    printf("%d", val);
-    for(int i = 0; i < width - len; i++) putchar(' ');
-}
-
-static int calculate_total_ticks(process_info_t * process_array){
-    int total = 0;
-    process_info_t * current = process_array;
-    while (current->pid != NO_PID) {
-        total += current->ticks;
-        current++;
-    }
-    return total;
-}
 
 int64_t my_create_process(entry_point_t main, char ** argv, char * name, int * file_descriptors) {
     return sys_create_process(main, argv, name, file_descriptors);

@@ -12,6 +12,7 @@
 #include "memoryMap.h"
 #include "scheduler.h"
 #include "semaphore.h"
+#include "keyboard.h"
 
 extern uint8_t text;
 extern uint8_t rodata;

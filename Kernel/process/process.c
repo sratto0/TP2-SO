@@ -13,7 +13,6 @@ static char ** duplicate_argv(char ** argv);
 static int count_from_argv(char ** argv);
 static uint32_t str_length(const char * str);
 static void free_partial_argv(char ** argv, int allocated);
-static uint8_t initial_quantum(uint8_t priority);
 
 
 process_t * my_create_process(int64_t pid, entry_point_t entry_point, char ** argv, char * name, int * fds) {
@@ -151,11 +150,4 @@ static void free_partial_argv(char ** argv, int allocated){
   }
 }
 
-static uint8_t initial_quantum(uint8_t priority){
-  uint16_t base = (uint16_t)priority + 1;
-  if (base > UINT8_MAX) {
-    base = UINT8_MAX;
-  }
-  return (uint8_t)base;
-}
 
