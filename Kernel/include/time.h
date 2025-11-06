@@ -1,12 +1,12 @@
 #ifndef _TIME_H_
 #define _TIME_H_
 
-#include <stdint.h>
 #include "scheduler.h"
+#include <stdint.h>
 
 typedef struct {
-	int64_t pid;
-	uint64_t wake_up_tick;
+  int64_t pid;
+  uint64_t wake_up_tick;
 } sleeping_process_t;
 
 /**
@@ -14,7 +14,7 @@ typedef struct {
  */
 uint64_t timerHandler(uint64_t rsp);
 /**
- * @return Devuelve los ticks 
+ * @return Devuelve los ticks
  */
 uint64_t ticksElapsed(void);
 

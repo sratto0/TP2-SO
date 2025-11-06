@@ -4,7 +4,7 @@
 #define PROMPT "user@vsls:~$ "
 /**
  * @brief Corre la terminal
- * 
+ *
  */
 void run_shell();
 #endif

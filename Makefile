@@ -43,6 +43,11 @@ image: kernel bootloader userland
 image_buddy: kernel_buddy bootloader userland
 	cd Image; make all
 
+format:
+	@echo "Aplicando clang-format…"
+	@find Kernel Userland SharedLibraries \
+		\( -name '*.c' -o -name '*.h' \) -exec clang-format -i {} +
+
 clean:
 	cd Bootloader; make clean
 	cd Image; make clean

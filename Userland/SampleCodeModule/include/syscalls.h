@@ -1,8 +1,8 @@
 #ifndef _SYSCALLS_H
 #define _SYSCALLS_H
 
-#include <stdint.h>
 #include "color.h"
+#include <stdint.h>
 
 #include "../../../SharedLibraries/sharedStructs.h"
 
@@ -27,16 +27,17 @@ uint8_t read(int fd);
 uint32_t getSeconds();
 
 /**
- * @brief Pone todos los pixeles de la pantalla en negro y limpia el buffer de video
+ * @brief Pone todos los pixeles de la pantalla en negro y limpia el buffer de
+ * video
  */
 void clear(void);
 
 /**
- * @brief 
+ * @brief
  * @param regarr: Vector donde se llena la informacion de los registros
  * @return Puntero a la informacion de los registros
  */
-uint64_t * getInfoReg(uint64_t * regarr);
+uint64_t *getInfoReg(uint64_t *regarr);
 
 /**
  * @brief Cambia el tamaño de la fuente
@@ -46,19 +47,20 @@ void setFontSize(uint8_t size);
 
 /**
  * @brief Devuelve las dimensiones de la pantalla
- * @return 32 bits menos significativos el ancho, 32 el alto 
+ * @return 32 bits menos significativos el ancho, 32 el alto
  */
 uint32_t getScreenResolution();
 
 /**
  * @brief  Dibuja un rectangulo
- * @param  x: Origen en x 
- * @param  y: Origen en y 
+ * @param  x: Origen en x
+ * @param  y: Origen en y
  * @param  width: Ancho
  * @param  height: Alto
  * @param  color: Color de relleno
  */
-void drawRect(uint16_t x, uint16_t y, uint16_t width, uint16_t height, Color color);
+void drawRect(uint16_t x, uint16_t y, uint16_t width, uint16_t height,
+              Color color);
 
 /**
  * @brief Devuelve la cantidad de ticks actuales
@@ -67,11 +69,12 @@ void drawRect(uint16_t x, uint16_t y, uint16_t width, uint16_t height, Color col
 uint64_t getTicks();
 
 /**
- * @brief Llena un vector con 32 bytes de informacion a partir de una direccion de memoria en hexa
- * @param pos: Direccion de memoria a partir de la cual se llena el vector 
+ * @brief Llena un vector con 32 bytes de informacion a partir de una direccion
+ * de memoria en hexa
+ * @param pos: Direccion de memoria a partir de la cual se llena el vector
  * @param vec: Vector en el cual se llena la informacion
  */
-void getMemory(uint64_t pos, uint8_t * vec);
+void getMemory(uint64_t pos, uint8_t *vec);
 
 /**
  * @brief Ejecuta una excepcion de Invalid Opcode Exception
@@ -88,7 +91,7 @@ void setFontColor(uint8_t r, uint8_t g, uint8_t b);
 
 /**
  * @brief Retorna el color de fuente que se esta usando actualmente
- * @return Color 
+ * @return Color
  */
 Color getFontColor();
 
@@ -97,12 +100,13 @@ Color getFontColor();
  * @param size: Cantidad de bytes a asignar
  * @return Puntero a la memoria asignada
  */
- 
-void * sys_malloc(uint64_t size);
 
-void sys_free(void * ptr);
+void *sys_malloc(uint64_t size);
 
-int64_t sys_create_process(entry_point_t main, char ** argv, char * name, int * file_descriptors);
+void sys_free(void *ptr);
+
+int64_t sys_create_process(entry_point_t main, char **argv, char *name,
+                           int *file_descriptors);
 
 uint64_t sys_exit_process(int64_t exit_code);
 
@@ -115,30 +119,29 @@ int64_t sys_block_process(int64_t pid);
 int64_t sys_unblock_process(int64_t pid);
 
 int64_t sys_set_priority(int64_t pid, uint8_t priority);
-    
-process_info_t * sys_get_processes_info();
+
+process_info_t *sys_get_processes_info();
 
 int64_t sys_kill_process(int64_t pid);
 
-int64_t sys_wait_pid(int64_t pid, int * ret);
+int64_t sys_wait_pid(int64_t pid, int *ret);
 
 uint64_t sys_total_cpu_ticks();
 
-int64_t sys_sem_open(char * name, uint64_t initialValue);
+int64_t sys_sem_open(char *name, uint64_t initialValue);
 
-int64_t sys_sem_wait(char * name);
+int64_t sys_sem_wait(char *name);
 
-int64_t sys_sem_post(char * name);
+int64_t sys_sem_post(char *name);
 
-int64_t sys_sem_close(char * name);
+int64_t sys_sem_close(char *name);
 
-memory_info_t * sys_memory_get_info();
+memory_info_t *sys_memory_get_info();
 
 void sys_sleep(uint64_t seconds);
 
-int sys_read_stdin(char * buffer, uint64_t size);
+int sys_read_stdin(char *buffer, uint64_t size);
 
-int sys_write_stdout(char * buffer, uint64_t size);
-
+int sys_write_stdout(char *buffer, uint64_t size);
 
 #endif
