@@ -215,22 +215,11 @@ const static Command commands[] = {
      "No recibe parametros.", "Termina con Ctrl+D o una linea vacia.",
      "filter"}};
 
-void run_shell() {
-  puts(WELCOME);
-  while (1) {
-    printfc(PINK, ">");
-    char raw_input[MAX_CHARS] = {0};
-    scanf("%S", raw_input);
-    input_parser_t *parser = parse_input(raw_input);
-    if (parser == NULL) {
-      printErr(INVALID_COMMAND);
-      continue;
-    }
 
 void run_shell(){
     puts(WELCOME);
     while(1) {
-        putchar('>');
+        printfc(PINK, ">");
         char raw_input[MAX_CHARS] = {0};
         scanf("%S", raw_input);
         input_parser_t * parser = parse_input(raw_input);

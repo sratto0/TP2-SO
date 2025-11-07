@@ -1,17 +1,3 @@
-cd Toolchain
-make
-cd ..
-make
-exit
-cd root
-cd Toolchain
-make
-cd ..
-make
-make
-cd Toolchain
-make
-cd ..
 make
 exit
 cd root
@@ -496,5 +482,19 @@ cd root
 cd Toolchain
 make
 cd ..
+make
+exit
+cd root
+cd Toolchain
+make
+cd ..
+make
+exit
+exit
+cd root
+cd Toolchain
+make
+cd ..
+make
 make
 exit
