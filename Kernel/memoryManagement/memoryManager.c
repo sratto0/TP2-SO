@@ -59,9 +59,8 @@
 //             curr->is_free = 0;
 //             memory_info.used += curr->size + BLOCK_HEADER_SIZE;
 
-//             // Retornamos la dirección después de la cabecera (donde empieza
-//             el bloque útil) return (void *)((uint8_t *)curr +
-//             BLOCK_HEADER_SIZE);
+//             // Retornamos la dirección después de la cabecera (donde empieza el bloque útil) 
+//             return (void *)((uint8_t *)curr + BLOCK_HEADER_SIZE);
 //         }
 
 //         curr = curr->next;
@@ -90,7 +89,7 @@
 //     }
 // }
 
-// memory_info_t *mem_dump() {
+// memory_info_t *memory_get_info() {
 //     memory_info.free = memory_info.size - memory_info.used;
 //     return &memory_info;
 // }
