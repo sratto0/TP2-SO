@@ -6,8 +6,8 @@
 // #include <stdlib.h>
 #include "./include/shell.h"
 #include "../../SharedLibraries/sharedStructs.h"
+#include "./include/color.h"
 #include "./include/inputParser.h"
-#include "./include/man.h"
 #include "./include/shellCommands.h"
 #include "./include/syscalls.h"
 #include "./include/test_functions.h"
@@ -31,14 +31,29 @@ typedef enum { NO_PARAMS = 0, SINGLE_PARAM, DUAL_PARAM } functionType;
 #define INVALID_COMMAND "Comando invalido!\n"
 #define WRONG_PARAMS "La cantidad de parametros ingresada es invalida\n"
 #define INVALID_FONT_SIZE "Dimension invalida de fuente\n"
-#define CHECK_MAN "Escriba \"man %s\" para ver como funciona el comando\n"
 #define CHECK_MAN_FONT                                                         \
   "Escriba \"man font-size\" para ver las dimensiones validas\n"
 
+#define CAT_GENERAL "General"
+#define CAT_INFO "Informacion"
+#define CAT_TESTS "Tests"
+#define CAT_PROCESOS "Procesos"
+#define CAT_IO "Entrada/Salida"
+
+#define COLOR_SECTION MAGENTA
+#define COLOR_USAGE TURQUOISE
+#define COLOR_DESC SILVER
+
 typedef struct {
-  char *name;        // Nombre del comando
-  char *description; // Descripcion del comando (para help)
+  const char *name;
+  const char *short_desc;
   entry_point_t f;
+  const char *category;
+  const char *usage;
+  const char *details;
+  const char *parameters;
+  const char *notes;
+  const char *example;
 } Command;
 
 static void help(int argc, char **argv);
@@ -64,45 +79,144 @@ static int getCommandIndex(char *command);
 // static int cmd_wc_wrapper(char **argv);
 // static int cmd_filter_wrapper(char **argv);
 static void create_single_process(input_parser_t *parser);
+static void print_block(const char *text);
+static void print_section(const char *title, const char *text);
+static const char *command_category(const Command *cmd);
+static Color category_color(const char *category);
 
 const static Command commands[] = {
-    {"help", "Listado de comandos", (entry_point_t)help},
-    {"man", "Manual de uso de los comandos", (entry_point_t)man},
-    {"inforeg", "Informacion de los registos capturados",
-     (entry_point_t)printInfoReg},
-    {"time", "Despliega la hora actual UTC - 3", (entry_point_t)time},
-    {"div", "Division entera de dos numeros naturales", (entry_point_t)div},
-    {"kaboom", "Ejecuta una excepcion de Invalid Opcode",
-     (entry_point_t)kaboom},
-    {"font-size", "Cambia dimensiones de la fuente", (entry_point_t)fontSize},
-    {"printmem", "Vuelco de memoria de 32 bytes desde direccion dada",
-     (entry_point_t)printMem},
-    {"clear", "Limpia toda la pantalla", (entry_point_t)clear},
-    {"test-mm", "Corre el test del memory manager", (entry_point_t)test_mm},
-    {"test-processes", "Corre el test de procesos",
-     (entry_point_t)test_processes},
-    {"test-prio", "Corre el test de prioridades", (entry_point_t)test_prio},
-    {"test-sync", "Corre el test de sincronizacion", (entry_point_t)test_sync},
-    {"ps", "Muestra informacion de los procesos", (entry_point_t)cmd_ps},
-    {"mem", "Muestra informacion del uso de memoria", (entry_point_t)cmd_mem},
-    {"loop",
-     "Imprime su ID con un saludo cada una determinada cantidad de segundos",
-     (entry_point_t)cmd_loop},
-    {"kill", "Mata un proceso dado su ID", (entry_point_t)cmd_kill},
-    {"nice",
-     "Cambia la prioridad de un proceso dado su ID y la nueva prioridad",
-     (entry_point_t)cmd_nice},
-    {"block", "Bloquea o desbloquea un proceso dado su ID",
-     (entry_point_t)cmd_block},
-    {"unblock", "Desbloquea un proceso dado su ID", (entry_point_t)cmd_unblock},
-    {"cat", "Imprime el stdin tal como lo recibe", (entry_point_t)cmd_cat},
-    {"wc", "Cuenta la cantidad de líneas del input", (entry_point_t)cmd_wc},
-    {"filter", "Filtra las vocales del input", (entry_point_t)cmd_filter}};
+    {"help", "Lista todos los comandos disponibles", (entry_point_t)help,
+     CAT_GENERAL, "help",
+     "Muestra una tabla con todos los comandos agrupados por categoria.",
+     "No recibe parametros.", "Use 'man <comando>' para ver mas detalles.",
+     "help"},
+    {"man", "Describe un comando en detalle", (entry_point_t)man, CAT_GENERAL,
+     "man <comando>",
+     "Imprime descripcion, parametros, notas y ejemplos del comando "
+     "solicitado.",
+     "<comando>  Nombre tal como figura en 'help'.",
+     "Si el comando no existe se informa un error.", "man ps"},
+    {"clear", "Limpia la pantalla y resetea el cursor", (entry_point_t)clear,
+     CAT_GENERAL, "clear",
+     "Borra el contenido de la consola y posiciona el cursor en la esquina "
+     "superior.",
+     "No recibe parametros.", NULL, "clear"},
+    {"font-size", "Cambia el tamano de la fuente", (entry_point_t)fontSize,
+     CAT_GENERAL, "font-size <1|2|3>",
+     "Actualiza el tamano de la fuente usada por la terminal.",
+     "<1|2|3>  Nivel de zoom (1=pequeno, 3=grande).",
+     "El valor permanece hasta seleccionar otro.", "font-size 2"},
+    {"div", "Divide dos numeros naturales", (entry_point_t)div, CAT_GENERAL,
+     "div <dividendo> <divisor>",
+     "Realiza una division entera e imprime solo el cociente.",
+     "<dividendo>  Entero natural.\n<divisor>    Entero natural distinto de "
+     "cero.",
+     "No maneja signos ni valores fraccionarios.", "div 10 3"},
+    {"kaboom", "Dispara una excepcion de opcode invalido",
+     (entry_point_t)kaboom, CAT_GENERAL, "kaboom",
+     "Ejecuta un opcode invalido para probar el manejador de excepciones.",
+     "No recibe parametros.",
+     "Provoca un dump de registros y vuelve al shell.", "kaboom"},
+    {"inforeg", "Muestra el ultimo snapshot de registros",
+     (entry_point_t)printInfoReg, CAT_INFO, "inforeg",
+     "Imprime el estado guardado de los registros generales y de pila.",
+     "No recibe parametros.",
+     "El snapshot se captura al presionar Ctrl+S en el teclado.",
+     "inforeg"},
+    {"time", "Despliega la hora actual UTC-3", (entry_point_t)time, CAT_INFO,
+     "time", "Lee el RTC y muestra la hora local en formato hh:mm:ss.",
+     "No recibe parametros.", NULL, "time"},
+    {"printmem", "Vuelca 32 bytes consecutivos de memoria",
+     (entry_point_t)printMem, CAT_INFO, "printmem <direccion_hex>",
+     "Lee y muestra 32 bytes a partir de la direccion fisica indicada.",
+     "<direccion_hex>  Direccion en hexadecimal (sin 0x).",
+     "Util para depurar contenido de memoria.", "printmem F00"},
+    {"ps", "Lista PID, estado, prioridad y stack", (entry_point_t)cmd_ps,
+    CAT_INFO, "ps",
+    "Muestra para cada proceso su PID, nombre, estado, prioridad, stack y si está en foreground/background.",
+    "No recibe parametros.", "Los procesos marcados como foreground aparecen como 'Foreground'.",
+    "ps"},
+    {"mem", "Muestra el uso de memoria", (entry_point_t)cmd_mem, CAT_INFO,
+     "mem",
+     "Consulta al administrador de memoria y muestra total, usado y libre.",
+     "No recibe parametros.", NULL, "mem"},
+    {"test-mm", "Ejecuta el test del memory manager", (entry_point_t)test_mm,
+     CAT_TESTS, "test-mm <max_mem>",
+     "Reserva y libera bloques aleatorios hasta alcanzar el limite indicado, "
+     "verificando que no haya corrupcion.",
+     "<max_mem>  Cantidad maxima de bytes a reservar antes de liberar.",
+     "Use Ctrl+C para detener el test y volver a la shell.", "test-mm 4096"},
+    {"test-processes", "Estresa al scheduler creando multiples procesos",
+     (entry_point_t)test_processes, CAT_TESTS, "test-processes <cantidad>",
+     "Crea la cantidad indicada de procesos y los va matando, bloqueando y "
+     "desbloqueando al azar.",
+     "<cantidad>  Cantidad de procesos que el test crea por ronda (1..MAX_PROCESSES-1).",
+     "Corre en bucle infinito: detenelo con Ctrl+C cuando termines de observar el comportamiento.",
+     "test-processes 10"},
+    {"test-prio", "Muestra como impactan las prioridades en el scheduler",
+     (entry_point_t)test_prio, CAT_TESTS, "test-prio <vueltas>",
+     "Corre tres escenarios: (1) todos con igual prioridad, (2) prioridad "
+     "ajustada antes de arrancar y (3) prioridad modificada mientras los "
+     "procesos estan bloqueados.",
+     "<vueltas>  Iteraciones que cada proceso ejecuta antes de finalizar.",
+     "Usar valores a partir de 100000000 permite ver claramente como se "
+     "ordenan segun la prioridad.",
+     "test-prio 100000000"},
+    {"test-sync", "Testea sincronizacion con y sin semaforos",
+     (entry_point_t)test_sync, CAT_TESTS, "test-sync <n> <usar_sem>",
+     "Lanza pares de procesos que incrementan y decrementan una variable "
+     "compartida.",
+     "<n>        Iteraciones por proceso.\n<usar_sem>  1 para usar "
+     "semaforos, 0 para dejar la condicion de carrera.",
+     "Con usar_sem=1 el valor final deberia ser 0.", "test-sync 1000 1"},
+    {"loop", "Imprime su PID y duerme en un bucle infinito",
+     (entry_point_t)cmd_loop, CAT_PROCESOS, "loop <segundos>",
+     "Muestra el PID y duerme la cantidad indicada de segundos en un loop.",
+     "<segundos>  Intervalo en segundos (entero positivo).",
+     "Detenelo con Ctrl+C desde la shell.", "loop 2"},
+    {"kill", "Mata el proceso indicado por PID", (entry_point_t)cmd_kill,
+     CAT_PROCESOS, "kill <pid>",
+     "Solicita al kernel que termine el proceso con el PID indicado.",
+     "<pid>  Identificador del proceso (>1).",
+     "No se puede matar init (0) ni la shell (1).", "kill 7"},
+    {"nice", "Cambia la prioridad de un proceso", (entry_point_t)cmd_nice,
+     CAT_PROCESOS, "nice <pid> <prioridad>",
+     "Actualiza la prioridad que el scheduler utiliza para el proceso.",
+     "<pid>        Identificador del proceso.\n<prioridad>  Nuevo valor "
+     "(0-5).",
+     "La nueva prioridad se respeta cuando el proceso vuelva a correr.",
+     "nice 8 3"},
+    {"block", "Detiene temporalmente un proceso", (entry_point_t)cmd_block,
+     CAT_PROCESOS, "block <pid>",
+     "Quita al proceso de la cola de listos y lo marca como BLOQUEADO.",
+     "<pid>  Identificador del proceso.",
+     "El proceso permanece detenido hasta ejecutar 'unblock <pid>'.",
+     "block 6"},
+    {"unblock", "Devuelve un proceso bloqueado a READY",
+     (entry_point_t)cmd_unblock, CAT_PROCESOS, "unblock <pid>",
+     "Reincorpora un proceso bloqueado a la cola de listos.",
+     "<pid>  Identificador del proceso (debe estar bloqueado).",
+     "Complemento de 'block': reanuda el proceso pausado.", "unblock 6"},
+    {"cat", "Reproduce stdin en pantalla", (entry_point_t)cmd_cat, CAT_IO,
+     "cat",
+     "Lee del teclado (o pipe) y muestra el flujo sin modificaciones hasta Ctrl+D.",
+     "No recibe parametros.",
+     "Util para testear pipes.",
+     "cat"},
+    {"wc", "Cuenta lineas del texto ingresado", (entry_point_t)cmd_wc, CAT_IO,
+     "wc",
+     "Lee lineas desde stdin y al final informa cuantas se recibieron.",
+     "No recibe parametros.", "Se detiene con Ctrl+D.", "wc"},
+    {"filter", "Filtra vocales del texto ingresado",
+     (entry_point_t)cmd_filter, CAT_IO, "filter",
+     "Lee caracteres desde stdin y reimprime solo los que no son vocales.",
+     "No recibe parametros.", "Termina con Ctrl+D o una linea vacia.",
+     "filter"}};
 
 void run_shell() {
   puts(WELCOME);
   while (1) {
-    putchar('>');
+    printfc(PINK, ">");
     char raw_input[MAX_CHARS] = {0};
     scanf("%S", raw_input);
     input_parser_t *parser = parse_input(raw_input);
@@ -136,6 +250,49 @@ static void create_single_process(input_parser_t *parser) {
   }
 }
 
+static const char *command_category(const Command *cmd) {
+  if (cmd->category != NULL && cmd->category[0] != '\0') {
+    return cmd->category;
+  }
+  return CAT_GENERAL;
+}
+
+static Color category_color(const char *category) {
+  (void)category;
+  return COLOR_SECTION;
+}
+
+static void print_block(const char *text) {
+  if (text == NULL || *text == '\0') {
+    return;
+  }
+
+  const char *cursor = text;
+  while (*cursor != '\0') {
+    printf("    ");
+
+    while (*cursor != '\0' && *cursor != '\n') {
+      putchar(*cursor);
+      cursor++;
+    }
+    putchar('\n');
+
+    if (*cursor == '\0') {
+      break;
+    }
+    cursor++;
+  }
+}
+
+static void print_section(const char *title, const char *text) {
+  if (text == NULL || *text == '\0') {
+    return;
+  }
+  printfc(COLOR_SECTION, "%s:\n", title);
+  print_block(text);
+  putchar('\n');
+}
+
 /**
  * @brief  Devuelve el indice del vector de comandos dado su nombre
  * @param  command: Nombre del comando a buscar
@@ -155,8 +312,26 @@ static void help(int argc, char **argv) {
     printErr(WRONG_PARAMS);
     return;
   }
-  for (int i = 0; i < QTY_COMMANDS; i++)
-    printf("%s: %s\r\n", commands[i].name, commands[i].description);
+  printfc((Color){0, 255, 255}, "Comandos disponibles:\n\n");
+
+  const char *current_category = NULL;
+  for (int i = 0; i < QTY_COMMANDS; i++) {
+    const char *category = command_category(&commands[i]);
+    if (current_category == NULL || strcmp(current_category, category) != 0) {
+      if (current_category != NULL) {
+        putchar('\n');
+      }
+      current_category = category;
+      printfc(category_color(current_category), "[%s]\n", current_category);
+    }
+    printfc(COLOR_USAGE, "  %s", commands[i].usage);
+    if (commands[i].short_desc != NULL) {
+      printfc(COLOR_DESC, " - %s", commands[i].short_desc);
+    }
+    putchar('\n');
+  }
+
+  printf("\nUse 'man <comando>' para obtener mas detalles.\n");
 }
 
 static void div(int argc, char **argv) {
@@ -221,10 +396,26 @@ static void man(int argc, char **argv) {
     return;
   }
   int idx = getCommandIndex(argv[1]);
-  if (idx != -1)
-    printf("%s\n", usages[idx]);
-  else
+  if (idx == -1) {
     printErr(INVALID_COMMAND);
+    return;
+  }
+
+  const Command *cmd = &commands[idx];
+  const char *category = command_category(cmd);
+
+printfc(COLOR_SECTION, "Comando:   ");
+  printf("%s\n\n", cmd->name);
+  printfc(COLOR_SECTION, "Categoria: ");
+  printf("%s\n\n", category);
+  printfc(COLOR_SECTION, "Uso:       ");
+  printf("%s\n\n", cmd->usage);
+
+  print_section("Descripcion",
+                (cmd->details != NULL) ? cmd->details : cmd->short_desc);
+  print_section("Parametros", cmd->parameters);
+  print_section("Notas", cmd->notes);
+  print_section("Ejemplo", cmd->example);
 }
 
 // // Wrapper que adapta (char**) para test_mm(argc, argv)

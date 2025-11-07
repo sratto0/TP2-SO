@@ -26,11 +26,18 @@ docker exec -it $CONTAINER_NAME make clean -C /root/Toolchain
 docker exec -it $CONTAINER_NAME make clean -C /root
 
 # Execute the make commands
-docker exec -it $CONTAINER_NAME make -C /root/Toolchain MM="$MM"
+if [ -n "$MM" ]; then
+    docker exec -it $CONTAINER_NAME make -C /root/Toolchain MM="$MM"
+else
+    docker exec -it $CONTAINER_NAME make -C /root/Toolchain
+fi
 MAKE_TOOLCHAIN_EXIT_CODE=$?
 
-
-docker exec -it $CONTAINER_NAME make -C /root MM="$MM"
+if [ -n "$MM" ]; then
+    docker exec -it $CONTAINER_NAME make -C /root MM="$MM"
+else
+    docker exec -it $CONTAINER_NAME make -C /root
+fi
 MAKE_ROOT_EXIT_CODE=$?
 
 

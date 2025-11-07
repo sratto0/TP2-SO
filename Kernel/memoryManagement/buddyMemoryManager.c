@@ -1,3 +1,5 @@
+#ifdef USE_BUDDY
+
 #include "memoryManager.h"
 #include <stddef.h>
 #include <stdint.h>
@@ -234,3 +236,5 @@ memory_info_t *memory_get_info() {
   mem_info.free = mem_info.size - mem_info.used;
   return &mem_info;
 }
+
+#endif // USE_BUDDY
