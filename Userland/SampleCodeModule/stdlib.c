@@ -77,27 +77,6 @@ void *my_malloc(uint64_t size) { return (void *)sys_malloc(size); }
 
 void my_free(void *ptr) { sys_free(ptr); }
 
-// static void ftab_print(int fd, char * buffer, int width) {
-//     int len = 0;
-//     const char * str = buffer;
-//     while(*str++) len++;
-//     fd_print(fd, "%s", buffer);
-//     for(int i = 0; i < width - len; i++) putchar(' ');
-// }
-
-// int fd_print(uint64_t fd, const char * format, ...) {
-//     va_list args;
-//     va_start(args, format);
-//     int toRet = print_args(fd, format, args);
-//     va_end(args);
-//     return toRet;
-// }
-
-// static int print_args(uint64_t fd, const char * format, va_list args) {
-//     char buf[BUFFER_SIZE];
-
-// }
-
 int64_t my_create_process(entry_point_t main, char **argv, char *name,
                           int *file_descriptors) {
   return sys_create_process(main, argv, name, file_descriptors);

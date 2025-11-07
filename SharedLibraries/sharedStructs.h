@@ -2,6 +2,7 @@
 #define SHARED_STRUCTS_H
 
 #include <stdint.h>
+#define MAX_NAME_LEN 32
 
 #define NO_PID ((int64_t)-1)
 
@@ -20,7 +21,7 @@ typedef enum {
 } process_state_t;
 
 typedef struct {
-  char name[32];
+  char name[MAX_NAME_LEN];
   int64_t pid;
   int64_t parent_pid;
   uint8_t priority;

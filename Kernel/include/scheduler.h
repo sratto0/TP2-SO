@@ -12,6 +12,7 @@
 #define MAX_PRIORITY 5
 
 #define MAX_PROCESSES 64
+#define STACK_RIP_OFFSET 15
 
 typedef struct schedulerCDT {
   process_t *processes[MAX_PROCESSES]; // Array para acceso al PCB por PID
@@ -19,7 +20,7 @@ typedef struct schedulerCDT {
   uint64_t process_count;              // Cantidad total de procesos
   DListADT ready_queue;                // Lista de procesos PROC_READY
   uint64_t total_cpu_ticks;            // Total de ticks de la CPU
-  uint8_t force_reschedule; // Flag para forzar el cambio del proceso corriendo
+  uint8_t force_reschedule;            // Flag para forzar el cambio del proceso corriendo
 } schedulerCDT;
 
 typedef struct schedulerCDT *schedulerADT;

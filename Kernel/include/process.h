@@ -3,7 +3,6 @@
 
 #include "memoryManager.h"
 #include <stdint.h>
-// #include "scheduler.h"
 #include "../../SharedLibraries/sharedStructs.h"
 
 #define MAX_NAME_LEN 32
@@ -47,15 +46,5 @@ process_t *my_create_process(int64_t pid, entry_point_t entry_point,
 void process_destroy(process_t *proc);
 void free_argv(char **argv);
 void process_caller(entry_point_t main, char **argv);
-
-/* Syscall-like API (usados por los tests) */
-// int32_t my_create_process(const char *name, int priority, char *argv[]);
-// int my_kill(int64_t pid);
-// int my_block(int64_t pid);
-// int my_unblock(int64_t pid);
-// int my_nice(int64_t pid, int new_prio);
-// int32_t my_getpid(void);
-// void my_list_processes(void);
-// int my_process_info(int64_t pid, process_t *out);
 
 #endif

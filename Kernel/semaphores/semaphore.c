@@ -1,3 +1,7 @@
+// This is a personal academic project. Dear PVS-Studio, please check it.
+// PVS-Studio Static Code Analyzer for C, C++, C#, and Java:
+// https://pvs-studio.com
+
 #include "../include/semaphore.h"
 #include "../include/lib.h"
 #include "../include/memoryManager.h"
@@ -13,7 +17,7 @@ typedef struct semaphore {
   int in_use;
   int using_count;
   lock_t lock;
-  char name[32];
+  char name[MAX_NAME_LEN];
   DListADT waiting_queue;
 } semaphore_t;
 
@@ -115,12 +119,12 @@ int64_t my_sem_open(char *name, uint64_t initialValue) {
   sem->in_use = 1;
   sem->lock = 1;
   sem->using_count = 1;
-  my_strncpy(sem->name, name, 32);
+  my_strncpy(sem->name, name, MAX_NAME_LEN);
   sem->name[sizeof(sem->name) - 1] = '\0';
   return 0;
 }
 
-int64_t my_sem_wait(char *name) { // Mirar bien donde hacer el release del lock
+int64_t my_sem_wait(char *name) {
   if (semaphore_manager == NULL || name == NULL) {
     return -1;
   }
@@ -153,7 +157,7 @@ int64_t my_sem_wait(char *name) { // Mirar bien donde hacer el release del lock
   return 0;
 }
 
-int64_t my_sem_post(char *name) { // Mirar bien donde hacer el release del lock
+int64_t my_sem_post(char *name) { 
   if (semaphore_manager == NULL || name == NULL) {
     return -1;
   }
