@@ -28,7 +28,7 @@ static schedulerADT scheduler = NULL;
 static void init(int argc, char **argv) {
   char *shell_argv[] = {NULL};
 
-  if (SHELL_ADDRESS == 0 || SHELL_ADDRESS == (void *)-1) {
+  if (SHELL_ADDRESS == 0) {
     while (1)
       _hlt();
   }
@@ -289,8 +289,7 @@ int kill_process(int64_t pid) {
   process_t *parent = scheduler->processes[proc->parent_pid];
 
   proc->state = PROC_KILLED;
-  if (proc->in_ready_queue || proc->state == PROC_READY ||
-      proc->state == PROC_RUNNING) {
+  if (proc->in_ready_queue) {
     remove_from_ready_queue(proc);
   }
 
@@ -372,8 +371,7 @@ int unblock_current_process() {
 }
 
 int set_process_priority(int64_t pid, uint8_t priority) {
-  if (scheduler == NULL || pid < 0 || pid >= MAX_PROCESSES ||
-      priority < MIN_PRIORITY || priority > MAX_PRIORITY) {
+  if (scheduler == NULL || pid < 0 || pid >= MAX_PROCESSES || priority > MAX_PRIORITY) {
     return -1;
   }
 
@@ -480,9 +478,7 @@ uint64_t total_ticks(void) {
 }
 
 static uint8_t quantum_for_priority(uint8_t priority) {
-  if (priority < MIN_PRIORITY) {
-    priority = MIN_PRIORITY;
-  } else if (priority > MAX_PRIORITY) {
+  if (priority > MAX_PRIORITY) {
     priority = MAX_PRIORITY;
   }
   return (priority - MIN_PRIORITY) + 1;

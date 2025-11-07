@@ -33,10 +33,8 @@ process_t *my_create_process(int64_t pid, entry_point_t entry_point,
   }
 
   memset(proc, 0, sizeof(*proc));
-  if(name){
-    my_strncpy(proc->name, name, MAX_NAME_LEN - 1);
-    proc->name[MAX_NAME_LEN - 1] = 0;
-  }
+  my_strncpy(proc->name, name, MAX_NAME_LEN - 1);
+  proc->name[MAX_NAME_LEN - 1] = 0;
 
   proc->pid = pid;
   proc->parent_pid = get_current_pid();
