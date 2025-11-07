@@ -12,6 +12,7 @@
 #define MAX_PRIORITY 5
 
 #define MAX_PROCESSES 64
+#define STACK_RIP_OFFSET 15
 
 typedef struct schedulerCDT {
   process_t *processes[MAX_PROCESSES]; // Array para acceso al PCB por PID

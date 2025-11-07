@@ -600,7 +600,7 @@ process_info_t *get_processes_info() {
       proc_info->stack_pointer = proc->stack_pointer;
       if (proc->stack_pointer != NULL) {
         uint64_t *stack = (uint64_t *)proc->stack_pointer;
-        proc_info->rip = (void *)stack[15];
+        proc_info->rip = (void *)stack[STACK_RIP_OFFSET];
       } else {
         proc_info->rip = NULL;
       }
