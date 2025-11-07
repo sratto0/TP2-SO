@@ -1,0 +1,310 @@
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+  <title>video.c</title>
+  <link rel="stylesheet" href="../style.css"/>
+  <script src="../jquery-3.5.1.min.js"></script>
+</head>
+<body>
+<pre><code class = "cpp">
+<a name="ln1">// This is a personal academic project. Dear PVS-Studio, please check it.</a>
+<a name="ln2">// PVS-Studio Static Code Analyzer for C, C++, C#, and Java:</a>
+<a name="ln3">// https://pvs-studio.com</a>
+<a name="ln4"> </a>
+<a name="ln5">#include &lt;font.h&gt;</a>
+<a name="ln6">#include &lt;lib.h&gt;</a>
+<a name="ln7">#include &lt;stdarg.h&gt;</a>
+<a name="ln8">#include &lt;stdint.h&gt;</a>
+<a name="ln9">#include &lt;string.h&gt;</a>
+<a name="ln10">#include &lt;video.h&gt;</a>
+<a name="ln11"> </a>
+<a name="ln12">#define RGB_SIZE 3</a>
+<a name="ln13">#define MAX_RESOLUTION (64 * 128) /* Longitud del buffer de caracteres */</a>
+<a name="ln14">#define MSG_BUFFER_EXCEEDED                                                    \</a>
+<a name="ln15">  &quot;Buffer de video excedido, la pantalla ha sido limpiada\n&quot;</a>
+<a name="ln16"> </a>
+<a name="ln17">struct vbe_mode_info_structure {</a>
+<a name="ln18">  uint16_t</a>
+<a name="ln19">      attributes; // deprecated, only bit 7 should be of interest to you, and it</a>
+<a name="ln20">                  // indicates the mode supports a linear frame buffer.</a>
+<a name="ln21">  uint8_t window_a;     // deprecated</a>
+<a name="ln22">  uint8_t window_b;     // deprecated</a>
+<a name="ln23">  uint16_t granularity; // deprecated; used while calculating bank numbers</a>
+<a name="ln24">  uint16_t window_size;</a>
+<a name="ln25">  uint16_t segment_a;</a>
+<a name="ln26">  uint16_t segment_b;</a>
+<a name="ln27">  uint32_t win_func_ptr; // deprecated; used to switch banks from protected mode</a>
+<a name="ln28">                         // without returning to real mode</a>
+<a name="ln29">  uint16_t pitch;        // number of bytes per horizontal line</a>
+<a name="ln30">  uint16_t width;        // width in pixels</a>
+<a name="ln31">  uint16_t height;       // height in pixels</a>
+<a name="ln32">  uint8_t w_char;        // unused...</a>
+<a name="ln33">  uint8_t y_char;        // ...</a>
+<a name="ln34">  uint8_t planes;</a>
+<a name="ln35">  uint8_t bpp;   // bits per pixel in this mode</a>
+<a name="ln36">  uint8_t banks; // deprecated; total number of banks in this mode</a>
+<a name="ln37">  uint8_t memory_model;</a>
+<a name="ln38">  uint8_t bank_size; // deprecated; size of a bank, almost always 64 KB but may</a>
+<a name="ln39">                     // be 16 KB...</a>
+<a name="ln40">  uint8_t image_pages;</a>
+<a name="ln41">  uint8_t reserved0;</a>
+<a name="ln42"> </a>
+<a name="ln43">  uint8_t red_mask;</a>
+<a name="ln44">  uint8_t red_position;</a>
+<a name="ln45">  uint8_t green_mask;</a>
+<a name="ln46">  uint8_t green_position;</a>
+<a name="ln47">  uint8_t blue_mask;</a>
+<a name="ln48">  uint8_t blue_position;</a>
+<a name="ln49">  uint8_t reserved_mask;</a>
+<a name="ln50">  uint8_t reserved_position;</a>
+<a name="ln51">  uint8_t direct_color_attributes;</a>
+<a name="ln52"> </a>
+<a name="ln53">  uint32_t framebuffer; // physical address of the linear frame buffer; write</a>
+<a name="ln54">                        // here to draw to the screen</a>
+<a name="ln55">  uint32_t off_screen_mem_off;</a>
+<a name="ln56">  uint16_t off_screen_mem_size; // size of memory in the framebuffer but not</a>
+<a name="ln57">                                // being displayed on the screen</a>
+<a name="ln58">  uint8_t reserved1[206];</a>
+<a name="ln59">} __attribute__((packed));</a>
+<a name="ln60"> </a>
+<a name="ln61">struct vbe_mode_info_structure *_screenData = (void *)0x5C00;</a>
+<a name="ln62">uint16_t _X = 0, _Y = 0;            /* Coordenadas de escritura de caracteres */</a>
+<a name="ln63">Color _fontColor = DEFAULT_COLOR;   /* Color de fuente */</a>
+<a name="ln64">uint8_t _charWidth = CHAR_WIDTH_12; /* Ancho en pixeles de un caracter */</a>
+<a name="ln65">uint8_t _charHeight = CHAR_HEIGHT_12; /* Altura en pixeles de un caracter */</a>
+<a name="ln66">char *_font = font_12; /* Mapa de bits de dibujo para los caracteres */</a>
+<a name="ln67">char _charBuffer[MAX_RESOLUTION]; /* Buffer de caracteres */</a>
+<a name="ln68">uint16_t _bufferIdx = 0;          /* Posicion de indice del buffer */</a>
+<a name="ln69"> </a>
+<a name="ln70">/**</a>
+<a name="ln71"> * @brief Reescribe los caracteres de _charBuffer</a>
+<a name="ln72"> * @note  Se llama cuando se reajusta el tamaño de fuente</a>
+<a name="ln73"> */</a>
+<a name="ln74">static void renderFonts();</a>
+<a name="ln75"> </a>
+<a name="ln76">/**</a>
+<a name="ln77"> * @brief  Obtiene la direccion de memoria del pixel (x,y) de la pantalla</a>
+<a name="ln78"> * @param  x: Coordenada x</a>
+<a name="ln79"> * @param  y: Coordenada y</a>
+<a name="ln80"> * @return Puntero al pixel (x,y)</a>
+<a name="ln81"> */</a>
+<a name="ln82">static void *getPtrToPixel(uint16_t x, uint16_t y);</a>
+<a name="ln83"> </a>
+<a name="ln84">static void *getPtrToPixel(uint16_t x, uint16_t y) {</a>
+<a name="ln85">  return (void *)(_screenData-&gt;framebuffer +</a>
+<a name="ln86">                  RGB_SIZE * (x + (y * (uint64_t)_screenData-&gt;width)));</a>
+<a name="ln87">}</a>
+<a name="ln88"> </a>
+<a name="ln89">void videoClear() {</a>
+<a name="ln90">  void *pos = getPtrToPixel(0, 0);</a>
+<a name="ln91">  memset(pos, 0, RGB_SIZE * (uint64_t)_screenData-&gt;width * _screenData-&gt;height);</a>
+<a name="ln92">  _X = _Y = 0;</a>
+<a name="ln93">  _bufferIdx = 0;</a>
+<a name="ln94">}</a>
+<a name="ln95"> </a>
+<a name="ln96">uint8_t coordinatesValid(uint16_t x, uint16_t y) {</a>
+<a name="ln97">  return x &lt; _screenData-&gt;width &amp;&amp; y &lt; _screenData-&gt;height;</a>
+<a name="ln98">}</a>
+<a name="ln99"> </a>
+<a name="ln100">void drawRect(uint16_t x, uint16_t y, uint16_t width, uint16_t height,</a>
+<a name="ln101">              Color color) {</a>
+<a name="ln102">  if (!coordinatesValid(x, y))</a>
+<a name="ln103">    return;</a>
+<a name="ln104"> </a>
+<a name="ln105">  uint16_t maxWidth = _screenData-&gt;width - x;</a>
+<a name="ln106">  if (width &gt; maxWidth)</a>
+<a name="ln107">    width = maxWidth;</a>
+<a name="ln108"> </a>
+<a name="ln109">  uint16_t maxHeight = _screenData-&gt;height - y;</a>
+<a name="ln110">  if (height &gt; maxHeight)</a>
+<a name="ln111">    height = maxHeight;</a>
+<a name="ln112"> </a>
+<a name="ln113">  Color *ptr = (Color *)getPtrToPixel(x, y);</a>
+<a name="ln114">  uint16_t lineDiff = _screenData-&gt;width - width;</a>
+<a name="ln115">  for (int i = 0; i &lt; height; i++) {</a>
+<a name="ln116">    for (int c = 0; c &lt; width; c++)</a>
+<a name="ln117">      *(ptr++) = color;</a>
+<a name="ln118">    ptr += lineDiff;</a>
+<a name="ln119">  }</a>
+<a name="ln120">}</a>
+<a name="ln121"> </a>
+<a name="ln122">void setPosition(uint16_t x, uint16_t y) {</a>
+<a name="ln123">  uint16_t maxX = _screenData-&gt;width - _charWidth;</a>
+<a name="ln124">  uint16_t maxY = _screenData-&gt;height - _charHeight;</a>
+<a name="ln125"> </a>
+<a name="ln126">  _X = x &lt; maxX ? x : maxX;</a>
+<a name="ln127">  _Y = y &lt; maxY ? y : maxY;</a>
+<a name="ln128">}</a>
+<a name="ln129"> </a>
+<a name="ln130">void setFontColor(Color color) { _fontColor = color; }</a>
+<a name="ln131"> </a>
+<a name="ln132">Color getFontColor() { return _fontColor; }</a>
+<a name="ln133"> </a>
+<a name="ln134">void setFontSize(fontSize f) {</a>
+<a name="ln135">  if (f &gt;= FONT_12 &amp;&amp; f &lt;= FONT_36) {</a>
+<a name="ln136">    _font = fonts[f];</a>
+<a name="ln137">    _charWidth = charWidths[f];</a>
+<a name="ln138">    _charHeight = charHeights[f];</a>
+<a name="ln139">    renderFonts();</a>
+<a name="ln140">  }</a>
+<a name="ln141">}</a>
+<a name="ln142"> </a>
+<a name="ln143">static void renderFonts() {</a>
+<a name="ln144">  int buffIdx = _bufferIdx;</a>
+<a name="ln145">  videoClear();</a>
+<a name="ln146">  printN(_charBuffer, buffIdx);</a>
+<a name="ln147">}</a>
+<a name="ln148"> </a>
+<a name="ln149">void printNewline(void) {</a>
+<a name="ln150">  _X = 0;</a>
+<a name="ln151"> </a>
+<a name="ln152">  if (_Y + 2 * _charHeight &lt;= _screenData-&gt;height) {</a>
+<a name="ln153">    _Y += _charHeight;</a>
+<a name="ln154">  } else {</a>
+<a name="ln155">    uint64_t len = RGB_SIZE * ((uint64_t)_screenData-&gt;width *</a>
+<a name="ln156">                               (_screenData-&gt;height - _charHeight));</a>
+<a name="ln157">    memcpy(getPtrToPixel(0, 0), getPtrToPixel(0, _charHeight), len);</a>
+<a name="ln158">    memset(getPtrToPixel(0, _screenData-&gt;height - _charHeight), 0,</a>
+<a name="ln159">           RGB_SIZE * (uint64_t)_screenData-&gt;width * _charHeight);</a>
+<a name="ln160">  }</a>
+<a name="ln161">}</a>
+<a name="ln162"> </a>
+<a name="ln163">void printChar(char c) {</a>
+<a name="ln164">  if (c == '\b') { // Borrar el caracter anterior</a>
+<a name="ln165">    if (_X &lt; _charWidth &amp;&amp; _Y &gt; 0) {</a>
+<a name="ln166">      _Y -= _charHeight;</a>
+<a name="ln167">      _X = (_screenData-&gt;width / _charWidth) * _charWidth - _charWidth;</a>
+<a name="ln168">    } else {</a>
+<a name="ln169">      _X -= _charWidth;</a>
+<a name="ln170">    }</a>
+<a name="ln171">    drawRect(_X, _Y, _charWidth, _charHeight, BLACK);</a>
+<a name="ln172">    _bufferIdx--;</a>
+<a name="ln173">    return;</a>
+<a name="ln174">  }</a>
+<a name="ln175"> </a>
+<a name="ln176">  if (_bufferIdx == MAX_RESOLUTION) {</a>
+<a name="ln177">    videoClear();</a>
+<a name="ln178">    print(MSG_BUFFER_EXCEEDED);</a>
+<a name="ln179">  }</a>
+<a name="ln180"> </a>
+<a name="ln181">  _charBuffer[_bufferIdx++] = c;</a>
+<a name="ln182">  if (c == '\n') {</a>
+<a name="ln183">    printNewline();</a>
+<a name="ln184">    return;</a>
+<a name="ln185">  }</a>
+<a name="ln186"> </a>
+<a name="ln187">  if (c &gt;= FIRST_CHAR &amp;&amp; c &lt;= LAST_CHAR) {</a>
+<a name="ln188">    /* Puntero al Bitmap de dibujo del caracter recibido */</a>
+<a name="ln189">    const char *data = _font + _charHeight * _charWidth * (c - FIRST_CHAR) / 8;</a>
+<a name="ln190">    for (int h = 0; h &lt; _charHeight; h++) { // Iteracion por filas</a>
+<a name="ln191">      Color *ptr = (Color *)getPtrToPixel(_X, _Y + h);</a>
+<a name="ln192">      uint8_t mask = 1;</a>
+<a name="ln193">      for (uint8_t i = 0; i &lt; _charWidth; i++) { // Iteracion por columnas</a>
+<a name="ln194">        if (*data &amp; mask) {</a>
+<a name="ln195">          ptr[i] = _fontColor;</a>
+<a name="ln196">        }</a>
+<a name="ln197"> </a>
+<a name="ln198">        if (mask &amp; 0b10000000) {</a>
+<a name="ln199">          mask = 0b00000001;</a>
+<a name="ln200">          data++; // Pasa al siguiente byte dentro de una fila o de la siguiente</a>
+<a name="ln201">        } else {</a>
+<a name="ln202">          mask &lt;&lt;= 1; // Pasa al siguiente bit</a>
+<a name="ln203">        }</a>
+<a name="ln204">      }</a>
+<a name="ln205">    }</a>
+<a name="ln206">  }</a>
+<a name="ln207">  _X += _charWidth;</a>
+<a name="ln208">  if (_X &gt; (_screenData-&gt;width / _charWidth) * _charWidth - _charWidth)</a>
+<a name="ln209">    printNewline();</a>
+<a name="ln210">}</a>
+<a name="ln211"> </a>
+<a name="ln212">void print(const char *s) {</a>
+<a name="ln213">  while (*s)</a>
+<a name="ln214">    printChar(*s++);</a>
+<a name="ln215">}</a>
+<a name="ln216"> </a>
+<a name="ln217">void printN(const char *s, uint32_t n) {</a>
+<a name="ln218">  if (!n)</a>
+<a name="ln219">    return;</a>
+<a name="ln220">  while (n-- &amp;&amp; *s)</a>
+<a name="ln221">    printChar(*s++);</a>
+<a name="ln222">}</a>
+<a name="ln223"> </a>
+<a name="ln224">void printf(char *fmt, ...) {</a>
+<a name="ln225">  va_list v;</a>
+<a name="ln226">  va_start(v, fmt);</a>
+<a name="ln227">  char buffer[256] = {0};</a>
+<a name="ln228">  char *fmtPtr = fmt;</a>
+<a name="ln229">  while (*fmtPtr) {</a>
+<a name="ln230">    if (*fmtPtr == '%') {</a>
+<a name="ln231">      fmtPtr++;</a>
+<a name="ln232">      int dx = strtoi(fmtPtr, &amp;fmtPtr);</a>
+<a name="ln233">      int len;</a>
+<a name="ln234"> </a>
+<a name="ln235">      switch (*fmtPtr) {</a>
+<a name="ln236">      case 'c':</a>
+<a name="ln237">        printChar(va_arg(v, int));</a>
+<a name="ln238">        break;</a>
+<a name="ln239">      case 'd':</a>
+<a name="ln240">        len = itoa(va_arg(v, uint64_t), buffer, 10);</a>
+<a name="ln241">        printNChars('0', dx - len);</a>
+<a name="ln242">        print(buffer);</a>
+<a name="ln243">        break;</a>
+<a name="ln244">      case 'x':</a>
+<a name="ln245">        len = itoa(va_arg(v, uint64_t), buffer, 16);</a>
+<a name="ln246">        printNChars('0', dx - len);</a>
+<a name="ln247">        print(buffer);</a>
+<a name="ln248">        break;</a>
+<a name="ln249">      case 's':</a>
+<a name="ln250">        printNChars(' ', dx); // A diferencia %x y %d, la cantidad de espacios</a>
+<a name="ln251">                              // es igual al numero</a>
+<a name="ln252">        print((char *)va_arg(v, char *));</a>
+<a name="ln253">        break;</a>
+<a name="ln254">      }</a>
+<a name="ln255">    } else {</a>
+<a name="ln256">      printChar(*fmtPtr);</a>
+<a name="ln257">    }</a>
+<a name="ln258">    fmtPtr++;</a>
+<a name="ln259">  }</a>
+<a name="ln260">  va_end(v);</a>
+<a name="ln261">}</a>
+<a name="ln262"> </a>
+<a name="ln263">void printNChars(char c, int n) {</a>
+<a name="ln264">  for (int i = 0; i &lt; n; i++)</a>
+<a name="ln265">    printChar(c);</a>
+<a name="ln266">}</a>
+<a name="ln267"> </a>
+<a name="ln268">uint32_t getScreenResolution() {</a>
+<a name="ln269">  return _screenData-&gt;width | _screenData-&gt;height &lt;&lt; 16;</a>
+<a name="ln270">}</a>
+</code></pre>
+<div class="balloon" rel="62"><p><span style="font-size:18px">&uarr;</span> <a href="https://pvs-studio.com/en/docs/warnings/v707/" target="_blank">V707</a> Giving short names to global variables is considered to be bad practice. It is suggested to rename '_X', '_Y' variables.</p></div>
+<link rel="stylesheet" href="highlight.css">
+<script src="highlight.pack.js"></script>
+<script src="highlightjs-line-numbers.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+<script>hljs.initLineNumbersOnLoad();</script>
+<script>
+  $(document).ready(function() {
+      $('.balloon').each(function () {
+          var bl = $(this);
+          var line = bl.attr('rel');
+          var text = $('a[name="ln'+line+'"]').text();
+
+          var space_count = 0;
+          for(var i = 0; i<text.length; i++){
+              var char = text[i];
+              if((char !== ' ')&&(char !== '\t'))break;
+              if(char === '\t')space_count++;
+              space_count++;
+          }
+
+          bl.css('margin-left', space_count*8);
+          $('a[name="ln'+line+'"]').after(bl);
+      });
+
+      window.location = window.location;
+  });
+</script>
+</body>
+</html>

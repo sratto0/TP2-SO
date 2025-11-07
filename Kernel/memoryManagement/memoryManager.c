@@ -1,3 +1,7 @@
+// This is a personal academic project. Dear PVS-Studio, please check it.
+// PVS-Studio Static Code Analyzer for C, C++, C#, and Java:
+// https://pvs-studio.com
+
 // #include "memoryManager.h"
 // #define BLOCK_HEADER_SIZE sizeof(block_t)
 // #define ALIGN4(x) (((((x) - 1) >> 2) << 2) + 4)
