@@ -20,10 +20,12 @@ typedef union {
 } ColorInt;
 
 #define LIGHT_GREEN ((Color){100, 255, 100})
+#define TURQUOISE ((Color){255, 255, 100})
 #define DARK_GREEN ((Color){100, 150, 100})
-#define PINK ((Color){255, 153, 184})
+#define PINK ((Color){255, 102, 204})
 #define MAGENTA ((Color){255, 0, 184})
 #define SILVER ((Color){173, 169, 170})
 #define RED ((Color){0, 0, 255})
 #define BLACK ((Color){0, 0, 0})
+#define YELLOW ((Color){0, 255, 255})
 #endif
