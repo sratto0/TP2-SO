@@ -202,3 +202,19 @@ memory_info_t * my_memory_get_info(){
 void my_sleep(uint64_t seconds){
     sys_sleep(seconds);
 }
+
+void my_create_pipe(int fds[2]){
+    sys_create_pipe(fds);
+}
+
+void my_pipe_write(int fd, const char * buffer, int size){
+    sys_pipe_write(fd, buffer, size);
+}
+
+void my_pipe_read(int fd, char * buffer, int size){
+    sys_pipe_read(fd, buffer, size);
+}
+
+void my_destroy_pipe(int fd){
+    sys_destroy_pipe(fd);
+}

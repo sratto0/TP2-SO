@@ -12,6 +12,7 @@
 #include "memoryMap.h"
 #include "scheduler.h"
 #include "semaphore.h"
+#include "pipes.h"
 
 extern uint8_t text;
 extern uint8_t rodata;
@@ -62,6 +63,8 @@ int main()
 	init_scheduler();
 
 	semaphore_system_init();
+
+	pipe_system_init();
 	
 	timer_tick();
 

@@ -14,11 +14,11 @@
 #include "scheduler.h"
 #include "process.h"
 #include "semaphore.h"
+#include "pipes.h"
+#include "sharedStructs.h"
 
 /* File Descriptors*/
-#define STDIN 0
-#define STDOUT 1
-#define STDERR 2
+
 #define KBDIN 3
 
 /* IDs de syscalls */
@@ -53,10 +53,14 @@
 #define SEM_CLOSE 28
 #define MEMORY_INFO 29
 #define SLEEP 30
+#define CREATE_PIPE 31
+#define DESTROY_PIPE 32
+#define READ_PIPE 33
+#define WRITE_PIPE 34
 
 
 static uint8_t syscall_read(uint32_t fd);
-static void syscall_write(uint32_t fd, char c);
+static int syscall_write(int16_t fd, char * buffer, uint64_t len);
 static void syscall_clear();
 static uint32_t syscall_seconds();
 static uint64_t * syscall_registerArray(uint64_t * regarr);
@@ -85,7 +89,10 @@ static int64_t syscall_sem_post(char * name);
 static int64_t syscall_sem_close(char * name);
 static uint64_t syscall_memeory_get_info();
 static void syscall_sleep(uint64_t seconds);
-
+static void sycall_create_pipe();
+static void sycall_destroy_pipe();
+static void sycall_read_pipe();
+static void sycall_write_pipe();
 
 
 uint64_t syscallDispatcher(uint64_t nr, uint64_t arg0, uint64_t arg1, uint64_t arg2, uint64_t arg3, uint64_t arg4, uint64_t arg5) {
@@ -93,8 +100,7 @@ uint64_t syscallDispatcher(uint64_t nr, uint64_t arg0, uint64_t arg1, uint64_t a
         case READ:
             return syscall_read((uint32_t)arg0);
 		case WRITE:
-			syscall_write((uint32_t)arg0, (char)arg1);
-            break;
+    		return syscall_write((int16_t)arg0, (char *)arg1, (uint64_t)arg2);
         case CLEAR:
             syscall_clear();
             break;
@@ -161,12 +167,20 @@ uint64_t syscallDispatcher(uint64_t nr, uint64_t arg0, uint64_t arg1, uint64_t a
         case SLEEP:
             syscall_sleep((uint64_t) arg0);
             break;
+        case CREATE_PIPE:
+            return sycall_create_pipe();
+        case DESTROY_PIPE:
+            sycall_destroy_pipe();
+            break;
+        case READ_PIPE:
+            return sycall_read_pipe();
+        case WRITE_PIPE:
+            return sycall_write_pipe(); 
 	}
 	return 0;
 }
 
-// Read char
-static uint8_t syscall_read(uint32_t fd){
+static int64_t syscall_read(int16_t fd, char * destination_buffer, uint64_t len){
     switch (fd){
         case STDIN:
             return getAscii();
@@ -176,15 +190,33 @@ static uint8_t syscall_read(uint32_t fd){
     return 0;
 }
 
-// Write char
-static void syscall_write(uint32_t fd, char c){
+
+static int syscall_write(int16_t fd, char * buffer, uint64_t len){
+    if (fd < 1 || len == 0) {
+        return -1;
+    }
+
+    if (fd < BUILT_IN_FDS) {
+        int fds[2]
+        get_fds(fds);
+        fd = fds[1];    
+    }
+
+    if (fd >= BUILT_IN_FDS) {
+        return pipe_write(fd, buffer, len);
+    }
+
+
     Color prevColor = getFontColor();
     if(fd == STDERR)
         setFontColor(ERROR_COLOR);
     else if(fd != STDOUT)
         return;
-    printChar(c);
+    for(int i = 0; i < len; i++) {
+        printChar(buffer[i]);
+    }    
     setFontColor(prevColor);
+    return len;
 }
 
 // Clear
@@ -255,7 +287,7 @@ static int64_t syscall_create_process(entry_point_t main, char ** argv, char * n
 
 //Exit process
 static void syscall_exit_process(int64_t exit_code){
-    my_exit(exit_code);
+    exit_process(exit_code);
 }
 
 //Yield
@@ -331,3 +363,20 @@ static void syscall_sleep(uint64_t seconds){
     uint32_t sleeping_ticks = (uint32_t)(seconds * 18);
     sleep(sleeping_ticks);
 }
+
+static int sycall_create_pipe(int fds[2]){
+    pipe_create(fds);
+}
+
+static void sycall_destroy_pipe(int fd){
+    pipe_destroy(fd);
+}
+
+static int sycall_read_pipe(int fd, char * buffer, int size){
+    pipe_read(fd, buffer, size);
+}
+
+static int sycall_write_pipe(int fd, const char * buffer, int size){
+    pipe_write(fd, buffer, size);
+}
+

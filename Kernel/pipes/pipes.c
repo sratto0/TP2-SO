@@ -1,6 +1,8 @@
 #include "pipes.h"
 #include "../include/semaphore.h"
 #include <stdlib.h>
+#include "../include/memoryManager.h"
+#include "../include/lib.h"
 
 typedef struct pipe {
     int in_use;
@@ -20,6 +22,7 @@ typedef struct pipeManagerCDT {
     pipe_t pipes[MAX_PIPES];
     int next_fd;
 } pipeManagerCDT;
+
 
 pipeManagerADT pipe_manager = NULL;
 

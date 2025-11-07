@@ -142,7 +142,7 @@ void * schedule(void * prev_rsp) {
 
 
 int64_t add_process(entry_point_t main, char ** argv, char * name, int * file_descriptors){
-  if(scheduler == NULL || scheduler->process_count >= MAX_PROCESSES){
+  if(scheduler == NULL || scheduler->process_count >= MAX_PROCESSES || file_descriptors == NULL){
     return -1;
   }
 
@@ -391,6 +391,16 @@ int set_process_priority(int64_t pid, uint8_t priority){
   return 0;
 }
 
+
+void get_fds(int fds[2]) {
+  if (scheduler == NULL || scheduler->current_pid == NO_PID) {
+    return;
+  }
+  process_t * current_process = scheduler->processes[scheduler->current_pid];
+  fds[STDIN] = current_process->r_fd;
+  fds[STDOUT] = current_process->w_fd;
+}
+
 int64_t wait_pid(int64_t pid, int32_t * exit_code){
   
   process_t * child = get_process(pid);
@@ -457,7 +467,7 @@ int64_t wait_pid(int64_t pid, int32_t * exit_code){
 //   return 0;
 // }
 
-void my_exit(int64_t ret) {
+void exit_process(int64_t ret) {
   if(scheduler == NULL) {
     return;
   }
@@ -486,7 +496,6 @@ void my_exit(int64_t ret) {
   }
 
   yield();
-
 
 }
 

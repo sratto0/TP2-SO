@@ -6,6 +6,7 @@
 #include "../include/process.h" 
 #include "../include/scheduler.h"
 
+
 typedef struct semaphore {
     int value;
     int in_use;

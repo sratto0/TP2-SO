@@ -19,6 +19,7 @@ int pipe_create(int fds[2]);
 int pipe_write(int fd, const char * buffer, int size);
 int pipe_read(int fd, char * buffer, int size);
 void send_pipe_eof (int fd);
+void pipe_destroy(int fd);
 
 
 #endif /* PIPES_H */

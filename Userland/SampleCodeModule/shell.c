@@ -93,7 +93,7 @@ void run_shell(){
             create_single_process(parser);
         }
         else if (parser->qty_shell_programs == 2) {
-            // create_piped_processes(parser);
+            create_piped_processes(parser);
         }
         free_parser(parser);
     }
@@ -102,10 +102,8 @@ void run_shell(){
 static void create_single_process(input_parser_t * parser) {
     shell_program_t * program = parser->shell_programs[0];
     int idx = getCommandIndex(program->name);
-    if (idx == -1) {
-        printErr(INVALID_COMMAND);
-        return; 
-    }
+    continue_if_invalid(parser, first_idx);
+
     if(parser->background) {
         // VER!!
     }
@@ -116,6 +114,52 @@ static void create_single_process(input_parser_t * parser) {
 }
 
 
+static void create_piped_processes(input_parser_t * parser) {
+    shell_program_t * left_program = get_shell_program(parser, 0);
+    int first_idx = getCommandIndex(left_program->name);
+    continue_if_invalid(parser, first_idx);
+
+    shell_program_t * right_program = get_shell_program(parser, 1);
+    int second_idx = getCommandIndex(right_program->name);
+    continue_if_invalid(parser, second_idx);
+
+    int pipe_fds[2];
+    if(my_pipe_create(pipe_fds) == -1) {
+        printErr("No se pudo crear el pipe\n");
+        return;
+    }
+    
+    int left_fds[2] = {STDIN, pipe_fds[1]};
+    int right_fds[2] = {pipe_fds[0], STDOUT};
+
+    int left_pid = my_create_process((entry_point_t)commands[first_idx].f, left_program->params, left_program->name, left_fds);
+    int right_pid = my_create_process((entry_point_t)commands[second_idx].f, right_program->params, right_program->name, right_fds);
+
+    if (left_pid == -1 || right_pid == -1) {
+        printErr("No se pudo crear uno de los procesos\n");
+        my_destroy_pipe(pipe_fds);
+        return;
+    }
+
+    if (parser->background) {
+        
+        
+        return;
+    }
+    
+    
+    my_wait_pid(left_pid, NULL);
+    my_wait_pid(right_pid, NULL);
+
+    sys_destroy_pipe(pipe_fds);
+}
+
+static void continue_if_invalid(parser, index) {
+    if (index == -1) {
+        printErr(INVALID_COMMAND);
+        return;
+    }
+}
 
 /**
  * @brief  Devuelve el indice del vector de comandos dado su nombre
@@ -214,15 +258,6 @@ static void mm_test(char ** max_memory) {
     }
     test_mm(1, max_memory);
 }
-
-
-// static void my_test_sync() {
-//     char *argv[] = { "2", "1", NULL };
-//     test_sync(2, argv);
-
-//     char *argv_no_sem[] = { "2", "0", NULL };
-//     test_sync(2, argv_no_sem);
-// }
 
 static int cmd_ps_wrapper(char **argv){
     char *args[] = { "ps", NULL};

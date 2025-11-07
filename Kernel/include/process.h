@@ -11,6 +11,7 @@
 
 #define INIT_PID 0
 
+#define BUILT_IN_FDS 3
 
 typedef struct process {
 
@@ -35,6 +36,9 @@ typedef struct process {
   uint64_t ticks;
   int32_t return_value;
   int64_t waiting_pid; // PID que este proceso esta esperando (o NO_PID)
+
+  int r_fd;
+  int w_fd;
   
 } process_t;
 
