@@ -5,6 +5,11 @@
 
 #define NO_PID ((int64_t)-1)
 
+#define STDIN 0
+#define STDOUT 1
+#define STDERR 2
+
+
 typedef int (*entry_point_t)(int argc, char **argv);
 
 typedef enum {

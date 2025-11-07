@@ -8,6 +8,7 @@
 #include "process.h"
 #include "scheduler.h"
 #include "semaphore.h"
+#include "pipes.h"
 #include <interrupts.h>
 #include <lib.h>
 #include <moduleLoader.h>
@@ -31,35 +32,37 @@ extern void timer_tick();
 typedef int (*EntryPoint)();
 
 void clearBSS(void *bssAddress, uint64_t bssSize) {
-  memset(bssAddress, 0, bssSize);
+	memset(bssAddress, 0, bssSize);
 }
 
 void *getStackBase() {
-  return (void *)((uint64_t)&endOfKernel +
-                  PageSize * 8       // The size of the stack itself, 32KiB
-                  - sizeof(uint64_t) // Begin at the top of the stack
-  );
+	return (void *)((uint64_t)&endOfKernel +
+					PageSize * 8       // The size of the stack itself, 32KiB
+					- sizeof(uint64_t) // Begin at the top of the stack
+	);
 }
 
 void *initializeKernelBinary() {
-  void *moduleAddresses[] = {sampleCodeModuleAddress, sampleDataModuleAddress};
-  loadModules(&endOfKernelBinary, moduleAddresses);
-  clearBSS(&bss, &endOfKernel - &bss);
-  load_idt();
+	void *moduleAddresses[] = {sampleCodeModuleAddress, sampleDataModuleAddress};
+	loadModules(&endOfKernelBinary, moduleAddresses);
+	clearBSS(&bss, &endOfKernel - &bss);
+	load_idt();
 
-  return getStackBase();
+  	return getStackBase();
 }
 
 int main() {
-  memory_init((void *)START_FREE_MEM, MEM_SIZE);
+ 	memory_init((void *)START_FREE_MEM, MEM_SIZE);
+	
+	init_scheduler();
 
-  init_scheduler();
+	semaphore_system_init();
 
-  semaphore_system_init();
+	pipe_system_init();
+	
+	keyboard_init();
 
-  keyboard_init();
+	timer_tick();
 
-  timer_tick();
-
-  return 0;
+  	return 0;
 }

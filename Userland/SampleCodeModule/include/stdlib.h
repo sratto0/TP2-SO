@@ -75,8 +75,15 @@ memory_info_t *my_memory_get_info();
 
 void my_sleep(uint64_t seconds);
 
-int my_read_stdin(char *buffer, uint64_t size);
+int my_pipe_create(int fds[2]);
 
-int my_write_stdout(char *buffer, uint64_t size);
+int my_pipe_write(int fd, const char * buffer, int size);
+
+int my_pipe_read(int fd, char * buffer, int size);
+
+void my_destroy_pipe(int fd);
+
+void my_adopt_child(int64_t pid);
+
 
 #endif

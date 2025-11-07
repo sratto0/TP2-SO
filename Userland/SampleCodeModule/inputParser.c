@@ -12,6 +12,7 @@ static void free_program_memory(shell_program_t *prog);
 static int allocate_argument(shell_program_t *cmd, int arg_index);
 static int tokenize_arguments(shell_program_t *cmd, char **line_ptr);
 
+
 input_parser_t *parse_input(char *command_line) {
   input_parser_t *result = (input_parser_t *)my_malloc(sizeof(input_parser_t));
   if (!result) {
@@ -181,4 +182,11 @@ void free_parser(input_parser_t *parser) {
     my_free(parser->shell_programs);
   }
   my_free(parser);
+}
+
+shell_program_t *get_shell_program(input_parser_t *parser, int index) {
+    if (parser == NULL || index < 0 || index >= MAX_CHAINED_PROGRAMS) {
+        return NULL;
+    }
+    return parser->shell_programs[index];
 }

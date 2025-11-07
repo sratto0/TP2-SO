@@ -31,9 +31,11 @@ GLOBAL sys_sem_post
 GLOBAL sys_sem_close
 GLOBAL sys_memory_get_info
 GLOBAL sys_sleep
-GLOBAL sys_read_stdin
-GLOBAL sys_write_stdout
-
+GLOBAL sys_create_pipe
+GLOBAL sys_destroy_pipe
+GLOBAL sys_read_pipe
+GLOBAL sys_write_pipe
+GLOBAL sys_adopt_child
 
 read:
     mov rax, 0
@@ -192,12 +194,27 @@ sys_sleep:
     int 80h
     ret
 
-sys_read_stdin:
+sys_create_pipe:
     mov rax, 31
+    int 80h
+    ret 
+
+sys_destroy_pipe:
+    mov rax, 32
     int 80h
     ret
 
-sys_write_stdout:
-    mov rax, 32
+sys_read_pipe:
+    mov rax, 33
+    int 80h
+    ret 
+
+sys_write_pipe:
+    mov rax, 34
+    int 80h  
+    ret
+
+sys_adopt_child:
+    mov rax, 35
     int 80h
     ret

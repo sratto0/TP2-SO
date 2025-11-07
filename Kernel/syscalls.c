@@ -13,12 +13,18 @@
 #include <lib.h>
 #include <stdint.h>
 #include <time.h>
+#include "memory.h"
+#include "stdlib.h"
+#include "memoryManager.h"
+#include "scheduler.h"
+#include "process.h"
+#include "semaphore.h"
+#include "pipes.h"
+#include "sharedStructs.h"
 #include <video.h>
 
 /* File Descriptors*/
-#define STDIN 0
-#define STDOUT 1
-#define STDERR 2
+
 #define KBDIN 3
 
 /* IDs de syscalls */
@@ -53,11 +59,16 @@
 #define SEM_CLOSE 28
 #define MEMORY_INFO 29
 #define SLEEP 30
-#define READ_STDIN 31
-#define WRITE_STDOUT 32
+#define CREATE_PIPE 31
+#define DESTROY_PIPE 32
+#define READ_PIPE 33
+#define WRITE_PIPE 34
+#define ADOPT 35
 
-static uint8_t syscall_read(uint32_t fd);
-static void syscall_write(uint32_t fd, char c);
+#define EOF -1
+
+static int64_t syscall_read(int16_t fd, char * destination_buffer, uint64_t len);
+static int64_t syscall_write(int16_t fd, char * buffer, uint64_t len);
 static void syscall_clear();
 static uint32_t syscall_seconds();
 static uint64_t *syscall_registerArray(uint64_t *regarr);
@@ -87,113 +98,152 @@ static int64_t syscall_sem_post(char *name);
 static int64_t syscall_sem_close(char *name);
 static uint64_t syscall_memeory_get_info();
 static void syscall_sleep(uint64_t seconds);
-static int syscall_read_stdin(char *buffer, uint64_t size);
-static int syscall_write_stdout(char *buffer, uint64_t size);
+static int sycall_create_pipe();
+static void sycall_destroy_pipe();
+static int sycall_read_pipe();
+static int sycall_write_pipe();
+static void syscall_adopt_child(int64_t pid);
 
-uint64_t syscallDispatcher(uint64_t nr, uint64_t arg0, uint64_t arg1,
-                           uint64_t arg2, uint64_t arg3, uint64_t arg4,
-                           uint64_t arg5) {
-  switch (nr) {
-  case READ:
-    return syscall_read((uint32_t)arg0);
-  case WRITE:
-    syscall_write((uint32_t)arg0, (char)arg1);
-    break;
-  case CLEAR:
-    syscall_clear();
-    break;
-  case SECONDS:
-    return syscall_seconds();
-  case GET_REGISTER_ARRAY:
-    return (uint64_t)syscall_registerArray((uint64_t *)arg0);
-  case SET_FONT_SIZE:
-    syscall_fontSize((uint8_t)arg0);
-    break;
-  case GET_RESOLUTION:
-    return syscall_resolution();
-  case GET_TICKS:
-    return syscall_getTicks();
-  case GET_MEMORY:
-    syscall_getMemory((uint64_t)arg0, (uint8_t *)arg1);
-    break;
-  case SET_FONT_COLOR:
-    syscall_setFontColor((uint8_t)arg0, (uint8_t)arg1, (uint8_t)arg2);
-    break;
-  case GET_FONT_COLOR:
-    return syscall_getFontColor();
-  case MALLOC:
-    return (uint64_t)syscall_malloc((uint64_t)arg0);
-    break;
-  case FREE:
-    syscall_free((void *)arg0);
-    break;
-  case CREATE_PROCESS:
-    return (uint64_t)syscall_create_process((entry_point_t)arg0, (char **)arg1,
-                                            (char *)arg2, (int *)arg3);
-    break;
-  case EXIT_PROCESS:
-    syscall_exit_process((int64_t)arg0);
-    break;
-  case YIELD:
-    syscall_yield();
-    break;
-  case GET_PID:
-    return (uint64_t)syscall_get_pid();
-  case BLOCK_PROCESS:
-    return (uint64_t)syscall_block_process((int64_t)arg0);
-  case UNBLOCK_PROCESS:
-    return (uint64_t)syscall_unblock_process((int64_t)arg0);
-  case SET_PRIORITY:
-    return (uint64_t)syscall_set_priority((int64_t)arg0, (uint8_t)arg1);
-  case GET_PROCESSES_INFO:
-    return (uint64_t)syscall_get_processes_info();
-  case KILL_PROCESS:
-    return (uint64_t)syscall_kill_process((int64_t)arg0);
-  case WAIT_PID:
-    return (uint64_t)syscall_wait_pid((int64_t)arg0, (int32_t *)arg1);
-  case TOTAL_CPU_TICKS:
-    return (uint64_t)syscall_total_ticks();
-  case SEM_OPEN:
-    return (uint64_t)syscall_sem_open((char *)arg0, (uint64_t)arg1);
-  case SEM_WAIT:
-    return (uint64_t)syscall_sem_wait((char *)arg0);
-  case SEM_POST:
-    return (uint64_t)syscall_sem_post((char *)arg0);
-  case SEM_CLOSE:
-    return (uint64_t)syscall_sem_close((char *)arg0);
-  case MEMORY_INFO:
-    return (uint64_t)syscall_memeory_get_info();
-  case SLEEP:
-    syscall_sleep((uint64_t)arg0);
-    break;
-  case READ_STDIN:
-    return (uint64_t)syscall_read_stdin((char *)arg0, (uint64_t)arg1);
-  case WRITE_STDOUT:
-    return (uint64_t)syscall_write_stdout((char *)arg0, (uint64_t)arg1);
-  }
-  return 0;
+uint64_t syscallDispatcher(uint64_t nr, uint64_t arg0, uint64_t arg1, uint64_t arg2, uint64_t arg3, uint64_t arg4, uint64_t arg5) {
+	switch (nr) {
+        case READ:
+            return syscall_read((int16_t)arg0, (char *)arg1, (uint64_t)arg2);
+		case WRITE:
+    		return syscall_write((int16_t)arg0, (char *)arg1, (uint64_t)arg2);
+        case CLEAR:
+            syscall_clear();
+            break;
+        case SECONDS:
+            return syscall_seconds();
+        case GET_REGISTER_ARRAY:
+            return (uint64_t) syscall_registerArray((uint64_t *) arg0);
+        case SET_FONT_SIZE:
+            syscall_fontSize((uint8_t)arg0);
+            break;
+        case GET_RESOLUTION:
+            return syscall_resolution();
+        case GET_TICKS:
+            return syscall_getTicks();
+        case GET_MEMORY:
+            syscall_getMemory((uint64_t) arg0, (uint8_t *) arg1);
+            break;
+        case SET_FONT_COLOR:
+            syscall_setFontColor((uint8_t) arg0, (uint8_t) arg1, (uint8_t) arg2);
+            break;
+        case GET_FONT_COLOR:
+            return syscall_getFontColor();
+        case MALLOC:
+            return (uint64_t) syscall_malloc((uint64_t) arg0);
+            break;
+        case FREE:
+            syscall_free((void *) arg0);
+            break;
+        case CREATE_PROCESS:
+            return (uint64_t) syscall_create_process((entry_point_t) arg0, (char **) arg1, (char *) arg2, (int *) arg3);
+            break;
+        case EXIT_PROCESS:
+            syscall_exit_process((int64_t) arg0);
+            break;
+        case YIELD:
+            syscall_yield();
+            break;
+        case GET_PID:
+            return (uint64_t) syscall_get_pid();
+        case BLOCK_PROCESS:
+            return (uint64_t) syscall_block_process((int64_t) arg0);
+        case UNBLOCK_PROCESS:
+            return (uint64_t) syscall_unblock_process((int64_t) arg0);
+        case SET_PRIORITY:
+            return (uint64_t) syscall_set_priority((int64_t) arg0, (uint8_t) arg1);
+        case GET_PROCESSES_INFO:
+            return (uint64_t) syscall_get_processes_info();
+        case KILL_PROCESS:
+            return (uint64_t) syscall_kill_process((int64_t) arg0);
+        case WAIT_PID:
+            return (uint64_t) syscall_wait_pid((int64_t) arg0, (int32_t *) arg1);
+        case TOTAL_CPU_TICKS:
+            return (uint64_t) syscall_total_ticks();
+        case SEM_OPEN:
+            return (uint64_t) syscall_sem_open((char *) arg0, (uint64_t) arg1);
+        case SEM_WAIT:
+            return (uint64_t) syscall_sem_wait((char *) arg0);
+        case SEM_POST:
+            return (uint64_t) syscall_sem_post((char *) arg0);
+        case SEM_CLOSE:
+            return (uint64_t) syscall_sem_close((char *) arg0);
+        case MEMORY_INFO:
+            return (uint64_t) syscall_memeory_get_info();
+        case SLEEP:
+            syscall_sleep((uint64_t) arg0);
+            break;
+        case CREATE_PIPE:
+            return sycall_create_pipe();
+        case DESTROY_PIPE:
+            sycall_destroy_pipe();
+            break;
+        case READ_PIPE:
+            return sycall_read_pipe();
+        case WRITE_PIPE:
+            return sycall_write_pipe(); 
+        case ADOPT:
+            syscall_adopt_child((uint64_t) arg0);
+            break;
+	}
+	return 0;
 }
 
-// Read char
-static uint8_t syscall_read(uint32_t fd) {
-  switch (fd) {
-  case STDIN:
-    return getAscii();
-  case KBDIN:
-    return getScancode();
-  }
-  return 0;
-}
+static int64_t syscall_read(int16_t fd, char * destination_buffer, uint64_t len){
+    if (fd< 0 || destination_buffer == NULL || len == 0) {
+        return -1;
+    }
 
-// Write char
-static void syscall_write(uint32_t fd, char c) {
-  Color prevColor = getFontColor();
-  if (fd == STDERR)
-    setFontColor(ERROR_COLOR);
-  else if (fd != STDOUT)
-    return;
-  printChar(c);
-  setFontColor(prevColor);
+    if (fd < BUILT_IN_FDS) {
+        int fds[2];
+        get_fds(fds);
+        fd = fds[0];
+    }
+
+    if (fd >= BUILT_IN_FDS) {
+        return pipe_read(fd, destination_buffer, len);
+    }
+
+    else if (fd == STDIN) {
+        for (uint64_t i = 0; i < len; i++) {
+            destination_buffer[i] = getAscii();
+            if ((int) destination_buffer[i] == EOF) {
+                return i + 1;
+            }
+        }
+        return len;
+    }
+
+    return -1;
+}    
+
+static int64_t syscall_write(int16_t fd, char * buffer, uint64_t len){
+    if (fd < 1 || len == 0) {
+        return -1;
+    }
+
+    if (fd < BUILT_IN_FDS) {
+        int fds[2];
+        get_fds(fds);
+        fd = fds[1];    
+    }
+
+    if (fd >= BUILT_IN_FDS) {
+        return pipe_write(fd, buffer, len);
+    }
+
+
+    Color prevColor = getFontColor();
+    if(fd == STDERR)
+        setFontColor(ERROR_COLOR);
+    for(int i = 0; i < len; i++) {
+        printChar(buffer[i]);
+    }    
+    setFontColor(prevColor);
+    return len;
 }
 
 // Clear
@@ -253,14 +303,18 @@ static int64_t syscall_create_process(entry_point_t main, char **argv,
   return add_process((entry_point_t)main, argv, name, file_descriptors);
 }
 
-// Exit process
-static void syscall_exit_process(int64_t exit_code) { my_exit(exit_code); }
-
 // Yield
 static void syscall_yield() { yield(); }
 
-// Get PID
-static int64_t syscall_get_pid() { return get_current_pid(); }
+//Exit process
+static void syscall_exit_process(int64_t exit_code){
+    exit_process(exit_code);
+}
+
+//Get PID
+static int64_t syscall_get_pid() {
+    return get_current_pid();
+}
 
 // Block process
 static int syscall_block_process(int64_t pid) { return block_process(pid); }
@@ -307,28 +361,28 @@ static uint64_t syscall_memeory_get_info() {
   return (uint64_t)memory_get_info();
 }
 
-static void syscall_sleep(uint64_t seconds) {
-  uint32_t sleeping_ticks = (uint32_t)(seconds * 18);
-  sleep(sleeping_ticks);
+static void syscall_sleep(uint64_t seconds){
+    uint32_t sleeping_ticks = (uint32_t)(seconds * 18);
+    sleep(sleeping_ticks);
 }
 
-static int syscall_read_stdin(char *buffer, uint64_t size) {
-  uint64_t bytesRead = 0;
-  while (bytesRead < size) {
-    char c = syscall_read(STDIN);
-    if (c == '\n' || c == '\r') {
-      buffer[bytesRead++] = '\n';
-      break;
-    }
-    buffer[bytesRead++] = c;
-  }
-  return (int)bytesRead;
+static int sycall_create_pipe(int fds[2]){
+    return pipe_create(fds);
 }
 
-static int syscall_write_stdout(char *buffer, uint64_t size) {
-  uint64_t bytesWritten = 0;
-  while (bytesWritten < size) {
-    syscall_write(STDOUT, buffer[bytesWritten++]);
-  }
-  return (int)bytesWritten;
+static void sycall_destroy_pipe(int fd){
+    return pipe_destroy(fd);
 }
+
+static int sycall_read_pipe(int fd, char * buffer, int size){
+    return pipe_read(fd, buffer, size);
+}
+
+static int sycall_write_pipe(int fd, const char * buffer, int size){
+    return pipe_write(fd, buffer, size);
+}
+
+static void syscall_adopt_child(int64_t pid){
+    adopt_children(pid);
+}
+

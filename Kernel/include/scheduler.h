@@ -41,9 +41,11 @@ int unblock_current_process();
 int set_process_priority(int64_t pid, uint8_t priority);
 int64_t wait_pid(int64_t pid, int32_t *exit_code);
 int sleep_block(int64_t pid, uint8_t sleep);
-void my_exit(int64_t ret);
+void exit_process(int64_t ret);
 uint8_t is_foreground_process(int64_t pid);
-process_info_t *get_processes_info();
+process_info_t * get_processes_info();
+void get_fds(int fds[2]);
 void kill_foreground_process();
+void adopt_children(int64_t pid);
 
 #endif // SCHEDULER_H

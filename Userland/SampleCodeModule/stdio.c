@@ -19,9 +19,9 @@
  */
 static void vprintf(char *fmt, va_list args);
 
-void putchar(char c) { write(STDOUT, c); }
+void putchar(char c) { write(STDOUT, &c, 1); }
 
-void putcharErr(char c) { write(STDERR, c); }
+void putcharErr(char c) { write(STDERR, &c, 1); }
 
 void puts(const char *s) {
   while (*s)
@@ -35,11 +35,11 @@ void printErr(const char *s) {
 
 int getchar() {
   char c;
-  c = read(STDIN);
+  read(STDIN, &c, 1);
   return c;
 }
 
-char getScanCode() { return read(KBDIN); }
+// char getScanCode() { return read(KBDIN); }
 
 void printf(char *fmt, ...) {
   va_list v;

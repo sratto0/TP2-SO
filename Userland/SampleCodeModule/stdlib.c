@@ -141,10 +141,22 @@ memory_info_t *my_memory_get_info() { return sys_memory_get_info(); }
 
 void my_sleep(uint64_t seconds) { sys_sleep(seconds); }
 
-int my_read_stdin(char *buffer, uint64_t size) {
-  return sys_read_stdin(buffer, size);
+int my_pipe_create(int fds[2]){
+    return sys_create_pipe(fds);
 }
 
-int my_write_stdout(char *buffer, uint64_t size) {
-  return sys_write_stdout(buffer, size);
+int my_pipe_write(int fd, const char * buffer, int size){
+    return sys_write_pipe(fd, buffer, size);
+}
+
+int my_pipe_read(int fd, char * buffer, int size){
+    return sys_read_pipe(fd, buffer, size);
+}
+
+void my_destroy_pipe(int fd){
+    sys_destroy_pipe(fd);
+}
+
+void my_adopt_child(int64_t pid){
+    sys_adopt_child(pid);
 }

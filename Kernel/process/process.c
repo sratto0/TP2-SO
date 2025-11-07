@@ -16,7 +16,6 @@ static void free_partial_argv(char **argv, int allocated);
 
 process_t *my_create_process(int64_t pid, entry_point_t entry_point,
                              char **argv, char *name, int *fds) {
-  (void)fds;
 
   if (entry_point == NULL || name == NULL) {
     return NULL;
@@ -35,6 +34,11 @@ process_t *my_create_process(int64_t pid, entry_point_t entry_point,
   proc->in_ready_queue = 0;
   proc->entry_point = entry_point;
   proc->return_value = 0;
+  proc->r_fd = fds[0];
+  proc->w_fd = fds[1];
+  proc->ticks = 0;
+
+  
 
   proc->stack_base = memory_alloc(STACK_SIZE);
   if (proc->stack_base == NULL) {
@@ -123,7 +127,7 @@ void free_argv(char **argv) {
 void process_caller(entry_point_t main, char **argv) {
   int count = count_from_argv(argv);
   int64_t ret = main(count, argv);
-  my_exit(ret);
+  exit_process(ret);
 }
 
 static uint32_t str_length(const char *str) {

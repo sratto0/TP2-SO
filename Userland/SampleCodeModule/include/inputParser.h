@@ -17,7 +17,8 @@ typedef struct input_parser {
   uint8_t background;
 } input_parser_t;
 
-input_parser_t *parse_input(char *input);
-void free_parser(input_parser_t *parser);
+input_parser_t * parse_input(char * input);
+void free_parser(input_parser_t * parser);
+shell_program_t *get_shell_program(input_parser_t *parser, int index);
 
 #endif // INPUT_PARSER_H

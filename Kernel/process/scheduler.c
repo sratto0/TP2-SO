@@ -4,12 +4,12 @@
 #include "memoryMap.h"
 #include "process.h"
 #include "time.h"
-
+#include "semaphore.h"
+#include "pipes.h"
 #include "video.h"
 
 extern void timer_tick();
 
-static void adopt_children(int64_t pid);
 static int remove_process(int64_t pid);
 static process_t *get_process(int64_t pid);
 static process_t *get_current_process(void);
@@ -29,8 +29,9 @@ static void init(int argc, char **argv) {
       _hlt();
   }
 
+  int shell_fds[2] = {STDIN, STDOUT}; 
   int shell_pid =
-      add_process((entry_point_t)SHELL_ADDRESS, shell_argv, "shell", NULL);
+      add_process((entry_point_t)SHELL_ADDRESS, shell_argv, "shell", shell_fds);
 
   if (shell_pid < 0) {
     while (1)
@@ -47,9 +48,9 @@ static int add_init() {
     return -1;
   }
 
-  // VER!!: ACA EL NULL QUE PASE COMO FD probablemente cambie
+  int init_fds[2] = {STDIN, STDOUT}; 
   process_t *pcb_init =
-      my_create_process(INIT_PID, (entry_point_t)init, NULL, "init", NULL);
+      my_create_process(INIT_PID, (entry_point_t)init, NULL, "init", init_fds);
 
   if (pcb_init == NULL) {
     return -1;
@@ -151,9 +152,9 @@ void *schedule(void *prev_rsp) {
   return next_process->stack_pointer;
 }
 
-int64_t add_process(entry_point_t main, char **argv, char *name,
-                    int *file_descriptors) {
-  if (scheduler == NULL || scheduler->process_count >= MAX_PROCESSES) {
+
+int64_t add_process(entry_point_t main, char ** argv, char * name, int * file_descriptors){
+  if(scheduler == NULL || scheduler->process_count >= MAX_PROCESSES || file_descriptors == NULL){
     return -1;
   }
 
@@ -233,7 +234,7 @@ void yield() {
   timer_tick();
 }
 
-static void adopt_children(int64_t pid) {
+void adopt_children(int64_t pid) {
   if (scheduler == NULL || pid < 0 || pid >= MAX_PROCESSES) {
     return;
   }
@@ -285,6 +286,8 @@ int kill_process(int64_t pid) {
 
   process_t *proc = scheduler->processes[pid];
   process_t *parent = scheduler->processes[proc->parent_pid];
+
+  semaphore_remove_process(proc->pid);
 
   proc->state = PROC_KILLED;
   if (proc->in_ready_queue || proc->state == PROC_READY ||
@@ -396,10 +399,21 @@ int set_process_priority(int64_t pid, uint8_t priority) {
   return 0;
 }
 
-int64_t wait_pid(int64_t pid, int32_t *exit_code) {
 
-  process_t *child = get_process(pid);
-  process_t *current = get_current_process();
+void get_fds(int fds[2]) {
+  if (scheduler == NULL || scheduler->current_pid == NO_PID) {
+    return;
+  }
+  process_t * current_process = scheduler->processes[scheduler->current_pid];
+  fds[STDIN] = current_process->r_fd;
+  fds[STDOUT] = current_process->w_fd;
+}
+
+int64_t wait_pid(int64_t pid, int32_t * exit_code){
+  
+  process_t * child = get_process(pid);
+  process_t * current = get_current_process();
+
 
   if (child == NULL || current == NULL) {
     return -1;
@@ -461,13 +475,25 @@ int64_t wait_pid(int64_t pid, int32_t *exit_code) {
 //   return 0;
 // }
 
-void my_exit(int64_t ret) {
-  if (scheduler == NULL) {
+void exit_process(int64_t ret) {
+  if(scheduler == NULL) {
     return;
   }
 
   process_t *current = get_current_process();
+
+  if (current->w_fd != STDOUT && current->w_fd != STDERR) {
+    send_pipe_eof(current->w_fd);
+  }
+
+  // VER!! : cerrar semaforos abiertos por el proceso actual 
+  // VER!! : send_pipe_eof (chat me tira muchas cosas raras sobre esta fun)
+  // VER!! :  
+
   adopt_children(current->pid);
+
+  semaphore_remove_process(current->pid);
+
 
   if (scheduler->processes[scheduler->current_pid]->parent_pid == INIT_PID) {
     remove_process(current->pid);
