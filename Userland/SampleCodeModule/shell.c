@@ -64,6 +64,9 @@ static int getCommandIndex(char *command);
 // static int cmd_wc_wrapper(char **argv);
 // static int cmd_filter_wrapper(char **argv);
 static void create_single_process(input_parser_t *parser);
+static void create_piped_processes(input_parser_t * parser);
+static void continue_if_invalid(input_parser_t * parser, int index);
+
 
 const static Command commands[] = {
     {"help", "Listado de comandos", (entry_point_t)help},
@@ -97,7 +100,8 @@ const static Command commands[] = {
     {"unblock", "Desbloquea un proceso dado su ID", (entry_point_t)cmd_unblock},
     {"cat", "Imprime el stdin tal como lo recibe", (entry_point_t)cmd_cat},
     {"wc", "Cuenta la cantidad de líneas del input", (entry_point_t)cmd_wc},
-    {"filter", "Filtra las vocales del input", (entry_point_t)cmd_filter}};
+    {"filter", "Filtra las vocales del input", (entry_point_t)cmd_filter}
+};
 
 
 void run_shell(){
@@ -120,26 +124,20 @@ void run_shell(){
         }
         free_parser(parser);
     }
-
-    if (parser->qty_shell_programs == 1) {
-      create_single_process(parser);
-    } else if (parser->qty_shell_programs == 2) {
-      // create_piped_processes(parser);
-    }
-    free_parser(parser);
-  }
 }
 
 static void create_single_process(input_parser_t * parser) {
     shell_program_t * program = parser->shell_programs[0];
     int idx = getCommandIndex(program->name);
-    continue_if_invalid(parser, first_idx);
+    continue_if_invalid(parser, idx);
 
     if(parser->background) {
-        // VER!!
+        int fds[2] = {-1, STDOUT};
+        my_create_process((entry_point_t)commands[idx].f, program->params, program->name, fds);
     }
     else {
-        int16_t pid = my_create_process((entry_point_t)commands[idx].f, program->params, program->name, NULL);
+        int fds[2] = {STDIN, STDOUT}; // Usar descriptores estándar para foreground
+        int16_t pid = my_create_process((entry_point_t)commands[idx].f, program->params, program->name, fds);
         my_wait_pid(pid, NULL);
     }
 }
@@ -168,24 +166,25 @@ static void create_piped_processes(input_parser_t * parser) {
 
     if (left_pid == -1 || right_pid == -1) {
         printErr("No se pudo crear uno de los procesos\n");
-        my_destroy_pipe(pipe_fds);
+        my_destroy_pipe(pipe_fds[0]);
         return;
     }
 
     if (parser->background) {
-        
-        
-        return;
+        my_adopt_child(left_pid);
+        // my_adopt_child(right_pid);
     }
-    
-    
-    my_wait_pid(left_pid, NULL);
+    else {
+        my_wait_pid(left_pid, NULL);
+    }
+
     my_wait_pid(right_pid, NULL);
 
-    sys_destroy_pipe(pipe_fds);
+    // VER!!: esta bien pasar en [0]
+    sys_destroy_pipe(pipe_fds[0]);
 }
 
-static void continue_if_invalid(parser, index) {
+static void continue_if_invalid(input_parser_t * parser, int index) {
     if (index == -1) {
         printErr(INVALID_COMMAND);
         return;
@@ -283,10 +282,10 @@ static void man(int argc, char **argv) {
     printErr(INVALID_COMMAND);
 }
 
-static int cmd_ps_wrapper(char **argv){
-    char *args[] = { "ps", NULL};
-    return cmd_ps(1, args);
-}
+// static int cmd_ps_wrapper(char **argv){
+//     char *args[] = { "ps", NULL};
+//     return cmd_ps(1, args);
+// }
 
 // static int cmd_mem_wrapper(char **argv){
 //     char *args[] = { "mem", NULL};

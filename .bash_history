@@ -1,239 +1,3 @@
-<<<<<<< HEAD
-make
-make
-make
-exit
-cd root
-cd Toolchain
-make
-cd ..
-make
-make
-make
-make
-make
-make
-make
-make
-make
-make
-make
-make
-make
-make
-make
-make
-make
-make
-make
-cd Toolchain
-mke
-make
-cd ..
-make
-exit
-cd root
-cd Toolchain
-make
-cd ..
-make
-cd Toolchain
-make
-cd ..
-make
-exit
-cd root
-cd Toolchain
-make
-cd ..
-make
-make
-make
-make
-make
-make
-make
-make
-make
-make
-exit
-cd root
-gdb
-make
-cd Toolchain
-make
-cd ..
-make
-exit
-cd root
-make clean
-cd Toolchain
-make clean
-make
-cd ..
-make
-exit
-cd root
-gdb
-cd root
-=======
->>>>>>> origin/jose
-cd Toolchain
-make
-cd ..
-make
-make
-exit
-cd root
-cd Toolchain
-make
-cd ..
-make
-make
-make
-make
-gdb
-exit
-cd root
-cd Toolchain
-make
-cd ..
-make
-make clean
-cd Toolchain
-make clean
-make
-cd ..
-make 
-cd Toolchain
-make
-cd ..
-make
-cd Toolchain
-make
-cd ..
-make
-make
-make
-exit
-cd root
-cd Toolchain
-make
-cd ..
-make
-make
-make
-make
-make
-cd Toolchain
-make
-cd ..
-make
-make
-cd Toolchain
-make
-cd ..
-make
-make
-exit
-cd root
-cd Toolchain
-make
-cd ..
-make
-make
-exit
-cd root
-make clean
-cd Toolchain
-make
-cd ..
-make
-make
-ls
-makcd ..
-make clean
-cd Toolchain
-make
-cd ..
-make 
-exit
-cd root
-cd Toolchain
-make
-cd ..
-make
-exit
-cd root
-cd Toolchain
-make
-cd ..
-make
-exit
-cd root
-make clean
-cd Toolchain
-make clean
-make
-cd ..
-make
-exit
-cd root
-cd Toolchain
-make
-cd ..
-make
-exit
-cd root
-cd Toolchain
-make
-cd ..
-make
-exit
-cd root
-make
-cd Toolchain
-make
-cd ..
-make
-exit
-cd root
-cd toolchain
-cd Toolchain
-make
-cd ..
-make
-exit
-cd root
-cd Toolchain
-make
-cd ..
-make
-make
-cd ..
-make
-cd root
-cd Toolchain
-make
-cd ..
-make
-exit
-cd root
-cd Toolchain
-make
-cd ..
-ake
-make
-man
-make
-make
-make
-exit
-cd root
-cd Toolchain
-make
-cd ..
-make
 make
 mak
 make
@@ -611,4 +375,126 @@ cd root
 make clean
 make
 >>>>>>> origin/jose
+exit
+cd root
+cd Toolchain
+make
+cd ..
+make
+make
+make
+make
+make
+make
+make
+make
+make
+make
+make
+make
+make
+make
+make
+make
+make
+make
+make
+make
+make
+make
+mak
+make
+make
+make
+make
+make
+make
+make
+make
+make
+make
+make
+exit
+cd root
+make clean
+cd Toolchain
+make clean
+make
+cd ..
+make
+make
+make clean
+make
+make
+make clean
+make
+make clean
+make
+make
+make clean
+make
+make clean
+make
+make clean
+make
+make
+make clean
+make
+make clean
+make
+make clean
+cd Toolchain
+make
+cd ..
+make
+exit
+cd root
+make clean
+cd Toolchain
+make clean
+make
+cd ..
+make
+exit
+cd root
+cd Toolchain
+cd ..
+gdb
+y
+gdb
+quit
+ls
+cd Toolchain
+cd ..
+make clean
+cd Toolchain
+make clea
+make clean
+make
+cd ..
+make 
+exit
+cd root
+cd Toolchain
+make
+cd ..
+make
+exit
+cd root
+gdb
+qui
+qui
+quit
+exit
+cd root
+cd Toolchain
+make
+cd ..
+make
+exit
+cd root
+cd Toolchain
+make
+cd ..
+make
 exit

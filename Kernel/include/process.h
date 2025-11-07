@@ -37,12 +37,9 @@ typedef struct process {
   int32_t return_value;
   int64_t waiting_pid; // PID que este proceso esta esperando (o NO_PID)
 
-<<<<<<< HEAD
   int r_fd;
   int w_fd;
   
-=======
->>>>>>> origin/jose
 } process_t;
 
 process_t *my_create_process(int64_t pid, entry_point_t entry_point,

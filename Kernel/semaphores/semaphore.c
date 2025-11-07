@@ -5,6 +5,7 @@
 #include "../include/scheduler.h"
 #include "doubleLinkedList.h"
 #include <stddef.h>
+#include <stdint.h>
 
 
 typedef struct semaphore {
@@ -79,6 +80,16 @@ static int get_free_slot() {
     }
   }
   return -1;
+}
+
+static void remove_pid_from_queue(semaphore_t *sem, int64_t pid) {
+  if (sem == NULL || sem->waiting_queue == NULL) {
+    return;
+  }
+
+  void *pid_ptr = (void *)(uintptr_t)pid;
+  while (delete_element(sem->waiting_queue, pid_ptr) == 0) {
+  }
 }
 
 int64_t my_sem_open(char *name, uint64_t initialValue) {
@@ -194,4 +205,20 @@ int64_t my_sem_close(char *name) {
   }
   release_lock(&sem->lock);
   return 0;
+}
+
+void semaphore_remove_process(int64_t pid) {
+  if (semaphore_manager == NULL || pid < 0) {
+    return;
+  }
+
+  for (int i = 0; i < MAX_SEMAPHORES; i++) {
+    semaphore_t *sem = &semaphore_manager->semaphores[i];
+    if (!sem->in_use) {
+      continue;
+    }
+    acquire_lock(&sem->lock);
+    remove_pid_from_queue(sem, pid);
+    release_lock(&sem->lock);
+  }
 }

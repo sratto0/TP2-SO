@@ -46,5 +46,6 @@ uint8_t is_foreground_process(int64_t pid);
 process_info_t * get_processes_info();
 void get_fds(int fds[2]);
 void kill_foreground_process();
+void adopt_children(int64_t pid);
 
 #endif // SCHEDULER_H

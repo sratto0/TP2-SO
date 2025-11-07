@@ -141,46 +141,22 @@ memory_info_t *my_memory_get_info() { return sys_memory_get_info(); }
 
 void my_sleep(uint64_t seconds) { sys_sleep(seconds); }
 
-int64_t my_sem_wait(char * name){
-    return sys_sem_wait(name);
+int my_pipe_create(int fds[2]){
+    return sys_create_pipe(fds);
 }
 
-int64_t my_sem_post(char * name){
-    return sys_sem_post(name);
+int my_pipe_write(int fd, const char * buffer, int size){
+    return sys_write_pipe(fd, buffer, size);
 }
 
-int64_t my_sem_close(char * name){
-    return sys_sem_close(name);
-}
-
-process_info_t * my_get_processes_info(){
-    return sys_get_processes_info();
-}
-
-int64_t my_total_cpu_ticks(){
-   return sys_total_cpu_ticks();
-}
-
-memory_info_t * my_memory_get_info(){
-    return sys_memory_get_info();
-}
-
-void my_sleep(uint64_t seconds){
-    sys_sleep(seconds);
-}
-
-void my_create_pipe(int fds[2]){
-    sys_create_pipe(fds);
-}
-
-void my_pipe_write(int fd, const char * buffer, int size){
-    sys_pipe_write(fd, buffer, size);
-}
-
-void my_pipe_read(int fd, char * buffer, int size){
-    sys_pipe_read(fd, buffer, size);
+int my_pipe_read(int fd, char * buffer, int size){
+    return sys_read_pipe(fd, buffer, size);
 }
 
 void my_destroy_pipe(int fd){
     sys_destroy_pipe(fd);
+}
+
+void my_adopt_child(int64_t pid){
+    sys_adopt_child(pid);
 }

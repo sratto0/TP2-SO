@@ -35,7 +35,7 @@ GLOBAL sys_create_pipe
 GLOBAL sys_destroy_pipe
 GLOBAL sys_read_pipe
 GLOBAL sys_write_pipe
-
+GLOBAL sys_adopt_child
 
 read:
     mov rax, 0
@@ -214,3 +214,7 @@ sys_write_pipe:
     int 80h  
     ret
 
+sys_adopt_child:
+    mov rax, 35
+    int 80h
+    ret
