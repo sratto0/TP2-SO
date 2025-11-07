@@ -108,7 +108,7 @@ int64_t my_sem_open(char *name, uint64_t initialValue) {
   return 0;
 }
 
-int64_t my_sem_wait(char *name) { // Mirar bien donde hacer el release del lock
+int64_t my_sem_wait(char *name) {
   if (semaphore_manager == NULL || name == NULL) {
     return -1;
   }
@@ -141,7 +141,7 @@ int64_t my_sem_wait(char *name) { // Mirar bien donde hacer el release del lock
   return 0;
 }
 
-int64_t my_sem_post(char *name) { // Mirar bien donde hacer el release del lock
+int64_t my_sem_post(char *name) { 
   if (semaphore_manager == NULL || name == NULL) {
     return -1;
   }

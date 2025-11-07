@@ -5,7 +5,7 @@ SOURCES=$(wildcard [^_]*.c)
 SOURCES_ASM=$(wildcard asm/*.asm)
 OBJECTS=$(SOURCES:.c=.o)
 OBJECTS_ASM=$(SOURCES_ASM:asm/%.asm=obj/%.asm.o)
-TEST_OBJECTS=test_mm.o test_prio.o test_sync.o test_processes.o test_util.o syscall.o
+TEST_OBJECTS=test_mm.o test_prio.o test_sync.o test_processes.o test_util.o
 COMMANDS=$(wildcard commands/*.c)
 INCLUDE=./include
 

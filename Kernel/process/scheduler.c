@@ -125,9 +125,7 @@ void *schedule(void *prev_rsp) {
         current_process->pid != INIT_PID) {
       enqueue_ready(current_process);
       if (!current_process
-               ->in_ready_queue) { // Si no se pudo encolar (porque no habia
-                                   // espacio o no existia la lista), sigo
-                                   // corriendo el current_process
+               ->in_ready_queue) {
         current_process->state = PROC_RUNNING;
         current_process->remaining_quantum =
             quantum_for_priority(current_process->priority);
@@ -243,7 +241,7 @@ static void adopt_children(int64_t pid) {
     process_t *child = scheduler->processes[i];
 
     if (child != NULL && child->parent_pid == pid) {
-      child->parent_pid = INIT_PID; // adoptado por init
+      child->parent_pid = INIT_PID;
     }
   }
 }
@@ -441,26 +439,6 @@ int64_t wait_pid(int64_t pid, int32_t *exit_code) {
   return -1;
 }
 
-// int sleep_block(int64_t pid, uint8_t sleep){
-//   process_t * proc = get_process(pid);
-//   if(pid == 0 || proc == NULL || proc->state == PROC_KILLED){
-//     return -1;
-//   }
-//   if(sleep == 0){
-//     remove_sleeping_process(pid);
-//   }
-
-//   proc->state = PROC_BLOCKED;
-//   proc->quantum = 0;
-//   remove_from_ready_queue(proc);
-//   add_blocked(proc);
-
-//   if(scheduler != NULL && scheduler->current == pid){
-//     yield();
-//   }
-//   return 0;
-// }
-
 void my_exit(int64_t ret) {
   if (scheduler == NULL) {
     return;
@@ -568,18 +546,6 @@ uint8_t is_foreground_process(int64_t pid) {
   return (scheduler->processes[SHELL_PID]->waiting_pid == pid);
 }
 
-// void kill_foreground_process(){
-//   if(scheduler == NULL){
-//     return;
-//   }
-//   for(int i = 0; i < MAX_PROCESSES; i++){
-//     if(scheduler->processes[i] != NULL && foreground_process(i)){
-//       kill_process(i);
-//       return;
-//     }
-//   }
-// }
-
 process_info_t *get_processes_info() {
   static process_info_t processes_info[MAX_PROCESSES];
   for (int k = 0; k < MAX_PROCESSES; k++) {
@@ -618,17 +584,15 @@ void kill_foreground_process() {
     return;
   }
 
-  // Buscar el proceso en foreground
   for (int i = 0; i < MAX_PROCESSES; i++) {
     process_t *proc = scheduler->processes[i];
 
     if (proc != NULL && is_foreground_process(proc->pid)) {
-      // No matar la shell ni init
       if (proc->pid == SHELL_PID || proc->pid == INIT_PID) {
         continue;
       }
 
-      printf("\n^C\n"); // Mostrar ^C en pantalla
+      printf("\n^C\n");
       kill_process(proc->pid);
       return;
     }

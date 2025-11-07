@@ -60,9 +60,6 @@ process_t *my_create_process(int64_t pid, entry_point_t entry_point,
 
   proc->argc = count_from_argv(proc->argv);
 
-  // my_strncpy(proc->name, name, sizeof(proc->name));
-  // proc->name[MAX_NAME_LEN - 1] = '\0';
-
   proc->stack_pointer = set_stack_frame(&process_caller, entry_point,
                                         proc->stack_pointer, proc->argv);
 
@@ -78,7 +75,6 @@ void process_destroy(process_t *proc) {
   memory_free(proc);
 }
 
-// duplicar argumentos para proceso
 static char **duplicate_argv(char **argv) {
   if (argv == NULL || argv[0] == NULL) {
     char **new_argv = memory_alloc(sizeof(char *));

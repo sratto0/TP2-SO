@@ -1,6 +1,6 @@
 include ../../Makefile.inc
 
-SOURCES=test_mm.c test_prio.c test_sync.c test_processes.c syscall.c
+SOURCES=test_mm.c test_prio.c test_sync.c test_processes.c
 OBJECTS=$(SOURCES:.c=.o)
 UTIL=test_util.o
 INCLUDE=../include

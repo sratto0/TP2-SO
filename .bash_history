@@ -1,37 +1,3 @@
-make
-make
-make
-make
-cd Toolchain
-make
-cd ..
-make
-make
-cd Toolchain
-make
-cd ..
-make
-make
-exit
-cd root
-cd Toolchain
-make
-cd ..
-make
-make
-exit
-cd root
-make clean
-cd Toolchain
-make
-cd ..
-make
-make
-ls
-makcd ..
-make clean
-cd Toolchain
-make
 cd ..
 make 
 exit
@@ -492,6 +458,40 @@ cd ..
 make
 exit
 cd root
+make clean
+cd Toolchain
+make
+cd ..
+make
+exit
+cd root
+make clean
+exit
+cd root
+make clean
+cd Toolchain
+make
+cd ..
+make
+make clean
+make clean
+ls
+make clean
+make clean
+cd Toolchain
+make
+cd ..
+make
+make clean
+cd Toolchain
+make
+cd ..
+make
+make clean
+cd Toolchain
+make
+cd ..
+make
 make clean
 cd Toolchain
 make

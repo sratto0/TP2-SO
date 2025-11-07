@@ -77,7 +77,6 @@ void sleep(uint32_t sleeping_ticks) {
   sleeping_processes[pid].pid = pid;
   if (sleeping_processes[pid].wake_up_tick < next_tick)
     next_tick = sleeping_processes[pid].wake_up_tick;
-  // sleep_block(pid, 1);
   block_current_process();
 }
 
