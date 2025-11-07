@@ -1,16 +1,3 @@
-cd Toolchain
-make
-cd ..
-make 
-exit
-cd root
-cd Toolchain
-make
-cd ..
-make
-exit
-cd root
-cd Toolchain
 make
 cd ..
 make
@@ -497,4 +484,17 @@ exit
 cd root
 make clean
 make
+exit
+cd root
+make clean
+make buddy
+make clean
+make buddy
+nm Kernel/memoryManagement/buddyMemoryManager.o | grep memory_init
+nm Kernel/memoryManagement/memoryManager.o | grep memory_init
+nm Kernel/memoryManagement/buddyMemoryManager.o | grep memory_init
+nm Kernel/memoryManagement/memoryManager.o | grep memory_init
+make clean
+make
+nm Kernel/memoryManagement/memoryManager.o | grep memory_init
 exit

@@ -26,22 +26,22 @@ all: bootloader kernel userland image
 buddy: bootloader kernel_buddy userland image_buddy
 
 bootloader:
-	cd Bootloader; make all
+	cd Bootloader; $(MAKE) all
 
 kernel:
-	cd Kernel; make all MEMORY_MANAGER=bitmap
+	cd Kernel; $(MAKE) all
 
 kernel_buddy:
-	cd Kernel; make all MEMORY_MANAGER=buddy
+	cd Kernel; $(MAKE) all MM=USE_BUDDY
 
 userland:
-	cd Userland; make all
+	cd Userland; $(MAKE) all
 
 image: kernel bootloader userland
-	cd Image; make all
+	cd Image; $(MAKE) all
 
 image_buddy: kernel_buddy bootloader userland
-	cd Image; make all
+	cd Image; $(MAKE) all MM=USE_BUDDY
 
 format:
 	@echo "Aplicando clang-format…"
