@@ -22,10 +22,16 @@ process_t *my_create_process(int64_t pid, entry_point_t entry_point,
     return NULL;
   }
 
-  process_t *proc = memory_alloc(sizeof(process_t));
+  process_t *proc = (process_t *)memory_alloc(sizeof(process_t));
 
   if (proc == NULL) {
     return NULL;
+  }
+
+  memset(proc, 0, sizeof(*proc));
+  if(name){
+    my_strncpy(proc->name, name, MAX_NAME_LEN - 1);
+    proc->name[MAX_NAME_LEN - 1] = 0;
   }
 
   proc->pid = pid;
@@ -54,8 +60,8 @@ process_t *my_create_process(int64_t pid, entry_point_t entry_point,
 
   proc->argc = count_from_argv(proc->argv);
 
-  my_strncpy(proc->name, name, sizeof(proc->name));
-  proc->name[MAX_NAME_LEN - 1] = '\0';
+  // my_strncpy(proc->name, name, sizeof(proc->name));
+  // proc->name[MAX_NAME_LEN - 1] = '\0';
 
   proc->stack_pointer = set_stack_frame(&process_caller, entry_point,
                                         proc->stack_pointer, proc->argv);
