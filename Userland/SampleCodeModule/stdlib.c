@@ -141,10 +141,6 @@ memory_info_t *my_memory_get_info() { return sys_memory_get_info(); }
 
 void my_sleep(uint64_t seconds) { sys_sleep(seconds); }
 
-int my_read_stdin(char *buffer, uint64_t size) {
-  return sys_read_stdin(buffer, size);
-}
-
 int64_t my_sem_wait(char * name){
     return sys_sem_wait(name);
 }
