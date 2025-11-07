@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 make
 make
 make
@@ -75,6 +76,8 @@ exit
 cd root
 gdb
 cd root
+=======
+>>>>>>> origin/jose
 cd Toolchain
 make
 cd ..
@@ -453,7 +456,73 @@ exit
 cd root
 make clean
 cd Toolchain
+<<<<<<< HEAD
 make clean
+=======
+make
+cd ..
+make
+exit
+cd root
+make clean
+cd Toolchain
+make clean
+cd ..
+cd Toolchain
+make
+cd ..
+make
+make clean
+make
+exit
+cd root
+make clean
+cd Toolchain
+make clean
+exit
+cd root
+make clean
+make format
+make
+make clean
+make
+make clean
+make
+cd Toolchain
+make
+cd ..
+make
+make clean
+make
+make format
+make clean
+make
+exit
+cd root
+make clean
+cd Toolchain
+make clean
+make
+cd ..
+make
+make clean
+exit
+make
+cd root
+make
+make clean
+make
+make clean
+exit
+make clean
+cd root
+make clean
+cd Toolchain
+make clean
+make 
+cd ..
+make
+>>>>>>> origin/jose
 exit
 cd root
 make clean
@@ -467,6 +536,7 @@ cd root
 make clean
 cd Toolchain
 make clean
+<<<<<<< HEAD
 exit
 cd root
 cd Toolchain
@@ -488,6 +558,26 @@ cd Toolchain
 make
 cd ..
 make
+=======
+make
+cd ..
+make
+exit
+cd root
+>>>>>>> origin/jose
+make clean
+cd Toolchain
+make clean
+make
+cd ..
+make
+<<<<<<< HEAD
+make clean
+make
+make
+=======
+exit
+cd root
 make clean
 cd Toolchain
 make clean
@@ -496,5 +586,29 @@ cd ..
 make
 make clean
 make
+exit
+cd root
+make clean
+cd Toolchain
+make clean
 make
+cd ..
+make
+exit
+cd root
+make clean
+make
+exit
+cd root
+make clean
+make
+exit
+cd root
+make clean
+make
+exit
+cd root
+make clean
+make
+>>>>>>> origin/jose
 exit

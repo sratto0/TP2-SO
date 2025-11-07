@@ -2,12 +2,18 @@
 // PVS-Studio Static Code Analyzer for C, C++, C#, and Java:
 // https://pvs-studio.com
 
-#include <stdint.h>
-#include <video.h>
+#include "memory.h"
+#include "memoryManager.h"
+#include "process.h"
+#include "scheduler.h"
+#include "semaphore.h"
+#include "stdlib.h"
+#include <color.h>
 #include <keyboard.h>
 #include <lib.h>
-#include <color.h>
+#include <stdint.h>
 #include <time.h>
+<<<<<<< HEAD
 #include "memory.h"
 #include "stdlib.h"
 #include "memoryManager.h"
@@ -16,6 +22,9 @@
 #include "semaphore.h"
 #include "pipes.h"
 #include "sharedStructs.h"
+=======
+#include <video.h>
+>>>>>>> origin/jose
 
 /* File Descriptors*/
 
@@ -39,7 +48,7 @@
 #define CREATE_PROCESS 14
 #define EXIT_PROCESS 15
 #define YIELD 16
-#define GET_PID 17  
+#define GET_PID 17
 #define BLOCK_PROCESS 18
 #define UNBLOCK_PROCESS 19
 #define SET_PRIORITY 20
@@ -63,16 +72,17 @@ static uint8_t syscall_read(uint32_t fd);
 static int syscall_write(int16_t fd, char * buffer, uint64_t len);
 static void syscall_clear();
 static uint32_t syscall_seconds();
-static uint64_t * syscall_registerArray(uint64_t * regarr);
+static uint64_t *syscall_registerArray(uint64_t *regarr);
 static void syscall_fontSize(uint8_t size);
 static uint32_t syscall_resolution();
 static uint64_t syscall_getTicks();
-static void syscall_getMemory(uint64_t pos, uint8_t * vec);
+static void syscall_getMemory(uint64_t pos, uint8_t *vec);
 static void syscall_setFontColor(uint8_t r, uint8_t g, uint8_t b);
 static uint32_t syscall_getFontColor();
-static uint64_t syscall_malloc(uint64_t size);  
-static void syscall_free(void * ptr);
-static int64_t syscall_create_process(entry_point_t main, char ** argv, char * name, int * file_descriptors);
+static uint64_t syscall_malloc(uint64_t size);
+static void syscall_free(void *ptr);
+static int64_t syscall_create_process(entry_point_t main, char **argv,
+                                      char *name, int *file_descriptors);
 static void syscall_exit_process(int64_t exit_code);
 static void syscall_yield();
 static int64_t syscall_get_pid();
@@ -81,12 +91,12 @@ static int syscall_unblock_process(int64_t pid);
 static int syscall_set_priority(int64_t pid, uint8_t priority);
 static uint64_t syscall_get_processes_info();
 static int syscall_kill_process(int64_t pid);
-static int64_t syscall_wait_pid(int64_t pid, int32_t * exit_code);
+static int64_t syscall_wait_pid(int64_t pid, int32_t *exit_code);
 static uint64_t syscall_total_ticks();
-static int64_t syscall_sem_open(char * name, uint64_t initialValue);
-static int64_t syscall_sem_wait(char * name);
-static int64_t syscall_sem_post(char * name);
-static int64_t syscall_sem_close(char * name);
+static int64_t syscall_sem_open(char *name, uint64_t initialValue);
+static int64_t syscall_sem_wait(char *name);
+static int64_t syscall_sem_post(char *name);
+static int64_t syscall_sem_close(char *name);
 static uint64_t syscall_memeory_get_info();
 static void syscall_sleep(uint64_t seconds);
 static void sycall_create_pipe();
@@ -220,70 +230,67 @@ static int syscall_write(int16_t fd, char * buffer, uint64_t len){
 }
 
 // Clear
-static void syscall_clear(){
-    videoClear();
-}
+static void syscall_clear() { videoClear(); }
 
 // Get time in seconds
-static uint32_t syscall_seconds(){
-    uint8_t h, m, s;
-    getTime(&h, &m, &s);
-    return s + m * 60 + ((h + 24 - 3) % 24) * 3600;
+static uint32_t syscall_seconds() {
+  uint8_t h, m, s;
+  getTime(&h, &m, &s);
+  return s + m * 60 + ((h + 24 - 3) % 24) * 3600;
 }
 
 // Get register snapshot array
-static uint64_t * syscall_registerArray(uint64_t * regarr){
-    uint64_t * snapshot = getLastRegSnapshot();
-    for(int i = 0; i < QTY_REGS; i++)
-        regarr[i] = snapshot[i];
-    return regarr;
+static uint64_t *syscall_registerArray(uint64_t *regarr) {
+  uint64_t *snapshot = getLastRegSnapshot();
+  for (int i = 0; i < QTY_REGS; i++)
+    regarr[i] = snapshot[i];
+  return regarr;
 }
 
 // Set fontsize
-static void syscall_fontSize(uint8_t size){
-    setFontSize(size - 1);
-}
+static void syscall_fontSize(uint8_t size) { setFontSize(size - 1); }
 
 // Get screen resolution
-static uint32_t syscall_resolution(){
-    return getScreenResolution();
-}
+static uint32_t syscall_resolution() { return getScreenResolution(); }
 
 // GetTicks
-static uint64_t syscall_getTicks(){
-    return ticksElapsed();
+static uint64_t syscall_getTicks() { return ticksElapsed(); }
+
+// PrintMem
+static void syscall_getMemory(uint64_t pos, uint8_t *vec) {
+  memcpy(vec, (uint8_t *)pos, 32);
 }
 
-//PrintMem
-static void syscall_getMemory(uint64_t pos, uint8_t * vec){
-    memcpy(vec, (uint8_t *) pos, 32);
+// Set fontsize
+static void syscall_setFontColor(uint8_t r, uint8_t g, uint8_t b) {
+  setFontColor((Color){b, g, r});
 }
 
-//Set fontsize
-static void syscall_setFontColor(uint8_t r, uint8_t g, uint8_t b){
-    setFontColor((Color){b, g, r});
+// Get fontsize
+static uint32_t syscall_getFontColor() {
+  ColorInt c = {color : getFontColor()};
+  return c.bits;
 }
 
-//Get fontsize
-static uint32_t syscall_getFontColor(){
-    ColorInt c = { color: getFontColor() };
-    return c.bits;
+// Malloc
+static uint64_t syscall_malloc(uint64_t size) {
+  return (uint64_t)memory_alloc(size);
 }
 
-//Malloc
-static uint64_t syscall_malloc(uint64_t size){
-    return (uint64_t) memory_alloc(size);
+// Free
+static void syscall_free(void *ptr) { memory_free(ptr); }
+
+// Create process
+static int64_t syscall_create_process(entry_point_t main, char **argv,
+                                      char *name, int *file_descriptors) {
+  return add_process((entry_point_t)main, argv, name, file_descriptors);
 }
 
-//Free
-static void syscall_free(void * ptr){
-    memory_free(ptr);
-}
+// Exit process
+static void syscall_exit_process(int64_t exit_code) { my_exit(exit_code); }
 
-//Create process
-static int64_t syscall_create_process(entry_point_t main, char ** argv, char * name, int * file_descriptors){
-    return add_process((entry_point_t) main, argv, name, file_descriptors);
-}
+// Yield
+static void syscall_yield() { yield(); }
 
 //Exit process
 static void syscall_exit_process(int64_t exit_code){
@@ -301,62 +308,53 @@ static int64_t syscall_get_pid() {
 }
 
 // Block process
-static int syscall_block_process(int64_t pid) {
-    return block_process(pid);
-}
+static int syscall_block_process(int64_t pid) { return block_process(pid); }
 
 // Unblock process
-static int syscall_unblock_process(int64_t pid) {
-    return unblock_process(pid);
-}
+static int syscall_unblock_process(int64_t pid) { return unblock_process(pid); }
 
 // Set priority
 static int syscall_set_priority(int64_t pid, uint8_t priority) {
-    return set_process_priority(pid, priority);
+  return set_process_priority(pid, priority);
 }
 
-//Get process info
+// Get process info
 static uint64_t syscall_get_processes_info() {
-    return (uint64_t) get_processes_info();
+  return (uint64_t)get_processes_info();
 }
 
 // Kill process
-static int syscall_kill_process(int64_t pid) {
-    return kill_process(pid);
-}
+static int syscall_kill_process(int64_t pid) { return kill_process(pid); }
 
 // Wait PID
-static int64_t syscall_wait_pid(int64_t pid, int32_t * exit_code) {
-    return wait_pid(pid, exit_code);
+static int64_t syscall_wait_pid(int64_t pid, int32_t *exit_code) {
+  return wait_pid(pid, exit_code);
 }
 
 // Total CPU ticks
-static uint64_t syscall_total_ticks() {
-    return total_ticks();
-}
+static uint64_t syscall_total_ticks() { return total_ticks(); }
 
 // Semaphore open
-static int64_t syscall_sem_open(char * name, uint64_t initialValue){
-    return my_sem_open(name, initialValue);
+static int64_t syscall_sem_open(char *name, uint64_t initialValue) {
+  return my_sem_open(name, initialValue);
 }
 
 // Semaphore wait
-static int64_t syscall_sem_wait(char * name){
-    return my_sem_wait(name);
-}
+static int64_t syscall_sem_wait(char *name) { return my_sem_wait(name); }
 
 // Semaphore post
-static int64_t syscall_sem_post(char * name){
-    return my_sem_post(name);
-}
+static int64_t syscall_sem_post(char *name) { return my_sem_post(name); }
 
 // Semaphore close
-static int64_t syscall_sem_close(char * name){
-    return my_sem_close(name);
+static int64_t syscall_sem_close(char *name) { return my_sem_close(name); }
+
+static uint64_t syscall_memeory_get_info() {
+  return (uint64_t)memory_get_info();
 }
 
-static uint64_t syscall_memeory_get_info(){
-   return (uint64_t) memory_get_info();
+static void syscall_sleep(uint64_t seconds) {
+  uint32_t sleeping_ticks = (uint32_t)(seconds * 18);
+  sleep(sleeping_ticks);
 }
 
 static void syscall_sleep(uint64_t seconds){

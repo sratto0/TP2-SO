@@ -3,12 +3,12 @@
 // #define ALIGN4(x) (((((x) - 1) >> 2) << 2) + 4)
 
 // typedef struct block_t{
-//     uint64_t size;       
-//     int is_free;       
-//     struct block_t * next; 
+//     uint64_t size;
+//     int is_free;
+//     struct block_t * next;
 // } block_t;
 
-// typedef struct MemoryManagerCDT{ 
+// typedef struct MemoryManagerCDT{
 //     void * heap_start;
 //     uint64_t total_size;
 //     uint64_t used_size;
@@ -23,13 +23,11 @@
 // static block_t *free_list = NULL;
 // static memory_info_t mem_info;
 
-
 // void memory_init(void * start, uint64_t size){
 
 //     heap_start = start;
 //     heap_size = size;
 
-    
 //     mem_info.size = size;
 //     mem_info.used = 0;
 
@@ -38,7 +36,6 @@
 //     free_list->is_free = 1;
 //     free_list->next = NULL;
 // }
-
 
 // void *memory_alloc(uint64_t size) {
 //     size = ALIGN4(size);
@@ -50,9 +47,9 @@
 //             // Si el bloque es suficientemente grande para dividir
 //             if (curr->size >= size + BLOCK_HEADER_SIZE + 4) {
 //                 // Dividimos el bloque en uno asignado y otro libre
-//                 block_t *new_block = (block_t *)((uint8_t *)curr + BLOCK_HEADER_SIZE + size);
-//                 new_block->size = curr->size - size - BLOCK_HEADER_SIZE;
-//                 new_block->is_free = 1;
+//                 block_t *new_block = (block_t *)((uint8_t *)curr +
+//                 BLOCK_HEADER_SIZE + size); new_block->size = curr->size -
+//                 size - BLOCK_HEADER_SIZE; new_block->is_free = 1;
 //                 new_block->next = curr->next;
 
 //                 curr->size = size;
@@ -62,7 +59,7 @@
 //             curr->is_free = 0;
 //             memory_info.used += curr->size + BLOCK_HEADER_SIZE;
 
-//             // Retornamos la dirección después de la cabecera (donde empieza el bloque útil)
+//             // Retornamos la dirección después de la cabecera (donde empieza el bloque útil) 
 //             return (void *)((uint8_t *)curr + BLOCK_HEADER_SIZE);
 //         }
 
@@ -71,7 +68,6 @@
 
 //     return NULL;
 // }
-
 
 // void memory_free(void* ptr) {
 //     if (ptr == NULL) return;
@@ -83,7 +79,8 @@
 //     // Coalescing de bloques libres adyacentes
 //     block_t *curr = free_list;
 //     while (curr != NULL && curr->next != NULL) {
-//         if (curr->is_free && curr->next->is_free && (uint8_t *)curr + BLOCK_HEADER_SIZE + curr->size == (uint8_t *)curr->next) {
+//         if (curr->is_free && curr->next->is_free && (uint8_t *)curr +
+//         BLOCK_HEADER_SIZE + curr->size == (uint8_t *)curr->next) {
 //             curr->size += BLOCK_HEADER_SIZE + curr->next->size;
 //             curr->next = curr->next->next;
 //         } else {
@@ -92,8 +89,7 @@
 //     }
 // }
 
-
-// memory_info_t *mem_dump() {
+// memory_info_t *memory_get_info() {
 //     memory_info.free = memory_info.size - memory_info.used;
 //     return &memory_info;
 // }

@@ -7,14 +7,14 @@
 #define MAX_COMMAND_LEN 32
 
 typedef struct shell_program {
-    char * name;
-    char ** params;
+  char *name;
+  char **params;
 } shell_program_t;
 
 typedef struct input_parser {
-    shell_program_t ** shell_programs;
-    uint8_t qty_shell_programs;
-    uint8_t background;
+  shell_program_t **shell_programs;
+  uint8_t qty_shell_programs;
+  uint8_t background;
 } input_parser_t;
 
 input_parser_t * parse_input(char * input);

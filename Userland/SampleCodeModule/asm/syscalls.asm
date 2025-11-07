@@ -31,10 +31,15 @@ GLOBAL sys_sem_post
 GLOBAL sys_sem_close
 GLOBAL sys_memory_get_info
 GLOBAL sys_sleep
+<<<<<<< HEAD
 GLOBAL sys_create_pipe
 GLOBAL sys_destroy_pipe
 GLOBAL sys_read_pipe
 GLOBAL sys_write_pipe
+=======
+GLOBAL sys_read_stdin
+GLOBAL sys_write_stdout
+>>>>>>> origin/jose
 
 
 read:
@@ -193,7 +198,6 @@ sys_sleep:
     mov rax, 30
     int 80h
     ret
-
 
 sys_create_pipe:
     mov rax, 31

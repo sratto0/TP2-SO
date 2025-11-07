@@ -43,15 +43,17 @@ uint64_t test_mm(uint64_t argc, char *argv[]) {
     // Set
     uint32_t i;
     for (i = 0; i < rq; i++)
-      if (mm_rqs[i].address){
-        printf("Setting block at %p, size=%u\n", mm_rqs[i].address, mm_rqs[i].size);
+      if (mm_rqs[i].address) {
+        printf("Setting block at %p, size=%u\n", mm_rqs[i].address,
+               mm_rqs[i].size);
         my_memset(mm_rqs[i].address, i, mm_rqs[i].size);
       }
 
     // Check
     for (i = 0; i < rq; i++)
-      if (mm_rqs[i].address){
-        printf("Checking block at %p, size=%u\n", mm_rqs[i].address, mm_rqs[i].size);
+      if (mm_rqs[i].address) {
+        printf("Checking block at %p, size=%u\n", mm_rqs[i].address,
+               mm_rqs[i].size);
         if (!memcheck(mm_rqs[i].address, i, mm_rqs[i].size)) {
           printf("test_mm ERROR\n");
           return -1;
@@ -59,9 +61,9 @@ uint64_t test_mm(uint64_t argc, char *argv[]) {
       }
 
     // Free
-    for (i = 0; i < rq; i++){
+    for (i = 0; i < rq; i++) {
       printf("Freeing block of size %u\n", mm_rqs[i].size);
-      if (mm_rqs[i].address){
+      if (mm_rqs[i].address) {
         printf("Freeing block of size %u\n", mm_rqs[i].size);
         my_free(mm_rqs[i].address);
       }
