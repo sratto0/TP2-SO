@@ -5,12 +5,12 @@
 
 int cmd_ps(int argc, char **argv) {
   if (argc != 1) {
-    printf("ps: usage: ps\n");
+    printErr(WRONG_PARAM_0);
     return -1;
   }
   process_info_t *info = my_get_processes_info();
   if (info == NULL) {
-    printf("ps: no data\n");
+    printErr("ps: no data\n");
     return -1;
   }
 
@@ -43,12 +43,12 @@ int cmd_ps(int argc, char **argv) {
 
 int cmd_mem(int argc, char **argv) {
   if (argc != 1) {
-    printf("mem: usage: mem\n");
+    printErr(WRONG_PARAM_0);
     return -1;
   }
   memory_info_t *info = my_memory_get_info();
   if (info == NULL) {
-    printf("mem: no data\n");
+    printErr("mem: no data\n");
     return -1;
   }
 
@@ -60,13 +60,13 @@ int cmd_mem(int argc, char **argv) {
 
 int cmd_loop(int argc, char *argv[]) {
   if (argc != 2) {
-    printf("Necesita un argumento numerico que representa la cantidad de "
+    printErr("Necesita un argumento numerico que representa la cantidad de "
            "segundos\n");
     return -1;
   }
   int seconds = atoi(argv[1]);
   if (seconds <= 0) {
-    printf("El argumento debe ser un numero positivo\n");
+    printErr("El argumento debe ser un numero positivo\n");
     return -1;
   }
   int64_t pid = my_getpid();
@@ -81,12 +81,12 @@ int cmd_loop(int argc, char *argv[]) {
 
 int cmd_kill(int argc, char **argv) {
   if (argc != 2) {
-    printf("Necesita un argumento: el PID del proceso\n");
+    printErr(WRONG_PARAM_1);
     return -1;
   }
   int pid = atoi(argv[1]);
   if (pid <= 1) {
-    printf("El PID debe ser un numero mayor a 1\n");
+    printErr("El PID debe ser un numero mayor a 1\n");
     return -1;
   }
   process_info_t *info = my_get_processes_info();
@@ -99,40 +99,39 @@ int cmd_kill(int argc, char **argv) {
       }
     }
     if (!found) {
-      printf("No existe un proceso con PID %d\n", pid);
+      printErr("No existe un proceso con ese PID\n");
       return -1;
     }
   }
   int result = my_kill(pid);
 
   if (result == -1) {
-    printf("Error al matar el proceso. Verifique que el PID sea correcto.\n");
+    printErr("Error al matar el proceso. Verifique que el PID sea correcto.\n");
     return -1;
   } else if (result == 0) {
     printf("Proceso %d matado exitosamente\n", pid);
     return 0;
   } else {
-    printf("my_kill devolvió código inesperado %d\n", result);
+    printErr("my_kill devolvió código inesperado\n");
     return -1;
   }
 }
 
 int cmd_nice(int argc, char **argv) {
   if (argc != 3) {
-    printf(
-        "Necesita dos argumentos: el PID del proceso y la nueva prioridad\n");
+    printErr(WRONG_PARAM_2);
     return -1;
   }
   int pid = atoi(argv[1]);
   int new_priority = atoi(argv[2]);
   if (pid <= 0 || new_priority < 0) {
-    printf("El PID debe ser un numero positivo y la prioridad un numero no "
+    printErr("El PID debe ser un numero positivo y la prioridad un numero no "
            "negativo\n");
     return -1;
   }
   int result = my_nice(pid, new_priority);
   if (result == -1) {
-    printf(
+    printErr(
         "Error al cambiar la prioridad. Verifique que el PID sea correcto.\n");
     return -1;
   }
@@ -143,12 +142,12 @@ int cmd_nice(int argc, char **argv) {
 
 int cmd_block(int argc, char **argv) {
   if (argc != 2) {
-    printf("Necesita un argumento: el PID del proceso\n");
+    printErr(WRONG_PARAM_1);
     return -1;
   }
   int pid = atoi(argv[1]);
   if (pid <= 1) {
-    printf("El PID debe ser un numero mayor a 1\n");
+    printErr("El PID debe ser un numero mayor a 1\n");
     return -1;
   }
   process_info_t *info = my_get_processes_info();
@@ -161,33 +160,32 @@ int cmd_block(int argc, char **argv) {
       }
     }
     if (!found) {
-      printf("No existe un proceso con PID %d\n", pid);
+      printErr("No existe un proceso con ese PID\n");
       return -1;
     }
   }
 
   int result = my_block_process(pid);
   if (result == -1) {
-    printf("Error al bloquear/desbloquear el proceso. Verifique que el PID sea "
-           "correcto.\n");
+    printErr("Error al bloquear/desbloquear el proceso. Verifique que el PID sea correcto.\n");
     return -1;
   } else if (result == 0) {
     printf("Proceso %d bloqueado/desbloqueado exitosamente\n", pid);
     return 0;
   } else {
-    printf("my_block devolvió código inesperado %d\n", result);
+    printErr("my_block devolvió código inesperado\n");
     return -1;
   }
 }
 
 int cmd_unblock(int argc, char **argv) {
   if (argc != 2) {
-    printf("Necesita un argumento: el PID del proceso\n");
+    printErr(WRONG_PARAM_1);
     return -1;
   }
   int pid = atoi(argv[1]);
   if (pid <= 1) {
-    printf("El PID debe ser un numero mayor a 1\n");
+    printErr("El PID debe ser un numero mayor a 1\n");
     return -1;
   }
   process_info_t *info = my_get_processes_info();
@@ -200,28 +198,29 @@ int cmd_unblock(int argc, char **argv) {
       }
     }
     if (!found) {
-      printf("No existe un proceso con PID %d\n", pid);
+      printErr("No existe un proceso con ese PID\n");
       return -1;
     }
   }
 
   int result = my_unblock_process(pid);
   if (result == -1) {
-    printf("Error al desbloquear el proceso. Verifique que el PID sea "
-           "correcto.\n");
+    printErr("Error al desbloquear el proceso. Verifique que el PID sea correcto.\n");
     return -1;
   } else if (result == 0) {
     printf("Proceso %d desbloqueado exitosamente\n", pid);
     return 0;
   } else {
-    printf("my_unblock devolvió código inesperado %d\n", result);
+    printErr("my_unblock devolvió código inesperado\n");
     return -1;
   }
 }
 
 int cmd_cat(int argc, char **argv) {
-  (void)argc;
-  (void)argv;
+  if (argc != 1) {
+    printErr(WRONG_PARAM_0);
+    return -1;
+  }
 
   printf("cat: leyendo desde stdin (Ctrl+D para terminar)\n");
 
@@ -252,7 +251,7 @@ int cmd_cat(int argc, char **argv) {
 
 int cmd_filter(int argc, char **argv) {
   if (argc != 1) {
-    printf("No son necesarios argumentos para este comando.\n");
+    printErr(WRONG_PARAM_0);
     return -1;
   }
 
@@ -287,7 +286,7 @@ int cmd_filter(int argc, char **argv) {
 
 int cmd_wc(int argc, char **argv) {
   if (argc != 1) {
-    printf("No son necesarios argumentos para este comando.\n");
+    printErr(WRONG_PARAM_0);
     return -1;
   }
 
