@@ -351,7 +351,6 @@ int unblock_process(int64_t pid) {
   proc->state = PROC_READY;
   proc->remaining_quantum = quantum_for_priority(proc->priority);
 
-  // VER!!: ver si tendriamos que verificar si la lista de readys no es null
   enqueue_ready(proc);
 
   return 0;

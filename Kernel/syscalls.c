@@ -204,6 +204,10 @@ static int64_t syscall_read(int16_t fd, char * destination_buffer, uint64_t len)
         fd = fds[0];
     }
 
+    if (fd == DEV_NULL_FD) {
+        return 0;
+    }
+
     if (fd >= BUILT_IN_FDS) {
         return pipe_read(fd, destination_buffer, len);
     }
@@ -386,4 +390,3 @@ static int sycall_write_pipe(int fd, const char * buffer, int size){
 static void syscall_adopt_child(int64_t pid){
     adopt_children(pid);
 }
-

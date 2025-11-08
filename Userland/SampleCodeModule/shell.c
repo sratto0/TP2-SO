@@ -231,7 +231,7 @@ static void create_single_process(input_parser_t * parser) {
     RETURN_IF_INVALID(idx);
 
     if(parser->background) {
-        int fds[2] = {-1, STDOUT};
+        int fds[2] = {DEV_NULL_FD, STDOUT};
         my_create_process((entry_point_t)commands[idx].f, program->params, program->name, fds);
     }
     else {

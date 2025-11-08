@@ -9,6 +9,7 @@
 #define STDIN 0
 #define STDOUT 1
 #define STDERR 2
+#define DEV_NULL_FD (-2)
 
 
 typedef int (*entry_point_t)(int argc, char **argv);
