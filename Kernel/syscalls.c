@@ -177,20 +177,21 @@ uint64_t syscallDispatcher(uint64_t nr, uint64_t arg0, uint64_t arg1, uint64_t a
             syscall_sleep((uint64_t) arg0);
             break;
         case CREATE_PIPE:
-            return sycall_create_pipe();
+            return sycall_create_pipe((int *) arg0);
         case DESTROY_PIPE:
-            sycall_destroy_pipe();
+            sycall_destroy_pipe((int)arg0);
             break;
         case READ_PIPE:
-            return sycall_read_pipe();
+            return sycall_read_pipe((int)arg0);
         case WRITE_PIPE:
-            return sycall_write_pipe(); 
+            return sycall_write_pipe((int)arg0, (const char *)arg1, (int)arg2); 
         case ADOPT:
             syscall_adopt_child((uint64_t) arg0);
             break;
 	}
 	return 0;
 }
+
 
 static int64_t syscall_read(int16_t fd, char * destination_buffer, uint64_t len){
     if (fd< 0 || destination_buffer == NULL || len == 0) {

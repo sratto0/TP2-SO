@@ -43,6 +43,9 @@ typedef enum { NO_PARAMS = 0, SINGLE_PARAM, DUAL_PARAM } functionType;
 #define COLOR_USAGE TURQUOISE
 #define COLOR_DESC SILVER
 
+#define RETURN_IF_INVALID(idx) if ((idx) == -1) { printErr(INVALID_COMMAND); return; }
+
+
 typedef struct {
   const char *name;
   const char *short_desc;
@@ -64,7 +67,6 @@ static void fontSize(int argc, char **argv);
 static void printMem(int argc, char **argv);
 static int getCommandIndex(char *command);
 static void create_piped_processes(input_parser_t * parser);
-static void continue_if_invalid(input_parser_t * parser, int index);
 static void create_single_process(input_parser_t *parser);
 static void print_block(const char *text);
 static void print_section(const char *title, const char *text);
@@ -226,7 +228,7 @@ void run_shell(){
 static void create_single_process(input_parser_t * parser) {
     shell_program_t * program = parser->shell_programs[0];
     int idx = getCommandIndex(program->name);
-    continue_if_invalid(parser, idx);
+    RETURN_IF_INVALID(idx);
 
     if(parser->background) {
         int fds[2] = {-1, STDOUT};
@@ -243,11 +245,11 @@ static void create_single_process(input_parser_t * parser) {
 static void create_piped_processes(input_parser_t * parser) {
     shell_program_t * left_program = get_shell_program(parser, 0);
     int first_idx = getCommandIndex(left_program->name);
-    continue_if_invalid(parser, first_idx);
+    RETURN_IF_INVALID(first_idx);
 
     shell_program_t * right_program = get_shell_program(parser, 1);
     int second_idx = getCommandIndex(right_program->name);
-    continue_if_invalid(parser, second_idx);
+    RETURN_IF_INVALID(second_idx);
 
     int pipe_fds[2];
     if(my_pipe_create(pipe_fds) == -1) {
@@ -281,12 +283,6 @@ static void create_piped_processes(input_parser_t * parser) {
     sys_destroy_pipe(pipe_fds[0]);
 }
 
-static void continue_if_invalid(input_parser_t * parser, int index) {
-    if (index == -1) {
-        printErr(INVALID_COMMAND);
-        return;
-    }
-}
 
 static const char *command_category(const Command *cmd) {
   if (cmd->category != NULL && cmd->category[0] != '\0') {
