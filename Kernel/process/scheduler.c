@@ -101,9 +101,10 @@ void init_scheduler(void) {
 
 void *schedule(void *prev_rsp) {
   if (scheduler == NULL || scheduler->process_count == 0) {
-    scheduler->force_reschedule = 0;
     return prev_rsp;
   }
+
+  scheduler->force_reschedule = 0; 
 
   process_t *current_process = get_current_process();
 
@@ -130,12 +131,10 @@ void *schedule(void *prev_rsp) {
     if (current_process->state == PROC_READY &&
         current_process->pid != INIT_PID) {
       enqueue_ready(current_process);
-      if (!current_process
-               ->in_ready_queue) {
+      if (!current_process->in_ready_queue) {
         current_process->state = PROC_RUNNING;
         current_process->remaining_quantum =
             quantum_for_priority(current_process->priority);
-        scheduler->force_reschedule = 0;
         return prev_rsp;
       }
     }
@@ -151,7 +150,6 @@ void *schedule(void *prev_rsp) {
   next_process->state = PROC_RUNNING;
   next_process->remaining_quantum =
       quantum_for_priority(next_process->priority);
-  scheduler->force_reschedule = 0;
   return next_process->stack_pointer;
 }
 
@@ -461,6 +459,9 @@ void exit_process(int64_t ret) {
   }
 
   process_t *current = get_current_process();
+  if (current == NULL) {
+    return;
+  }
 
   if (current->w_fd != STDOUT && current->w_fd != STDERR) {
     send_pipe_eof(current->w_fd);
@@ -484,7 +485,7 @@ void exit_process(int64_t ret) {
 
     process_t *parent = get_process(current->parent_pid);
 
-    if (parent->state == PROC_BLOCKED && parent->waiting_pid == current->pid) {
+    if (parent != NULL && parent->state == PROC_BLOCKED && parent->waiting_pid == current->pid) {
       unblock_process(parent->pid);
     }
   }
