@@ -12,7 +12,11 @@
 #include "pipes.h"
 #include "video.h"
 
-#define PRIORITY_EXTRA_TURNS 1
+#define READY_SLOT_MAX_BONUS 3
+
+static inline uint16_t min_u16(uint16_t a, uint16_t b) {
+  return (a < b) ? a : b;
+}
 
 extern void timer_tick();
 
@@ -27,6 +31,7 @@ static void free_ready_queue(void);
 static uint8_t clamp_priority(uint8_t priority);
 static uint8_t priority_index(uint8_t priority);
 static uint8_t priority_weight_for_index(uint8_t index);
+static uint16_t ready_slot_bonus(uint8_t index);
 static uint16_t slot_budget_for_index(uint8_t index);
 static uint8_t highest_priority_index(void);
 static uint8_t previous_priority_index(uint8_t index);
@@ -631,7 +636,7 @@ static uint8_t priority_weight_for_index(uint8_t index) {
   return (uint8_t)(index + 1);
 }
 
-static uint16_t slot_budget_for_index(uint8_t index) {
+static uint16_t ready_slot_bonus(uint8_t index) {
   if (scheduler == NULL || index >= PRIORITY_LEVELS) {
     return 0;
   }
@@ -646,9 +651,21 @@ static uint16_t slot_budget_for_index(uint8_t index) {
     return 0;
   }
 
+  return min_u16(queue_size, READY_SLOT_MAX_BONUS);
+}
+
+static uint16_t slot_budget_for_index(uint8_t index) {
+  if (scheduler == NULL || index >= PRIORITY_LEVELS) {
+    return 0;
+  }
+
+  uint16_t bonus = ready_slot_bonus(index);
+  if (bonus == 0) {
+    return 0;
+  }
+
   uint16_t weight = (uint16_t)priority_weight_for_index(index);
-  uint16_t extra_turns = (uint16_t)(weight * PRIORITY_EXTRA_TURNS);
-  return queue_size + extra_turns;
+  return weight + bonus;
 }
 
 static uint8_t highest_priority_index(void) {
