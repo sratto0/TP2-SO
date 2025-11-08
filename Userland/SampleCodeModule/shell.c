@@ -43,7 +43,7 @@ typedef enum { NO_PARAMS = 0, SINGLE_PARAM, DUAL_PARAM } functionType;
 #define COLOR_USAGE TURQUOISE
 #define COLOR_DESC SILVER
 
-#define RETURN_IF_INVALID(idx) if ((idx) == -1) { printErr(INVALID_COMMAND); return; }
+#define RETURN_IF_INVALID(idx) if ((idx) == -1) { printfc(RED, INVALID_COMMAND); return; }
 
 
 typedef struct {

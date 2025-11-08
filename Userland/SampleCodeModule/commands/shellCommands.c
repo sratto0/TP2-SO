@@ -9,12 +9,12 @@
 
 int cmd_ps(int argc, char **argv) {
   if (argc != 1) {
-    printErr(WRONG_PARAM_0);
+    printfc(RED, WRONG_PARAM_0);
     return -1;
   }
   process_info_t *info = my_get_processes_info();
   if (info == NULL) {
-    printErr("ps: no data\n");
+    printfc(RED, "ps: no data\n");
     return -1;
   }
 
@@ -48,12 +48,12 @@ int cmd_ps(int argc, char **argv) {
 
 int cmd_mem(int argc, char **argv) {
   if (argc != 1) {
-    printErr(WRONG_PARAM_0);
+    printfc(RED, WRONG_PARAM_0);
     return -1;
   }
   memory_info_t *info = my_memory_get_info();
   if (info == NULL) {
-    printErr("mem: no data\n");
+    printfc(RED, "mem: no data\n");
     return -1;
   }
 
@@ -65,13 +65,13 @@ int cmd_mem(int argc, char **argv) {
 
 int cmd_loop(int argc, char *argv[]) {
   if (argc != 2) {
-    printErr("Necesita un argumento numerico que representa la cantidad de "
+    printfc(RED, "Necesita un argumento numerico que representa la cantidad de "
            "segundos\n");
     return -1;
   }
   int seconds = atoi(argv[1]);
   if (seconds <= 0) {
-    printErr("El argumento debe ser un numero positivo\n");
+    printfc(RED, "El argumento debe ser un numero positivo\n");
     return -1;
   }
   int64_t pid = my_getpid();
@@ -86,12 +86,12 @@ int cmd_loop(int argc, char *argv[]) {
 
 int cmd_kill(int argc, char **argv) {
   if (argc != 2) {
-    printErr(WRONG_PARAM_1);
+    printfc(RED, WRONG_PARAM_1);
     return -1;
   }
   int pid = atoi(argv[1]);
   if (pid <= 1) {
-    printErr("El PID debe ser un numero mayor a 1\n");
+    printfc(RED, "El PID debe ser un numero mayor a 1\n");
     return -1;
   }
   process_info_t *info = my_get_processes_info();
@@ -104,39 +104,39 @@ int cmd_kill(int argc, char **argv) {
       }
     }
     if (!found) {
-      printErr("No existe un proceso con ese PID\n");
+      printfc(RED, "No existe un proceso con ese PID\n");
       return -1;
     }
   }
   int result = my_kill(pid);
 
   if (result == -1) {
-    printErr("Error al matar el proceso. Verifique que el PID sea correcto.\n");
+    printfc(RED, "Error al matar el proceso. Verifique que el PID sea correcto.\n");
     return -1;
   } else if (result == 0) {
     printf("Proceso %d matado exitosamente\n", pid);
     return 0;
   } else {
-    printErr("my_kill devolvió código inesperado\n");
+    printfc(RED, "my_kill devolvió código inesperado\n");
     return -1;
   }
 }
 
 int cmd_nice(int argc, char **argv) {
   if (argc != 3) {
-    printErr(WRONG_PARAM_2);
+    printfc(RED, WRONG_PARAM_2);
     return -1;
   }
   int pid = atoi(argv[1]);
   int new_priority = atoi(argv[2]);
   if (pid <= 0 || new_priority < 0) {
-    printErr("El PID debe ser un numero positivo y la prioridad un numero no "
+    printfc(RED, "El PID debe ser un numero positivo y la prioridad un numero no "
            "negativo\n");
     return -1;
   }
   int result = my_nice(pid, new_priority);
   if (result == -1) {
-    printErr(
+    printfc(RED, 
         "Error al cambiar la prioridad. Verifique que el PID sea correcto.\n");
     return -1;
   }
@@ -147,12 +147,12 @@ int cmd_nice(int argc, char **argv) {
 
 int cmd_block(int argc, char **argv) {
   if (argc != 2) {
-    printErr(WRONG_PARAM_1);
+    printfc(RED, WRONG_PARAM_1);
     return -1;
   }
   int pid = atoi(argv[1]);
   if (pid <= 1) {
-    printErr("El PID debe ser un numero mayor a 1\n");
+    printfc(RED, "El PID debe ser un numero mayor a 1\n");
     return -1;
   }
   process_info_t *info = my_get_processes_info();
@@ -165,32 +165,32 @@ int cmd_block(int argc, char **argv) {
       }
     }
     if (!found) {
-      printErr("No existe un proceso con ese PID\n");
+      printfc(RED, "No existe un proceso con ese PID\n");
       return -1;
     }
   }
 
   int result = my_block_process(pid);
   if (result == -1) {
-    printErr("Error al bloquear/desbloquear el proceso. Verifique que el PID sea correcto.\n");
+    printfc(RED, "Error al bloquear/desbloquear el proceso. Verifique que el PID sea correcto.\n");
     return -1;
   } else if (result == 0) {
     printf("Proceso %d bloqueado/desbloqueado exitosamente\n", pid);
     return 0;
   } else {
-    printErr("my_block devolvió código inesperado\n");
+    printfc(RED, "my_block devolvió código inesperado\n");
     return -1;
   }
 }
 
 int cmd_unblock(int argc, char **argv) {
   if (argc != 2) {
-    printErr(WRONG_PARAM_1);
+    printfc(RED, WRONG_PARAM_1);
     return -1;
   }
   int pid = atoi(argv[1]);
   if (pid <= 1) {
-    printErr("El PID debe ser un numero mayor a 1\n");
+    printfc(RED, "El PID debe ser un numero mayor a 1\n");
     return -1;
   }
   process_info_t *info = my_get_processes_info();
@@ -203,27 +203,27 @@ int cmd_unblock(int argc, char **argv) {
       }
     }
     if (!found) {
-      printErr("No existe un proceso con ese PID\n");
+      printfc(RED, "No existe un proceso con ese PID\n");
       return -1;
     }
   }
 
   int result = my_unblock_process(pid);
   if (result == -1) {
-    printErr("Error al desbloquear el proceso. Verifique que el PID sea correcto.\n");
+    printfc(RED, "Error al desbloquear el proceso. Verifique que el PID sea correcto.\n");
     return -1;
   } else if (result == 0) {
     printf("Proceso %d desbloqueado exitosamente\n", pid);
     return 0;
   } else {
-    printErr("my_unblock devolvió código inesperado\n");
+    printfc(RED, "my_unblock devolvió código inesperado\n");
     return -1;
   }
 }
 
 int cmd_cat(int argc, char **argv) {
   if (argc != 1) {
-    printErr(WRONG_PARAM_0);
+    printfc(RED, WRONG_PARAM_0);
     return -1;
   }
 
@@ -256,7 +256,7 @@ int cmd_cat(int argc, char **argv) {
 
 int cmd_filter(int argc, char **argv) {
   if (argc != 1) {
-    printErr(WRONG_PARAM_0);
+    printfc(RED, WRONG_PARAM_0);
     return -1;
   }
 
@@ -291,7 +291,7 @@ int cmd_filter(int argc, char **argv) {
 
 int cmd_wc(int argc, char **argv) {
   if (argc != 1) {
-    printErr(WRONG_PARAM_0);
+    printfc(RED, WRONG_PARAM_0);
     return -1;
   }
 

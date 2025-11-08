@@ -9,6 +9,8 @@
 #include <stddef.h>
 #include <stdio.h>
 
+#define MAX_PROCESSES 64
+
 typedef struct P_rq {
   int64_t pid;
   process_state_t state;
@@ -26,6 +28,11 @@ int64_t test_processes(uint64_t argc, char *argv[]) {
 
   if ((max_processes = satoi(argv[1])) <= 0)
     return -1;
+
+  if(max_processes >= MAX_PROCESSES){
+    printf("El numero maximo de procesos es 64\n");
+    return -1;
+  }
 
   p_rq p_rqs[max_processes];
 
