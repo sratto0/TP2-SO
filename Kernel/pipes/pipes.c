@@ -153,11 +153,10 @@ int pipe_read(fd_t fd, char * buffer, int size){
 
         char data = pipe->buffer[pipe->read_pos];
         
-        // Verificar si encontramos EOF
         if(data == PIPE_EOF){
             my_sem_post(pipe->mutex_sem);
             my_sem_post(pipe->space_sem);
-            return i; // Retornar cantidad de bytes leídos antes del EOF
+            return i; 
         }
 
         buffer[i] = data;

@@ -259,7 +259,7 @@ int cmd_filter(int argc, char **argv) {
     return -1;
   }
 
-  printf("filter: escriba texto (Enter en linea vacia para terminar)\n");
+  printf("filter: escriba texto (Ctrl+D para terminar)\n");
 
   while (1) {
     char c = getchar();
@@ -271,7 +271,7 @@ int cmd_filter(int argc, char **argv) {
 
     if (c == '\n') {
       printf("\n");
-      break;
+      continue;
     }
 
     if (c == '\b') {

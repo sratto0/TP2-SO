@@ -1,19 +1,3 @@
-make
-make clean
-exit
-make clean
-cd root
-make clean
-cd Toolchain
-make clean
-make 
-cd ..
-make
->>>>>>> origin/jose
-exit
-cd root
-make clean
-cd Toolchain
 make clean
 make
 cd ..
@@ -497,4 +481,20 @@ make
 cd ..
 make
 exi
+exit
+cd root
+cd Toolchain
+make
+cd ..
+make
+exit
+cd root
+cd Toolchain
+cd ..
+make clean
+cd Toolchain
+make clean
+make
+cd ..
+make
 exit
