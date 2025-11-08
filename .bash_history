@@ -1,37 +1,3 @@
-make format
-make
-make clean
-make
-make clean
-make
-cd Toolchain
-make
-cd ..
-make
-make clean
-make
-make format
-make clean
-make
-exit
-cd root
-make clean
-cd Toolchain
-make clean
-make
-cd ..
-make
-make clean
-exit
-make
-cd root
-make
-make clean
-make
-make clean
-exit
-make clean
-cd root
 make clean
 cd Toolchain
 make clean
@@ -497,4 +463,38 @@ cd Toolchain
 make
 cd ..
 make
+exit
+cd root
+make clean
+make buddy
+exit
+cd root
+make clean
+make
+exit
+cd root
+make clean
+make buddy
+exit
+cd root
+make clean
+make buddy
+exit
+cd root
+make clean
+make buddy
+exit
+cd roo
+cd root
+make clean
+make buddy
+exit
+cd root
+make clean
+make buddy
+exit
+cd root
+make clea
+make clean
+make buddy
 exit

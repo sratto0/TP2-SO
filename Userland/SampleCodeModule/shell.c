@@ -158,6 +158,13 @@ const static Command commands[] = {
      "<n>        Iteraciones por proceso.\n<usar_sem>  1 para usar "
      "semaforos, 0 para dejar la condicion de carrera.",
      "Con usar_sem=1 el valor final deberia ser 0.", "test-sync 1000 1"},
+    {"mvar", "Simula productores y consumidores sobre una variable compartida",
+     (entry_point_t)cmd_mvar, CAT_TESTS, "mvar <writers> <readers>",
+     "Crea procesos escritores y lectores que se sincronizan con semaforos "
+     "para compartir una MVar.",
+     "<writers>  Cantidad de escritores (1-6).\n<readers>  Cantidad de lectores (1-6).",
+     "Oculta el cursor mientras corre; usar Ctrl+C para abortar la demo.",
+     "mvar 2 2"},
     {"loop", "Imprime su PID y duerme en un bucle infinito",
      (entry_point_t)cmd_loop, CAT_PROCESOS, "loop <segundos>",
      "Muestra el PID y duerme la cantidad indicada de segundos en un loop.",

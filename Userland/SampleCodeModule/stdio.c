@@ -10,6 +10,11 @@
 #include <syscalls.h>
 
 #define CURSOR_FREQ 10 /* Frecuencia en Ticks del dibujo del cursor*/
+static volatile uint8_t cursor_enabled = 1;
+
+void set_cursor_enabled(uint8_t enabled) {
+    cursor_enabled = enabled;
+}
 
 /**
  * @brief Funcion auxiliar para printf y printfc
@@ -110,7 +115,7 @@ int scanf(char *fmt, ...) {
   uint64_t bIdx = 0;
   while ((c = getchar()) != '\n' && bIdx < MAX_CHARS - 1) {
     cursorTicks = getTicks() - ticks;
-    if (cursorTicks > CURSOR_FREQ) {
+    if (cursor_enabled && cursorTicks > CURSOR_FREQ) {
       ticks = getTicks();
       cursorTicks = 0;
       if (cursorDrawn)
@@ -120,7 +125,7 @@ int scanf(char *fmt, ...) {
       cursorDrawn = !cursorDrawn;
     }
     if (c != 0) {
-      if (cursorDrawn) {
+      if (cursor_enabled && cursorDrawn) {
         putchar('\b');
         cursorDrawn = !cursorDrawn;
       }
@@ -133,7 +138,7 @@ int scanf(char *fmt, ...) {
       }
     }
   }
-  if (cursorDrawn)
+  if (cursor_enabled && cursorDrawn)
     putchar('\b');
   putchar('\n');
   buffer[bIdx] = 0;
