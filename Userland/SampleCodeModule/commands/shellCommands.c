@@ -42,6 +42,7 @@ int cmd_ps(int argc, char **argv) {
     printf("RIP: %d\n", (unsigned long long)p->rip);
     printf("\n");
   }
+  my_free(info);
   return 0;
 }
 

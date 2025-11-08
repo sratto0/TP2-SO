@@ -11,6 +11,7 @@
 #include "semaphore.h"
 #include "pipes.h"
 #include "video.h"
+#include "stdlib.h"
 
 extern void timer_tick();
 
@@ -568,7 +569,11 @@ uint8_t is_foreground_process(int64_t pid) {
 }
 
 process_info_t *get_processes_info() {
-  static process_info_t processes_info[MAX_PROCESSES];
+  process_info_t *processes_info = (process_info_t *)memory_alloc(sizeof(process_info_t) * MAX_PROCESSES);
+  if (processes_info == NULL) {
+    return NULL;
+  }
+
   for (int k = 0; k < MAX_PROCESSES; k++) {
     processes_info[k].pid = NO_PID;
     processes_info[k].name[0] = '\0';
@@ -579,7 +584,8 @@ process_info_t *get_processes_info() {
     process_t *proc = scheduler->processes[i];
     if (proc != NULL) {
       process_info_t *proc_info = &processes_info[j++];
-      my_strncpy(proc_info->name, proc->name, MAX_NAME_LEN);
+      my_strncpy(proc_info->name, proc->name, MAX_NAME_LEN - 1);
+      proc_info->name[MAX_NAME_LEN - 1] = '\0';
       proc_info->pid = proc->pid;
       proc_info->parent_pid = proc->parent_pid;
       proc_info->priority = proc->priority;

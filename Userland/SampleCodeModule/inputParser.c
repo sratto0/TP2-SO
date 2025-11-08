@@ -175,21 +175,21 @@ void free_parser(input_parser_t *parser) {
     return;
   }
 
-  int i;
-  for (i = 0; i < MAX_CHAINED_PROGRAMS; i++) {
-    if (parser->shell_programs[i] != NULL) {
-      free_program_memory(parser->shell_programs[i]);
-    }
-  }
-
   if (parser->shell_programs) {
+    int i;
+    for (i = 0; i < MAX_CHAINED_PROGRAMS; i++) {
+      if (parser->shell_programs[i] != NULL) {
+        free_program_memory(parser->shell_programs[i]);
+      }
+    }
     my_free(parser->shell_programs);
   }
+  
   my_free(parser);
 }
 
 shell_program_t *get_shell_program(input_parser_t *parser, int index) {
-    if (parser == NULL || index < 0 || index >= MAX_CHAINED_PROGRAMS) {
+    if (parser == NULL || parser->shell_programs == NULL || index < 0 || index >= MAX_CHAINED_PROGRAMS) {
         return NULL;
     }
     return parser->shell_programs[index];

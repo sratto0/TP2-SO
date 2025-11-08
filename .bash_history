@@ -1,50 +1,3 @@
-make clean
-make
-cd ..
-make
-exit
-cd root
-make clean
-cd Toolchain
-make clean
-<<<<<<< HEAD
-exit
-cd root
-cd Toolchain
-make
-cd ..
-make
-make
-make
-make clean
-make
-make
-make clean
-make
-make
-make
-make clean
-make
-cd Toolchain
-make
-cd ..
-make
-=======
-make
-cd ..
-make
-exit
-cd root
->>>>>>> origin/jose
-make clean
-cd Toolchain
-make clean
-make
-cd ..
-make
-<<<<<<< HEAD
-make clean
-make
 make
 =======
 exit
@@ -494,6 +447,53 @@ cd ..
 make clean
 cd Toolchain
 make clean
+make
+cd ..
+make
+exit
+make pvs
+cd Toolchain
+cd root
+make pvs
+cd Toolchain
+make
+cd ..
+make
+exit
+cd root
+make clean
+cd Toolchain
+make
+cd ..
+make
+exit
+cd root
+make clean
+cd Toolchain
+make
+cd ..
+make
+exit
+cd root
+cd Toolchain
+make
+cd ..
+make
+exit
+cd root
+make clean
+cd Toolchain
+make
+cd ..
+make
+make
+make clean
+cd Toolchain
+make
+cd ..
+make
+make clean
+cd Toolchain
 make
 cd ..
 make
