@@ -14,14 +14,14 @@
  * @param fd: FileDescriptor (STDOUT | STDERR)
  * @param c: Caracter a escribir
  */
-void write(int16_t fd, char * buffer, uint64_t len);
+void write(fd_t fd, char * buffer, uint64_t len);
 
 /**
  * @brief Lee un byte a partir del descriptor recibido
  * @param fd: FileDescriptor (STDIN | KBDIN)
  * @return Byte leido
  */
-uint8_t read(int16_t fd, char * destination_buffer, uint64_t len);
+uint8_t read(fd_t fd, char * destination_buffer, uint64_t len);
 
 
 /**
@@ -110,7 +110,7 @@ void *sys_malloc(uint64_t size);
 void sys_free(void *ptr);
 
 int64_t sys_create_process(entry_point_t main, char **argv, char *name,
-                           int *file_descriptors);
+                           fd_t *file_descriptors);
 
 uint64_t sys_exit_process(int64_t exit_code);
 
@@ -144,13 +144,13 @@ memory_info_t *sys_memory_get_info();
 
 void sys_sleep(uint64_t seconds);
 
-int sys_create_pipe(int fds[2]);
+int sys_create_pipe(fd_t fds[2]);
 
-int sys_write_pipe(int fd, const char * buffer, int size);
+int sys_write_pipe(fd_t fd, const char * buffer, int size);
 
-int sys_read_pipe(int fd, char * buffer, int size);
+int sys_read_pipe(fd_t fd, char * buffer, int size);
 
-void sys_destroy_pipe(int fd);
+void sys_destroy_pipe(fd_t fd);
 
 void sys_adopt_child(int64_t pid);
 

@@ -33,7 +33,7 @@ static void init(int argc, char **argv) {
       _hlt();
   }
 
-  int shell_fds[2] = {STDIN, STDOUT}; 
+  fd_t shell_fds[2] = {STDIN, STDOUT}; 
   int shell_pid =
       add_process((entry_point_t)SHELL_ADDRESS, shell_argv, "shell", shell_fds);
 
@@ -52,7 +52,7 @@ static int add_init() {
     return -1;
   }
 
-  int init_fds[2] = {STDIN, STDOUT}; 
+  fd_t init_fds[2] = {STDIN, STDOUT}; 
   process_t *pcb_init =
       my_create_process(INIT_PID, (entry_point_t)init, NULL, "init", init_fds);
 
@@ -155,7 +155,7 @@ void *schedule(void *prev_rsp) {
 }
 
 
-int64_t add_process(entry_point_t main, char ** argv, char * name, int * file_descriptors){
+int64_t add_process(entry_point_t main, char ** argv, char * name, fd_t file_descriptors[2]){
   if(scheduler == NULL || scheduler->process_count >= MAX_PROCESSES || file_descriptors == NULL){
     return -1;
   }
@@ -399,7 +399,7 @@ int set_process_priority(int64_t pid, uint8_t priority) {
 }
 
 
-void get_fds(int fds[2]) {
+void get_fds(fd_t fds[2]) {
   if (scheduler == NULL || scheduler->current_pid == NO_PID) {
     return;
   }

@@ -5,7 +5,6 @@
 #include <stdint.h>
 #include "../../SharedLibraries/sharedStructs.h"
 
-#define MAX_NAME_LEN 32
 #define DEFAULT_PRIORITY 1
 
 #define INIT_PID 0
@@ -36,13 +35,13 @@ typedef struct process {
   int32_t return_value;
   int64_t waiting_pid; // PID que este proceso esta esperando (o NO_PID)
 
-  int r_fd;
-  int w_fd;
+  fd_t r_fd;
+  fd_t w_fd;
   
 } process_t;
 
 process_t *my_create_process(int64_t pid, entry_point_t entry_point,
-                             char **argv, char *name, int *fds);
+                             char **argv, char *name, fd_t fds[2]);
 void process_destroy(process_t *proc);
 void free_argv(char **argv);
 void process_caller(entry_point_t main, char **argv);

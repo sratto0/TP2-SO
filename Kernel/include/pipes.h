@@ -2,6 +2,7 @@
 #define PIPES_H
 
 #include <stdint.h>
+#include "../../SharedLibraries/sharedStructs.h"
 
 #define PIPE_BUFFER_SIZE 1024
 #define MAX_PIPES 64
@@ -15,11 +16,11 @@
 typedef struct pipeManagerCDT * pipeManagerADT;
 
 void pipe_system_init();
-int pipe_create(int fds[2]);
-int pipe_write(int fd, const char * buffer, int size);
-int pipe_read(int fd, char * buffer, int size);
-void send_pipe_eof (int fd);
-void pipe_destroy(int fd);
+int pipe_create(fd_t fds[2]);
+int pipe_write(fd_t fd, const char * buffer, int size);
+int pipe_read(fd_t fd, char * buffer, int size);
+void send_pipe_eof (fd_t fd);
+void pipe_destroy(fd_t fd);
 
 
 #endif /* PIPES_H */

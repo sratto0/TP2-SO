@@ -231,12 +231,12 @@ static void create_single_process(input_parser_t * parser) {
     RETURN_IF_INVALID(idx);
 
     if(parser->background) {
-        int fds[2] = {DEV_NULL_FD, STDOUT};
+        fd_t fds[2] = {DEV_NULL_FD, STDOUT};
         my_create_process((entry_point_t)commands[idx].f, program->params, program->name, fds);
     }
     else {
-        int fds[2] = {STDIN, STDOUT}; // Usar descriptores estándar para foreground
-        int16_t pid = my_create_process((entry_point_t)commands[idx].f, program->params, program->name, fds);
+        fd_t fds[2] = {STDIN, STDOUT}; // Usar descriptores estándar para foreground
+        int64_t pid = my_create_process((entry_point_t)commands[idx].f, program->params, program->name, fds);
         my_wait_pid(pid, NULL);
     }
 }
@@ -251,14 +251,14 @@ static void create_piped_processes(input_parser_t * parser) {
     int second_idx = getCommandIndex(right_program->name);
     RETURN_IF_INVALID(second_idx);
 
-    int pipe_fds[2];
+    fd_t pipe_fds[2];
     if(my_pipe_create(pipe_fds) == -1) {
         printErr("No se pudo crear el pipe\n");
         return;
     }
     
-    int left_fds[2] = {STDIN, pipe_fds[1]};
-    int right_fds[2] = {pipe_fds[0], STDOUT};
+    fd_t left_fds[2] = {STDIN, pipe_fds[1]};
+    fd_t right_fds[2] = {pipe_fds[0], STDOUT};
 
     int left_pid = my_create_process((entry_point_t)commands[first_idx].f, left_program->params, left_program->name, left_fds);
     int right_pid = my_create_process((entry_point_t)commands[second_idx].f, right_program->params, right_program->name, right_fds);

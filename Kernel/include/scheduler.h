@@ -29,7 +29,7 @@ void init_scheduler(void);
 uint64_t total_ticks(void);
 void *schedule(void *context);
 int64_t add_process(entry_point_t main, char **argv, char *name,
-                    int *file_descriptors);
+                    fd_t file_descriptors[2]);
 void destroy_scheduler();
 int64_t get_current_pid();
 void yield();
@@ -45,7 +45,7 @@ int sleep_block(int64_t pid, uint8_t sleep);
 void exit_process(int64_t ret);
 uint8_t is_foreground_process(int64_t pid);
 process_info_t * get_processes_info();
-void get_fds(int fds[2]);
+void get_fds(fd_t fds[2]);
 void kill_foreground_process();
 void adopt_children(int64_t pid);
 

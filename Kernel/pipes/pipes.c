@@ -6,7 +6,7 @@
 
 typedef struct pipe {
     int in_use;
-    int fds[2]; 
+    fd_t fds[2]; 
 
     char buffer[PIPE_BUFFER_SIZE];
     int read_pos;
@@ -20,7 +20,7 @@ typedef struct pipe {
 
 typedef struct pipeManagerCDT {
     pipe_t pipes[MAX_PIPES];
-    int next_fd;
+    fd_t next_fd;
 } pipeManagerCDT;
 
 
@@ -36,8 +36,8 @@ void pipe_system_init() {
     }
     for(int i = 0; i < MAX_PIPES; i++){
         pipe_manager->pipes[i].in_use = 0;
-        pipe_manager->pipes[i].fds[0] = -1;
-        pipe_manager->pipes[i].fds[1] = -1;
+        pipe_manager->pipes[i].fds[0] = FD_INVALID;
+        pipe_manager->pipes[i].fds[1] = FD_INVALID;
         pipe_manager->pipes[i].read_pos = 0;
         pipe_manager->pipes[i].write_pos = 0;
         pipe_manager->pipes[i].data_size = 0;
@@ -45,7 +45,7 @@ void pipe_system_init() {
         pipe_manager->pipes[i].data_sem[0] = '\0';
         pipe_manager->pipes[i].mutex_sem[0] = '\0';
     }
-    pipe_manager->next_fd = BUILTIN_FDS;
+    pipe_manager->next_fd = (fd_t)BUILTIN_FDS;
 }
 
 static void pipe_build_name(int id, const char *suffix, char *dst) {
@@ -67,7 +67,7 @@ static void pipe_build_name(int id, const char *suffix, char *dst) {
     dst[pos] = '\0';
 }
 
-int pipe_create(int fds[2]){
+int pipe_create(fd_t fds[2]){
     if(pipe_manager == NULL || fds == NULL){
         return -1;
     }
@@ -97,7 +97,7 @@ int pipe_create(int fds[2]){
     return -1;
 }
 
-static int get_pipe_index_from_fd(int fd, int pos){
+static int get_pipe_index_from_fd(fd_t fd, int pos){
     if(pipe_manager == NULL){
         return -1;
     }
@@ -111,7 +111,7 @@ static int get_pipe_index_from_fd(int fd, int pos){
     return -1;
 }
 
-int pipe_write(int fd, const char * buffer, int size){
+int pipe_write(fd_t fd, const char * buffer, int size){
     if(pipe_manager == NULL || buffer == NULL || size <= 0){
         return -1;
     }
@@ -135,7 +135,7 @@ int pipe_write(int fd, const char * buffer, int size){
     return size;
 }
 
-int pipe_read(int fd, char * buffer, int size){
+int pipe_read(fd_t fd, char * buffer, int size){
     if(pipe_manager == NULL || buffer == NULL || size <= 0){
         return -1;
     }
@@ -161,7 +161,7 @@ int pipe_read(int fd, char * buffer, int size){
     return size;
 }
 
-void send_pipe_eof (int fd){
+void send_pipe_eof (fd_t fd){
     if(pipe_manager == NULL || fd < BUILTIN_FDS || fd >= pipe_manager->next_fd){
         return;
     }
@@ -185,7 +185,7 @@ void send_pipe_eof (int fd){
 
 }
 
-void pipe_destroy(int fd){
+void pipe_destroy(fd_t fd){
     if(pipe_manager == NULL || fd < BUILTIN_FDS || fd >= pipe_manager->next_fd){
         return;
     }
@@ -205,8 +205,8 @@ void pipe_destroy(int fd){
     my_sem_close(pipe->mutex_sem);
 
     pipe->in_use = 0;
-    pipe->fds[PIPE_READ_END] = -1;
-    pipe->fds[PIPE_WRITE_END] = -1;
+    pipe->fds[PIPE_READ_END] = FD_INVALID;
+    pipe->fds[PIPE_WRITE_END] = FD_INVALID;
     pipe->read_pos = 0;
     pipe->write_pos = 0;
     pipe->data_size = 0;

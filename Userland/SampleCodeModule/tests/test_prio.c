@@ -36,7 +36,7 @@ uint64_t test_prio(uint64_t argc, char *argv[]) {
   char *ztm_argv[] = {0};
   int64_t i;
   int exit_code;
-  int fds[2] = {STDIN, STDOUT};
+  fd_t fds[2] = {STDIN, STDOUT};
 
 
   if (argc != 2)

@@ -1,9 +1,6 @@
 #ifndef _STDIO_H
 #define _STDIO_H
 
-#define STDIN 0
-#define STDOUT 1
-#define STDERR 2
 #define KBDIN 3
 
 /* Cantidad maxima de caracteres para los buffers */
