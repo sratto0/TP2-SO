@@ -105,8 +105,6 @@ static int sycall_write_pipe(fd_t fd, const char * buffer, int size);
 static void syscall_adopt_child(int64_t pid);
 
 uint64_t syscallDispatcher(uint64_t nr, uint64_t arg0, uint64_t arg1, uint64_t arg2, uint64_t arg3, uint64_t arg4, uint64_t arg5) {
-    (void)arg4;
-    (void)arg5;
 	switch (nr) {
         case READ:
             return syscall_read((fd_t)arg0, (char *)arg1, (uint64_t)arg2);

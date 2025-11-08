@@ -460,9 +460,7 @@ void exit_process(int64_t ret) {
   }
 
   process_t *current = get_current_process();
-  if(current == NULL) {
-    return;
-  }
+
   if (current->w_fd != STDOUT && current->w_fd != STDERR) {
     send_pipe_eof(current->w_fd);
   }
@@ -485,7 +483,7 @@ void exit_process(int64_t ret) {
 
     process_t *parent = get_process(current->parent_pid);
 
-    if (parent != NULL && parent->state == PROC_BLOCKED && parent->waiting_pid == current->pid) {
+    if (parent->state == PROC_BLOCKED && parent->waiting_pid == current->pid) {
       unblock_process(parent->pid);
     }
   }

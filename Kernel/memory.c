@@ -33,7 +33,7 @@ void copyRegisters(uint64_t *rsp) {
 }
 
 void dump(uint64_t rip, uint64_t rsp, uint64_t *newRsp) {
-  printf("RIP: 0x%llx\nRSP: 0x%llx\n", rip, rsp);
+  printf("RIP: 0x%x\nRSP: 0x%x\n", rip, rsp);
   for (int i = 0; i < sizeof(_regNames) / sizeof(char *); i++)
-    printf("%s: 0x%llx\n", _regNames[i], *(newRsp - i));
+    printf("%s: 0x%x\n", _regNames[i], *(newRsp - i));
 }

@@ -28,7 +28,7 @@ int itoa(uint64_t n, char *buffer, int base) {
 
   unsigned int len = 0;
   int i = 0;
-  if (base == 10) {
+  if (n < 0 && base == 10) {
     n = -n;
     buffer[i] = '-';
     len++;

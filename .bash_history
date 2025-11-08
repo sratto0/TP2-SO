@@ -1,60 +1,3 @@
-<<<<<<< HEAD
-=======
-make
-exit
-cd root
-make clean
-cd Toolchain
-make clean
-exit
-cd root
-make clean
-make format
-make
-make clean
-make
-make clean
-make
-cd Toolchain
-make
-cd ..
-make
-make clean
-make
-make format
-make clean
-make
-exit
-cd root
-make clean
-cd Toolchain
-make clean
-make
-cd ..
-make
-make clean
-exit
-make
-cd root
-make
-make clean
-make
-make clean
-exit
-make clean
-cd root
-make clean
-cd Toolchain
-make clean
-make 
-cd ..
-make
->>>>>>> origin/jose
-exit
-cd root
-make clean
-cd Toolchain
->>>>>>> pvs-fixes
 make clean
 make
 cd ..
@@ -472,7 +415,6 @@ cd ..
 make
 exit
 cd root
-<<<<<<< HEAD
 cd Toolchain
 make
 cd ..
@@ -488,22 +430,6 @@ cd ..
 make
 exit
 cd root
-=======
-make clean
->>>>>>> pvs-fixes
-cd Toolchain
-make
-cd ..
-make
-exit
-cd root
-cd Toolchain
-make
-cd ..
-make
-exit
-cd root
-<<<<<<< HEAD
 cd Toolchain
 make
 cd ..
@@ -520,16 +446,22 @@ cd Toolchain
 make
 cd ..
 make
-=======
-make pvs
-make clean
-make pvs
->>>>>>> pvs-fixes
+exit
+cd root
+cd Toolchain
+make
+cd ..
+make
+exit
+cd root
+cd Toolchain
+make
+cd ..
+make
 exit
 cd root
 make clean
 cd Toolchain
-<<<<<<< HEAD
 make clean
 make
 cd ..
@@ -552,14 +484,11 @@ exi
 exit
 cd root
 cd Toolchain
-=======
->>>>>>> pvs-fixes
 make
 cd ..
 make
 exit
 cd root
-<<<<<<< HEAD
 cd Toolchain
 cd ..
 make clean
@@ -568,9 +497,4 @@ make clean
 make
 cd ..
 make
-=======
-make pvs
-make clean
-ls
->>>>>>> pvs-fixes
 exit

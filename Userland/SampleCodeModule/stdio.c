@@ -122,7 +122,7 @@ int scanf(char *fmt, ...) {
     if (c != 0) {
       if (cursorDrawn) {
         putchar('\b');
-        cursorDrawn = 0;
+        cursorDrawn = !cursorDrawn;
       }
       if (c != '\b') {
         buffer[bIdx++] = c;
@@ -142,7 +142,7 @@ int scanf(char *fmt, ...) {
   bIdx = 0;
 
   int qtyParams = 0;
-  while (*fmtPtr && bIdx < MAX_CHARS && buffer[bIdx]) {
+  while (*fmtPtr && buffer[bIdx] && bIdx < MAX_CHARS) {
     if (*fmtPtr == '%') {
       fmtPtr++;
       switch (*fmtPtr) {

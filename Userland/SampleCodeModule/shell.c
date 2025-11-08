@@ -208,7 +208,7 @@ void run_shell(){
     while(1) {
         printfc(PINK, ">");
         char raw_input[MAX_CHARS] = {0};
-        scanf("%s", raw_input);
+        scanf("%S", raw_input);
         input_parser_t * parser = parse_input(raw_input);
         if(parser == NULL) {
             printErr(INVALID_COMMAND);
@@ -421,7 +421,7 @@ static void printInfoReg(int argc, char **argv) {
   uint64_t regSnapshot[len];
   getInfoReg(regSnapshot);
   for (int i = 0; i < len; i++)
-    printf("%s: 0x%x\n", _regNames[i], (int)regSnapshot[i]);
+    printf("%s: 0x%x\n", _regNames[i], regSnapshot[i]);
 }
 
 static void man(int argc, char **argv) {
