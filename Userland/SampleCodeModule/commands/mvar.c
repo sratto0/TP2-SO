@@ -101,24 +101,28 @@ static uint32_t next_random(uint32_t *state) {
     return *state;
 }
 
+#define SPIN_BASE_ITER 35000U
+#define SPIN_PER_BASE 10000U
+#define SPIN_JITTER 18000U
+#define SPIN_YIELD_INTERVAL 4096U
+
 static void pseudo_delay(uint32_t base, uint32_t *state) {
     if (base == 0) {
         base = 1;
     }
 
-    uint32_t count = base + (next_random(state) % (base + 1));
-    for (uint32_t i = 0; i < count; i++) {
-        uint32_t iterations = 20000U + base * 4000U;
-        iterations += next_random(state) % (base * 2000U + 1U);
-        busy_delay(iterations);
-        my_yield();
-    }
+    uint32_t total = SPIN_BASE_ITER + base * SPIN_PER_BASE;
+    total += next_random(state) % (SPIN_JITTER + base * 1500U);
+    busy_delay(total);
 }
 
 static void busy_delay(uint32_t iterations) {
     volatile uint32_t acc = 0;
     for (uint32_t i = 0; i < iterations; i++) {
-        acc ^= i;
+        acc ^= (i + (acc << 1));
+        if ((i & (SPIN_YIELD_INTERVAL - 1)) == 0U) {
+            my_yield();
+        }
     }
     (void)acc;
 }
