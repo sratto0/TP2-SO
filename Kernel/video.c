@@ -10,36 +10,31 @@
 #include <video.h>
 
 #define RGB_SIZE 3
-#define MAX_RESOLUTION (64 * 128) /* Longitud del buffer de caracteres */
-#define MSG_BUFFER_EXCEEDED                                                    \
+#define MAX_RESOLUTION (64 * 128)
+#define MSG_BUFFER_EXCEEDED \
   "Buffer de video excedido, la pantalla ha sido limpiada\n"
 
 struct vbe_mode_info_structure {
-  uint16_t
-      attributes; // deprecated, only bit 7 should be of interest to you, and it
-                  // indicates the mode supports a linear frame buffer.
-  uint8_t window_a;     // deprecated
-  uint8_t window_b;     // deprecated
-  uint16_t granularity; // deprecated; used while calculating bank numbers
+  uint16_t attributes;
+  uint8_t window_a;
+  uint8_t window_b;
+  uint16_t granularity;
   uint16_t window_size;
   uint16_t segment_a;
   uint16_t segment_b;
-  uint32_t win_func_ptr; // deprecated; used to switch banks from protected mode
-                         // without returning to real mode
-  uint16_t pitch;        // number of bytes per horizontal line
-  uint16_t width;        // width in pixels
-  uint16_t height;       // height in pixels
-  uint8_t w_char;        // unused...
-  uint8_t y_char;        // ...
+  uint32_t win_func_ptr;
+  uint16_t pitch;
+  uint16_t width;
+  uint16_t height;
+  uint8_t w_char;
+  uint8_t y_char;
   uint8_t planes;
-  uint8_t bpp;   // bits per pixel in this mode
-  uint8_t banks; // deprecated; total number of banks in this mode
+  uint8_t bpp;
+  uint8_t banks;
   uint8_t memory_model;
-  uint8_t bank_size; // deprecated; size of a bank, almost always 64 KB but may
-                     // be 16 KB...
+  uint8_t bank_size;
   uint8_t image_pages;
   uint8_t reserved0;
-
   uint8_t red_mask;
   uint8_t red_position;
   uint8_t green_mask;
@@ -49,36 +44,22 @@ struct vbe_mode_info_structure {
   uint8_t reserved_mask;
   uint8_t reserved_position;
   uint8_t direct_color_attributes;
-
-  uint32_t framebuffer; // physical address of the linear frame buffer; write
-                        // here to draw to the screen
+  uint32_t framebuffer;
   uint32_t off_screen_mem_off;
-  uint16_t off_screen_mem_size; // size of memory in the framebuffer but not
-                                // being displayed on the screen
+  uint16_t off_screen_mem_size;
   uint8_t reserved1[206];
 } __attribute__((packed));
 
 struct vbe_mode_info_structure *_screenData = (void *)0x5C00;
-uint16_t _X = 0, _Y = 0;            /* Coordenadas de escritura de caracteres */
-Color _fontColor = DEFAULT_COLOR;   /* Color de fuente */
-uint8_t _charWidth = CHAR_WIDTH_12; /* Ancho en pixeles de un caracter */
-uint8_t _charHeight = CHAR_HEIGHT_12; /* Altura en pixeles de un caracter */
-char *_font = font_12; /* Mapa de bits de dibujo para los caracteres */
-char _charBuffer[MAX_RESOLUTION]; /* Buffer de caracteres */
-uint16_t _bufferIdx = 0;          /* Posicion de indice del buffer */
+uint16_t _cursorX = 0, _cursorY = 0; /* Coordenadas de escritura de caracteres */
+Color _fontColor = DEFAULT_COLOR;
+uint8_t _charWidth = CHAR_WIDTH_12;
+uint8_t _charHeight = CHAR_HEIGHT_12;
+char *_font = font_12;
+char _charBuffer[MAX_RESOLUTION];
+uint16_t _bufferIdx = 0;
 
-/**
- * @brief Reescribe los caracteres de _charBuffer
- * @note  Se llama cuando se reajusta el tamaño de fuente
- */
 static void renderFonts();
-
-/**
- * @brief  Obtiene la direccion de memoria del pixel (x,y) de la pantalla
- * @param  x: Coordenada x
- * @param  y: Coordenada y
- * @return Puntero al pixel (x,y)
- */
 static void *getPtrToPixel(uint16_t x, uint16_t y);
 
 static void *getPtrToPixel(uint16_t x, uint16_t y) {
@@ -89,7 +70,7 @@ static void *getPtrToPixel(uint16_t x, uint16_t y) {
 void videoClear() {
   void *pos = getPtrToPixel(0, 0);
   memset(pos, 0, RGB_SIZE * (uint64_t)_screenData->width * _screenData->height);
-  _X = _Y = 0;
+  _cursorX = _cursorY = 0;
   _bufferIdx = 0;
 }
 
@@ -123,8 +104,8 @@ void setPosition(uint16_t x, uint16_t y) {
   uint16_t maxX = _screenData->width - _charWidth;
   uint16_t maxY = _screenData->height - _charHeight;
 
-  _X = x < maxX ? x : maxX;
-  _Y = y < maxY ? y : maxY;
+  _cursorX = x < maxX ? x : maxX;
+  _cursorY = y < maxY ? y : maxY;
 }
 
 void setFontColor(Color color) { _fontColor = color; }
@@ -147,10 +128,10 @@ static void renderFonts() {
 }
 
 void printNewline(void) {
-  _X = 0;
+  _cursorX = 0;
 
-  if (_Y + 2 * _charHeight <= _screenData->height) {
-    _Y += _charHeight;
+  if (_cursorY + 2 * _charHeight <= _screenData->height) {
+    _cursorY += _charHeight;
   } else {
     uint64_t len = RGB_SIZE * ((uint64_t)_screenData->width *
                                (_screenData->height - _charHeight));
@@ -161,14 +142,14 @@ void printNewline(void) {
 }
 
 void printChar(char c) {
-  if (c == '\b') { // Borrar el caracter anterior
-    if (_X < _charWidth && _Y > 0) {
-      _Y -= _charHeight;
-      _X = (_screenData->width / _charWidth) * _charWidth - _charWidth;
+  if (c == '\b') {
+    if (_cursorX < _charWidth && _cursorY > 0) {
+      _cursorY -= _charHeight;
+      _cursorX = (_screenData->width / _charWidth) * _charWidth - _charWidth;
     } else {
-      _X -= _charWidth;
+      _cursorX -= _charWidth;
     }
-    drawRect(_X, _Y, _charWidth, _charHeight, BLACK);
+    drawRect(_cursorX, _cursorY, _charWidth, _charHeight, BLACK);
     _bufferIdx--;
     return;
   }
@@ -185,27 +166,26 @@ void printChar(char c) {
   }
 
   if (c >= FIRST_CHAR && c <= LAST_CHAR) {
-    /* Puntero al Bitmap de dibujo del caracter recibido */
     const char *data = _font + _charHeight * _charWidth * (c - FIRST_CHAR) / 8;
-    for (int h = 0; h < _charHeight; h++) { // Iteracion por filas
-      Color *ptr = (Color *)getPtrToPixel(_X, _Y + h);
+    for (int h = 0; h < _charHeight; h++) {
+      Color *ptr = (Color *)getPtrToPixel(_cursorX, _cursorY + h);
       uint8_t mask = 1;
-      for (uint8_t i = 0; i < _charWidth; i++) { // Iteracion por columnas
+      for (uint8_t i = 0; i < _charWidth; i++) {
         if (*data & mask) {
           ptr[i] = _fontColor;
         }
 
         if (mask & 0b10000000) {
           mask = 0b00000001;
-          data++; // Pasa al siguiente byte dentro de una fila o de la siguiente
+          data++;
         } else {
-          mask <<= 1; // Pasa al siguiente bit
+          mask <<= 1;
         }
       }
     }
   }
-  _X += _charWidth;
-  if (_X > (_screenData->width / _charWidth) * _charWidth - _charWidth)
+  _cursorX += _charWidth;
+  if (_cursorX > (_screenData->width / _charWidth) * _charWidth - _charWidth)
     printNewline();
 }
 
@@ -247,8 +227,7 @@ void printf(char *fmt, ...) {
         print(buffer);
         break;
       case 's':
-        printNChars(' ', dx); // A diferencia %x y %d, la cantidad de espacios
-                              // es igual al numero
+        printNChars(' ', dx);
         print((char *)va_arg(v, char *));
         break;
       }
