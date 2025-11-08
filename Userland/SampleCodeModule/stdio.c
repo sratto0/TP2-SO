@@ -142,7 +142,7 @@ int scanf(char *fmt, ...) {
   bIdx = 0;
 
   int qtyParams = 0;
-  while (*fmtPtr && buffer[bIdx] && bIdx < MAX_CHARS) {
+  while (*fmtPtr && bIdx < MAX_CHARS && buffer[bIdx]) {
     if (*fmtPtr == '%') {
       fmtPtr++;
       switch (*fmtPtr) {

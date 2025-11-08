@@ -206,7 +206,7 @@ void run_shell(){
     while(1) {
         printfc(PINK, ">");
         char raw_input[MAX_CHARS] = {0};
-        scanf("%S", raw_input);
+        scanf("%s", raw_input);
         input_parser_t * parser = parse_input(raw_input);
         if(parser == NULL) {
             printErr(INVALID_COMMAND);

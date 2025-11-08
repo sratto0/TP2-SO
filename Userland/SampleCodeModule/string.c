@@ -28,7 +28,7 @@ int strcpychar(char *dest, const char *origin, char limit) {
 
 int strcpychar_n(char *dest, const char *origin, char limit, int n) {
   int idx = 0;
-  while (origin[idx] != limit && origin[idx] != '\0' && idx < n) {
+  while (idx < n && origin[idx] != limit && origin[idx] != '\0') {
     dest[idx] = origin[idx];
     idx++;
   }
