@@ -465,10 +465,6 @@ void exit_process(int64_t ret) {
     send_pipe_eof(current->w_fd);
   }
 
-  // VER!! : cerrar semaforos abiertos por el proceso actual 
-  // VER!! : send_pipe_eof (chat me tira muchas cosas raras sobre esta fun)
-  // VER!! :  
-
   adopt_children(current->pid);
 
   semaphore_remove_process(current->pid);
