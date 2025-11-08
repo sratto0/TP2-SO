@@ -1,23 +1,4 @@
 make
-make
-make
-make
-make
-make
-make
-make
-mak
-make
-make
-make
-make
-make
-make
-make
-make
-make
-make
-make
 exit
 cd root
 make clean
@@ -497,4 +478,23 @@ make
 cd ..
 make
 exit
+exit
+cd root
+make clean
+cd Toolchain
+make
+cd ..
+make
+make clean
+cd Toolchain
+make
+cd ..
+make
+exit
+cd root
+make clean
+cd Toolchain
+make
+cd ..
+make
 exit

@@ -188,9 +188,11 @@ const static Command commands[] = {
      "Complemento de 'block': reanuda el proceso pausado.", "unblock 6"},
     {"cat", "Reproduce stdin en pantalla", (entry_point_t)cmd_cat, CAT_IO,
      "cat",
-     "Lee del teclado (o pipe) y muestra el flujo sin modificaciones hasta Ctrl+D.",
+     "Lee desde la entrada estandar (teclado o pipe) y muestra el flujo por pantalla" 
+     " sin realizar modificaciones hasta recibir la senal de fin de archivo (Ctrl+D).",
      "No recibe parametros.",
-     "Util para testear pipes.",
+     "Util para testear redirecciones y pipes."
+     "Permite verificar la comunicacion entre procesos.",
      "cat"},
     {"wc", "Cuenta lineas del texto ingresado", (entry_point_t)cmd_wc, CAT_IO,
      "wc",
