@@ -425,7 +425,7 @@ static void printInfoReg(int argc, char **argv) {
   uint64_t regSnapshot[len];
   getInfoReg(regSnapshot);
   for (int i = 0; i < len; i++)
-    printf("%s: 0x%x\n", _regNames[i], regSnapshot[i]);
+    printf("%s: 0x%x\n", _regNames[i], (int)regSnapshot[i]);
 }
 
 static void man(int argc, char **argv) {

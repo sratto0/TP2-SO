@@ -11,6 +11,8 @@ INCLUDE=./include
 
 all: tests $(MODULE)
 
+$(TEST_OBJECTS): tests
+
 $(MODULE): _loader.c $(OBJECTS) $(OBJECTS_ASM) $(TEST_OBJECTS) $(COMMANDS)
 	$(GCC) $(GCCFLAGS) -I$(INCLUDE) -T sampleCodeModule.ld _loader.c $(OBJECTS_ASM) $(OBJECTS) $(TEST_OBJECTS) $(COMMANDS) -o ../$(MODULE)
 	$(GCC) $(GCCFLAGS) -I$(INCLUDE) -T sampleCodeModule.ld -Wl,--oformat=elf64-x86-64 _loader.c $(OBJECTS_ASM) $(OBJECTS) $(TEST_OBJECTS) $(COMMANDS) -o ../0000-sampleCodeModule.elf

@@ -4,18 +4,6 @@ cd root
 make clean
 cd Toolchain
 make clean
-cd ..
-cd Toolchain
-make
-cd ..
-make
-make clean
-make
-exit
-cd root
-make clean
-cd Toolchain
-make clean
 exit
 cd root
 make clean
@@ -497,4 +485,16 @@ cd root
 make pvs
 make clean
 make pvs
+exit
+cd root
+make clean
+cd Toolchain
+make
+cd ..
+make
+exit
+cd root
+make pvs
+make clean
+ls
 exit

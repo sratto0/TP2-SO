@@ -122,7 +122,7 @@ int scanf(char *fmt, ...) {
     if (c != 0) {
       if (cursorDrawn) {
         putchar('\b');
-        cursorDrawn = !cursorDrawn;
+        cursorDrawn = 0;
       }
       if (c != '\b') {
         buffer[bIdx++] = c;
