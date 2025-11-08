@@ -59,7 +59,7 @@ struct vbe_mode_info_structure {
 } __attribute__((packed));
 
 struct vbe_mode_info_structure *_screenData = (void *)0x5C00;
-uint16_t _X = 0, _Y = 0;            /* Coordenadas de escritura de caracteres */
+static uint16_t cursorX = 0, cursorY = 0;  /* Coordenadas de escritura de caracteres */
 Color _fontColor = DEFAULT_COLOR;   /* Color de fuente */
 uint8_t _charWidth = CHAR_WIDTH_12; /* Ancho en pixeles de un caracter */
 uint8_t _charHeight = CHAR_HEIGHT_12; /* Altura en pixeles de un caracter */
@@ -89,7 +89,7 @@ static void *getPtrToPixel(uint16_t x, uint16_t y) {
 void videoClear() {
   void *pos = getPtrToPixel(0, 0);
   memset(pos, 0, RGB_SIZE * (uint64_t)_screenData->width * _screenData->height);
-  _X = _Y = 0;
+  cursorX = cursorY = 0;
   _bufferIdx = 0;
 }
 
@@ -123,8 +123,8 @@ void setPosition(uint16_t x, uint16_t y) {
   uint16_t maxX = _screenData->width - _charWidth;
   uint16_t maxY = _screenData->height - _charHeight;
 
-  _X = x < maxX ? x : maxX;
-  _Y = y < maxY ? y : maxY;
+  cursorX = x < maxX ? x : maxX;
+  cursorY = y < maxY ? y : maxY;
 }
 
 void setFontColor(Color color) { _fontColor = color; }
@@ -147,10 +147,10 @@ static void renderFonts() {
 }
 
 void printNewline(void) {
-  _X = 0;
+  cursorX = 0;
 
-  if (_Y + 2 * _charHeight <= _screenData->height) {
-    _Y += _charHeight;
+  if (cursorY + 2 * _charHeight <= _screenData->height) {
+    cursorY += _charHeight;
   } else {
     uint64_t len = RGB_SIZE * ((uint64_t)_screenData->width *
                                (_screenData->height - _charHeight));
@@ -162,13 +162,13 @@ void printNewline(void) {
 
 void printChar(char c) {
   if (c == '\b') { // Borrar el caracter anterior
-    if (_X < _charWidth && _Y > 0) {
-      _Y -= _charHeight;
-      _X = (_screenData->width / _charWidth) * _charWidth - _charWidth;
+    if (cursorX < _charWidth && cursorY > 0) {
+      cursorY -= _charHeight;
+      cursorX = (_screenData->width / _charWidth) * _charWidth - _charWidth;
     } else {
-      _X -= _charWidth;
+      cursorX -= _charWidth;
     }
-    drawRect(_X, _Y, _charWidth, _charHeight, BLACK);
+    drawRect(cursorX, cursorY, _charWidth, _charHeight, BLACK);
     _bufferIdx--;
     return;
   }
@@ -183,12 +183,11 @@ void printChar(char c) {
     printNewline();
     return;
   }
-
   if (c >= FIRST_CHAR && c <= LAST_CHAR) {
     /* Puntero al Bitmap de dibujo del caracter recibido */
     const char *data = _font + _charHeight * _charWidth * (c - FIRST_CHAR) / 8;
     for (int h = 0; h < _charHeight; h++) { // Iteracion por filas
-      Color *ptr = (Color *)getPtrToPixel(_X, _Y + h);
+      Color *ptr = (Color *)getPtrToPixel(cursorX, cursorY + h);
       uint8_t mask = 1;
       for (uint8_t i = 0; i < _charWidth; i++) { // Iteracion por columnas
         if (*data & mask) {
@@ -204,8 +203,8 @@ void printChar(char c) {
       }
     }
   }
-  _X += _charWidth;
-  if (_X > (_screenData->width / _charWidth) * _charWidth - _charWidth)
+  cursorX += _charWidth;
+  if (cursorX > (_screenData->width / _charWidth) * _charWidth - _charWidth)
     printNewline();
 }
 
