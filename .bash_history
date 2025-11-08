@@ -1,8 +1,3 @@
-<<<<<<< HEAD
-make clean
-=======
-make
-cd ..
 make
 exit
 cd root
@@ -497,4 +492,9 @@ cd Toolchain
 make
 cd ..
 make
+exit
+cd root
+make pvs
+make clean
+make pvs
 exit
