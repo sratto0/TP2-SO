@@ -11,6 +11,8 @@
 #include <stdarg.h>
 #include <stdint.h>
 
+void set_cursor_enabled(uint8_t enabled);
+
 /**
  * @brief Imprime un caracter en STDOUT
  * @param c: Caracter a imprimir
