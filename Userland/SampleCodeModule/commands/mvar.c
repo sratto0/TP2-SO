@@ -236,7 +236,7 @@ static int manager_main(int argc, char **argv) {
     char delay_buf[12];
     itoa(2 + i % 3, delay_buf, 10);
     char *wargv[] = {argv[0], token_buf, delay_buf, NULL};
-    int fds[2] = {STDIN, STDOUT};
+    fd_t fds[2] = {STDIN, STDOUT};
     int64_t pid =
         my_create_process((entry_point_t)writer_main, wargv, "mvar_writer", fds);
     if (pid < 0) {
@@ -252,7 +252,7 @@ static int manager_main(int argc, char **argv) {
     itoa(j, index_buf, 10);
     itoa(3 + j % 3, delay_buf, 10);
     char *rargv[] = {argv[0], index_buf, delay_buf, NULL};
-    int fds[2] = {STDIN, STDOUT};
+    fd_t fds[2] = {STDIN, STDOUT};
     int64_t pid =
         my_create_process((entry_point_t)reader_main, rargv, "mvar_reader", fds);
     if (pid < 0) {
@@ -308,7 +308,7 @@ int cmd_mvar(int argc, char *argv[]) {
   itoa(readers, readers_buf, 10);
 
   char *manager_argv[] = {shared_hex, writers_buf, readers_buf, NULL};
-  int fds[2] = {STDIN, STDOUT};
+  fd_t fds[2] = {STDIN, STDOUT};
   int64_t manager_pid =
       my_create_process((entry_point_t)manager_main, manager_argv,
                         "mvar_manager", fds);
