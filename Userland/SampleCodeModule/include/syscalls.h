@@ -19,9 +19,9 @@ void write(fd_t fd, char * buffer, uint64_t len);
 /**
  * @brief Lee un byte a partir del descriptor recibido
  * @param fd: FileDescriptor (STDIN | KBDIN)
- * @return Byte leido
+ * @return Numero de bytes leidos o EOF (-1) si se alcanzó el final
  */
-uint8_t read(fd_t fd, char * destination_buffer, uint64_t len);
+int64_t read(fd_t fd, char * destination_buffer, uint64_t len);
 
 
 /**

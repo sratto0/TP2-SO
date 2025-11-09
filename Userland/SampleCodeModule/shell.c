@@ -285,12 +285,8 @@ static void create_piped_processes(input_parser_t * parser) {
     else {
         my_wait_pid(left_pid, NULL);
         my_wait_pid(right_pid, NULL);
+        my_destroy_pipe(pipe_fds[0]);
     }
-
-  
-  if (!parser->background) {
-    my_destroy_pipe(pipe_fds[0]);
-  }
 }
 
 

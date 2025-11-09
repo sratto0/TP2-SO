@@ -5,6 +5,7 @@
 #define MAX_NAME_LEN 32
 
 #define NO_PID ((int64_t)-1)
+#define EOF (-1)
 
 typedef uint16_t fd_t;
 
