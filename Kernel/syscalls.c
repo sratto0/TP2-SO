@@ -65,8 +65,6 @@
 #define WRITE_PIPE 34
 #define ADOPT 35
 
-#define EOF -1
-
 static int64_t syscall_read(fd_t fd, char * destination_buffer, uint64_t len);
 static int64_t syscall_write(fd_t fd, char * buffer, uint64_t len);
 static void syscall_clear();
@@ -215,7 +213,8 @@ static int64_t syscall_read(fd_t fd, char * destination_buffer, uint64_t len){
     }
 
     if (fd >= BUILT_IN_FDS) {
-        return pipe_read(fd, destination_buffer, len);
+        int64_t bytes_read = pipe_read(fd, destination_buffer, len);
+        return bytes_read == 0 ? EOF : bytes_read;
     }
 
     else if (fd == STDIN) {

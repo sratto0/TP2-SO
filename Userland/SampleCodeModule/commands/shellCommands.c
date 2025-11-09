@@ -227,8 +227,6 @@ int cmd_cat(int argc, char **argv) {
     return -1;
   }
 
-  printf("cat: leyendo desde stdin (Ctrl+D para terminar)\n");
-
   char c;
   while (1) {
     c = getchar();

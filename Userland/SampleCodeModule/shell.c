@@ -271,16 +271,13 @@ static void create_piped_processes(input_parser_t * parser) {
 
     if (parser->background) {
         my_adopt_child(left_pid);
-        // my_adopt_child(right_pid);
+        my_adopt_child(right_pid);
     }
     else {
         my_wait_pid(left_pid, NULL);
+        my_wait_pid(right_pid, NULL);
+        my_destroy_pipe(pipe_fds[0]);
     }
-
-    my_wait_pid(right_pid, NULL);
-
-    // VER!!: esta bien pasar en [0]
-    sys_destroy_pipe(pipe_fds[0]);
 }
 
 

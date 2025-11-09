@@ -34,12 +34,13 @@ void printErr(const char *s) {
 }
 
 int getchar() {
-  char c;
-  read(STDIN, &c, 1);
-  return c;
-}
-
-// char getScanCode() { return read(KBDIN); }
+    char c;
+    int64_t ret = read(STDIN, &c, 1);
+    if (ret == EOF) {
+        return EOF;
+    }
+    return c;
+}// char getScanCode() { return read(KBDIN); }
 
 void printf(char *fmt, ...) {
   va_list v;
