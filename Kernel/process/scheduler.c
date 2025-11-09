@@ -32,6 +32,7 @@ static DListADT ready_queue_for_priority(uint8_t priority);
 static process_t *pop_ready_from_slot(uint8_t slot_index);
 static void reset_priority_cursor(void);
 static void advance_priority_slot(void);
+static void notify_pipe_closure(process_t *proc);
 
 static schedulerADT scheduler = NULL;
 
@@ -269,6 +270,15 @@ void adopt_children(int64_t pid) {
   }
 }
 
+static void notify_pipe_closure(process_t *proc) {
+  if (proc == NULL) {
+    return;
+  }
+  if (proc->w_fd >= BUILT_IN_FDS) {
+    send_pipe_eof(proc->w_fd);
+  }
+}
+
 static int remove_process(int64_t pid) {
 
   if (scheduler == NULL || pid < 0 || pid >= MAX_PROCESSES) {
@@ -307,6 +317,7 @@ int kill_process(int64_t pid) {
   process_t *proc = scheduler->processes[pid];
   process_t *parent = scheduler->processes[proc->parent_pid];
 
+  notify_pipe_closure(proc);
   semaphore_remove_process(proc->pid);
 
   proc->state = PROC_KILLED;
@@ -479,10 +490,7 @@ void exit_process(int64_t ret) {
   }
 
   process_t *current = get_current_process();
-
-  if (current->w_fd != STDOUT && current->w_fd != STDERR) {
-    send_pipe_eof(current->w_fd);
-  }
+  notify_pipe_closure(current);
 
   // VER!! : cerrar semaforos abiertos por el proceso actual 
   // VER!! : send_pipe_eof (chat me tira muchas cosas raras sobre esta fun)

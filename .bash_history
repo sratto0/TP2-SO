@@ -1,11 +1,3 @@
-cd root
-make clean
-make
->>>>>>> origin/jose
-exit
-cd root
-cd Toolchain
-make
 cd ..
 make
 make
@@ -496,5 +488,13 @@ exit
 cd root
 make clean
 make buddy
+make buddy
+exit
+cd root
+make clean
+make buddy
+exit
+cd root
+make clean
 make buddy
 exit
