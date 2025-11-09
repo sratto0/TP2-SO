@@ -12,12 +12,6 @@
 #include "pipes.h"
 #include "video.h"
 
-#define READY_SLOT_MAX_BONUS 3
-
-static inline uint16_t min_u16(uint16_t a, uint16_t b) {
-  return (a < b) ? a : b;
-}
-
 extern void timer_tick();
 
 static int remove_process(int64_t pid);
@@ -31,7 +25,6 @@ static void free_ready_queue(void);
 static uint8_t clamp_priority(uint8_t priority);
 static uint8_t priority_index(uint8_t priority);
 static uint8_t priority_weight_for_index(uint8_t index);
-static uint16_t ready_slot_bonus(uint8_t index);
 static uint16_t slot_budget_for_index(uint8_t index);
 static uint8_t highest_priority_index(void);
 static uint8_t previous_priority_index(uint8_t index);
@@ -545,6 +538,7 @@ static void free_ready_queue(void) {
       scheduler->ready_queues[i] = NULL;
     }
   }
+  scheduler->current_priority_slot = 0;
   scheduler->slot_budget_remaining = 0;
 }
 
@@ -633,25 +627,8 @@ static uint8_t priority_weight_for_index(uint8_t index) {
   if (index >= PRIORITY_LEVELS) {
     return 1;
   }
-  return (uint8_t)(index + 1);
-}
-
-static uint16_t ready_slot_bonus(uint8_t index) {
-  if (scheduler == NULL || index >= PRIORITY_LEVELS) {
-    return 0;
-  }
-
-  DListADT queue = scheduler->ready_queues[index];
-  if (queue == NULL) {
-    return 0;
-  }
-
-  uint16_t queue_size = (uint16_t)get_size(queue);
-  if (queue_size == 0) {
-    return 0;
-  }
-
-  return min_u16(queue_size, READY_SLOT_MAX_BONUS);
+  uint8_t base = (uint8_t)(index + 1);
+  return (uint8_t)(base * base);
 }
 
 static uint16_t slot_budget_for_index(uint8_t index) {
@@ -659,18 +636,15 @@ static uint16_t slot_budget_for_index(uint8_t index) {
     return 0;
   }
 
-  uint16_t bonus = ready_slot_bonus(index);
-  if (bonus == 0) {
+  DListADT queue = scheduler->ready_queues[index];
+  if (queue == NULL || is_empty(queue)) {
     return 0;
   }
 
-  uint16_t weight = (uint16_t)priority_weight_for_index(index);
-  return weight + bonus;
+  return (uint16_t)priority_weight_for_index(index);
 }
 
-static uint8_t highest_priority_index(void) {
-  return PRIORITY_LEVELS - 1;
-}
+static uint8_t highest_priority_index(void) { return PRIORITY_LEVELS - 1; }
 
 static uint8_t previous_priority_index(uint8_t index) {
   if (index == 0) {
@@ -691,7 +665,6 @@ static process_t *pop_ready_from_slot(uint8_t slot_index) {
   if (scheduler == NULL || slot_index >= PRIORITY_LEVELS) {
     return NULL;
   }
-
   DListADT queue = scheduler->ready_queues[slot_index];
   if (queue == NULL) {
     return NULL;
@@ -700,14 +673,11 @@ static process_t *pop_ready_from_slot(uint8_t slot_index) {
   while (!is_empty(queue)) {
     process_t *proc = get_first(queue);
     delete_first(queue);
-    if (proc != NULL) {
+    if (proc != NULL && proc->state == PROC_READY) {
       proc->in_ready_queue = 0;
-      if (proc->state == PROC_READY) {
-        return proc;
-      }
+      return proc;
     }
   }
-
   return NULL;
 }
 
