@@ -8,6 +8,7 @@
 #include <stdint.h>
 #include <time.h>
 #include <video.h>
+#include "sharedStructs.h"
 
 #define BUFFER_CAPACITY 256
 #define HOTKEY 29
@@ -15,8 +16,7 @@
 #define CTRL_C_SCANCODE 0x2E 
 #define LSHIFT_SCANCODE 0x2A     
 #define RSHIFT_SCANCODE 0x36       
-#define ASCII_EOF 0x04
-#define KEYBOARD_SEM_ID "999" // ID único para el semáforo del teclado
+#define KEYBOARD_SEM_ID "999"
 #define KBD_EOF_MARKER 0xFF
 
 static uint8_t ctrl_pressed = 0;

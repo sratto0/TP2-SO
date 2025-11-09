@@ -6,6 +6,9 @@
 
 #define NO_PID ((int64_t)-1)
 
+// Carácter EOF usado por el driver de teclado (Ctrl+D)
+#define ASCII_EOF 0x04
+
 typedef uint16_t fd_t;
 
 #define STDIN ((fd_t)0)

@@ -65,7 +65,7 @@
 #define WRITE_PIPE 34
 #define ADOPT 35
 
-#define EOF -1
+// EOF is provided by the keyboard driver as ASCII_EOF (see sharedStructs.h)
 
 static int64_t syscall_read(fd_t fd, char * destination_buffer, uint64_t len);
 static int64_t syscall_write(fd_t fd, char * buffer, uint64_t len);
@@ -218,10 +218,10 @@ static int64_t syscall_read(fd_t fd, char * destination_buffer, uint64_t len){
 
     else if (fd == STDIN) {
         for (uint64_t i = 0; i < len; i++) {
-            destination_buffer[i] = getAscii();
-            if ((int) destination_buffer[i] == EOF) {
-                return i + 1;
-            }
+                destination_buffer[i] = getAscii();
+                if ((int) destination_buffer[i] == ASCII_EOF) {
+                    return i + 1;
+                }
         }
         return len;
     }
