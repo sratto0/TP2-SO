@@ -6,9 +6,13 @@
 
 #define NO_PID ((int64_t)-1)
 
-#define STDIN 0
-#define STDOUT 1
-#define STDERR 2
+typedef uint16_t fd_t;
+
+#define STDIN ((fd_t)0)
+#define STDOUT ((fd_t)1)
+#define STDERR ((fd_t)2)
+#define FD_INVALID ((fd_t)0xFFFF)
+#define DEV_NULL_FD ((fd_t)0xFFFE)
 
 
 typedef int (*entry_point_t)(int argc, char **argv);

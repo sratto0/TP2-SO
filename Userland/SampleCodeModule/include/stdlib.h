@@ -41,7 +41,7 @@ void *my_malloc(uint64_t size);
 void my_free(void *ptr);
 
 int64_t my_create_process(entry_point_t main, char **argv, char *name,
-                          int *file_descriptors);
+                          fd_t *file_descriptors);
 
 int64_t my_wait_pid(int64_t pid, int *exit_code);
 
@@ -75,13 +75,13 @@ memory_info_t *my_memory_get_info();
 
 void my_sleep(uint64_t seconds);
 
-int my_pipe_create(int fds[2]);
+int my_pipe_create(fd_t fds[2]);
 
-int my_pipe_write(int fd, const char * buffer, int size);
+int my_pipe_write(fd_t fd, const char * buffer, int size);
 
-int my_pipe_read(int fd, char * buffer, int size);
+int my_pipe_read(fd_t fd, char * buffer, int size);
 
-void my_destroy_pipe(int fd);
+void my_destroy_pipe(fd_t fd);
 
 void my_adopt_child(int64_t pid);
 

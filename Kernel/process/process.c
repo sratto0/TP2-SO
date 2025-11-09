@@ -19,9 +19,9 @@ static uint32_t str_length(const char *str);
 static void free_partial_argv(char **argv, int allocated);
 
 process_t *my_create_process(int64_t pid, entry_point_t entry_point,
-                             char **argv, char *name, int *fds) {
+                             char **argv, char *name, fd_t fds[2]) {
 
-  if (entry_point == NULL || name == NULL) {
+  if (entry_point == NULL || name == NULL || fds == NULL) {
     return NULL;
   }
 

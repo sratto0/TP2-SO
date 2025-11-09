@@ -10,11 +10,6 @@
 #include <syscalls.h>
 
 #define CURSOR_FREQ 10 /* Frecuencia en Ticks del dibujo del cursor*/
-static volatile uint8_t cursor_enabled = 1;
-
-void set_cursor_enabled(uint8_t enabled) {
-    cursor_enabled = enabled;
-}
 
 /**
  * @brief Funcion auxiliar para printf y printfc
@@ -77,8 +72,7 @@ void vprintf(char *fmt, va_list args) {
         puts(buffer);
         break;
       case 's':
-        printNChars(' ', dx); // A diferencia %x y %d, la cantidad de espacios
-                              // es igual al numero
+        printNChars(' ', dx); 
         puts((char *)va_arg(args, char *));
         break;
       }
@@ -113,21 +107,23 @@ int scanf(char *fmt, ...) {
   char cursorDrawn = 0;
   char buffer[MAX_CHARS];
   uint64_t bIdx = 0;
-  while ((c = getchar()) != '\n' && bIdx < MAX_CHARS - 1) {
+  while (bIdx < MAX_CHARS - 1 && (c = getchar()) != '\n') {
     cursorTicks = getTicks() - ticks;
-    if (cursor_enabled && cursorTicks > CURSOR_FREQ) {
+    if (cursorTicks > CURSOR_FREQ) {
       ticks = getTicks();
       cursorTicks = 0;
-      if (cursorDrawn)
+      if (cursorDrawn) {
         putchar('\b');
-      else
+        cursorDrawn = 0; 
+      } else {
         putchar('_');
-      cursorDrawn = !cursorDrawn;
+        cursorDrawn = 1; 
+      }
     }
     if (c != 0) {
-      if (cursor_enabled && cursorDrawn) {
+      if (cursorDrawn) {
         putchar('\b');
-        cursorDrawn = !cursorDrawn;
+        cursorDrawn = 0;
       }
       if (c != '\b') {
         buffer[bIdx++] = c;
@@ -138,7 +134,7 @@ int scanf(char *fmt, ...) {
       }
     }
   }
-  if (cursor_enabled && cursorDrawn)
+  if (cursorDrawn)
     putchar('\b');
   putchar('\n');
   buffer[bIdx] = 0;
@@ -147,7 +143,7 @@ int scanf(char *fmt, ...) {
   bIdx = 0;
 
   int qtyParams = 0;
-  while (*fmtPtr && buffer[bIdx] && bIdx < MAX_CHARS) {
+  while (*fmtPtr && bIdx < MAX_CHARS && buffer[bIdx]) {
     if (*fmtPtr == '%') {
       fmtPtr++;
       switch (*fmtPtr) {

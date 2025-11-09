@@ -43,7 +43,7 @@ typedef enum { NO_PARAMS = 0, SINGLE_PARAM, DUAL_PARAM } functionType;
 #define COLOR_USAGE TURQUOISE
 #define COLOR_DESC SILVER
 
-#define RETURN_IF_INVALID(idx) if ((idx) == -1) { printErr(INVALID_COMMAND); return; }
+#define RETURN_IF_INVALID(idx) if ((idx) == -1) { printfc(RED, INVALID_COMMAND); return; }
 
 
 typedef struct {
@@ -158,13 +158,6 @@ const static Command commands[] = {
      "<n>        Iteraciones por proceso.\n<usar_sem>  1 para usar "
      "semaforos, 0 para dejar la condicion de carrera.",
      "Con usar_sem=1 el valor final deberia ser 0.", "test-sync 1000 1"},
-    {"mvar", "Simula productores y consumidores sobre una variable compartida",
-     (entry_point_t)cmd_mvar, CAT_TESTS, "mvar <writers> <readers>",
-     "Crea procesos escritores y lectores que se sincronizan con semaforos "
-     "para compartir una MVar.",
-     "<writers>  Cantidad de escritores (1-6).\n<readers>  Cantidad de lectores (1-6).",
-     "Oculta el cursor mientras corre; usar Ctrl+C para abortar la demo.",
-     "mvar 2 2"},
     {"loop", "Imprime su PID y duerme en un bucle infinito",
      (entry_point_t)cmd_loop, CAT_PROCESOS, "loop <segundos>",
      "Muestra el PID y duerme la cantidad indicada de segundos en un loop.",
@@ -238,12 +231,12 @@ static void create_single_process(input_parser_t * parser) {
     RETURN_IF_INVALID(idx);
 
     if(parser->background) {
-        int fds[2] = {-1, STDOUT};
+        fd_t fds[2] = {DEV_NULL_FD, STDOUT};
         my_create_process((entry_point_t)commands[idx].f, program->params, program->name, fds);
     }
     else {
-        int fds[2] = {STDIN, STDOUT}; // Usar descriptores estándar para foreground
-        int16_t pid = my_create_process((entry_point_t)commands[idx].f, program->params, program->name, fds);
+        fd_t fds[2] = {STDIN, STDOUT}; // Usar descriptores estándar para foreground
+        int64_t pid = my_create_process((entry_point_t)commands[idx].f, program->params, program->name, fds);
         my_wait_pid(pid, NULL);
     }
 }
@@ -258,14 +251,14 @@ static void create_piped_processes(input_parser_t * parser) {
     int second_idx = getCommandIndex(right_program->name);
     RETURN_IF_INVALID(second_idx);
 
-    int pipe_fds[2];
+    fd_t pipe_fds[2];
     if(my_pipe_create(pipe_fds) == -1) {
         printErr("No se pudo crear el pipe\n");
         return;
     }
     
-    int left_fds[2] = {STDIN, pipe_fds[1]};
-    int right_fds[2] = {pipe_fds[0], STDOUT};
+    fd_t left_fds[2] = {STDIN, pipe_fds[1]};
+    fd_t right_fds[2] = {pipe_fds[0], STDOUT};
 
     int left_pid = my_create_process((entry_point_t)commands[first_idx].f, left_program->params, left_program->name, left_fds);
     int right_pid = my_create_process((entry_point_t)commands[second_idx].f, right_program->params, right_program->name, right_fds);
@@ -428,7 +421,7 @@ static void printInfoReg(int argc, char **argv) {
   uint64_t regSnapshot[len];
   getInfoReg(regSnapshot);
   for (int i = 0; i < len; i++)
-    printf("%s: 0x%x\n", _regNames[i], regSnapshot[i]);
+    printf("%s: 0x%llx\n", _regNames[i], regSnapshot[i]);
 }
 
 static void man(int argc, char **argv) {
