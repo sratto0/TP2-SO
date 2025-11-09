@@ -1,40 +1,3 @@
-<<<<<<< HEAD
-=======
-cd ..
-make
-make
-make
-make
-make
-make
-make
-make
-make
-make
-make
-make
-make
-make
-make
-make
-make
-make
-make
-make
-make
-make
-mak
-make
-make
-make
-make
-make
-make
-make
-make
-make
-make
->>>>>>> readys
 make
 exit
 cd root
@@ -369,22 +332,13 @@ cd ..
 make
 exit
 cd root
-<<<<<<< HEAD
 cd Toolchain
 make
 cd ..
-=======
-make clean
-make buddy
-exit
-cd root
-make clean
->>>>>>> readys
 make
 exit
 cd root
 make clean
-<<<<<<< HEAD
 cd Toolchain
 make clean
 make
@@ -396,46 +350,10 @@ mak
 make
 cd ..
 make
-=======
-make buddy
-exit
-cd root
-make clean
-make buddy
-exit
-cd root
-make clean
-make buddy
-exit
-cd roo
-cd root
-make clean
-make buddy
-exit
-cd root
-make clean
-make buddy
-exit
-cd root
-make clea
-make clean
-make buddy
-exit
-cd root
-make clean
-make buddy
-exit
-cd root
-make clean
-make buddy
-exit
-cd root
->>>>>>> readys
 make clean
 make
 exit
 cd root
-<<<<<<< HEAD
 cd Toolchain
 make
 cd ..
@@ -465,36 +383,17 @@ make pvs
 cd Toolchain
 make
 cd ..
-=======
-make clean
-make buddy
-exit
-cd root
-make clean
-make buddy
-exit
-cd root
-make clean
-make buddy
-exit
-cd root
-make clean
->>>>>>> readys
 make
 exit
 cd root
 make clean
-<<<<<<< HEAD
 cd Toolchain
 make
 cd ..
-=======
->>>>>>> readys
 make
 exit
 cd root
 make clean
-<<<<<<< HEAD
 cd Toolchain
 make
 cd ..
@@ -504,17 +403,10 @@ cd root
 cd Toolchain
 make
 cd ..
-=======
-make buddy
-exit
-cd root
-make clean
->>>>>>> readys
 make
 exit
 cd root
 make clean
-<<<<<<< HEAD
 cd Toolchain
 make
 cd ..
@@ -605,62 +497,4 @@ cd Toolchain
 make
 cd ..
 make
-=======
-make buddy
-exit
-cd root
-make buddy
-make clean
-make buddy
-exit
-cd root
-make clean
-make buddy
-exit
-cd root
-make clean
-make buddy
-exit
-cd root
-make clean
-make buddy
-exit
-cd root
-make clean
-make buddy
-exit
-cd root
-make clean
-make buddy
-exit
-cd root
-make clean
-make budy
-make buddy
-exit
-cd root
-make clean
-make buddy
-exit
-cd root
-make clean
-make buddy
-exit
-cd root
-make clean
-make buddy
-exit
-cd root
-make clean
-make buddy
-make buddy
-exit
-cd root
-make clean
-make buddy
-exit
-cd root
-make clean
-make buddy
->>>>>>> readys
 exit

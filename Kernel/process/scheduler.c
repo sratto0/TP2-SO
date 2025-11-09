@@ -23,17 +23,6 @@ static process_t *dequeue_ready(void);
 static void remove_from_ready_queue(process_t *proc);
 static uint8_t quantum_for_priority(uint8_t priority);
 static void free_ready_queue(void);
-static uint8_t clamp_priority(uint8_t priority);
-static uint8_t priority_index(uint8_t priority);
-static uint8_t priority_weight_for_index(uint8_t index);
-static uint16_t slot_budget_for_index(uint8_t index);
-static uint8_t highest_priority_index(void);
-static uint8_t previous_priority_index(uint8_t index);
-static DListADT ready_queue_for_priority(uint8_t priority);
-static process_t *pop_ready_from_slot(uint8_t slot_index);
-static void reset_priority_cursor(void);
-static void advance_priority_slot(void);
-static void notify_pipe_closure(process_t *proc);
 
 static schedulerADT scheduler = NULL;
 
@@ -96,21 +85,13 @@ void init_scheduler(void) {
 
   scheduler->current_pid = NO_PID;
   scheduler->process_count = 0;
-  for (int i = 0; i < PRIORITY_LEVELS; i++) {
-    scheduler->ready_queues[i] = NULL;
-  }
-
-  for (int i = 0; i < PRIORITY_LEVELS; i++) {
-    scheduler->ready_queues[i] = create_list();
-    if (scheduler->ready_queues[i] == NULL) {
-      free_ready_queue();
-      scheduler = NULL;
-      return;
-    }
+  scheduler->ready_queue = create_list();
+  if (scheduler->ready_queue == NULL) {
+    scheduler = NULL;
+    return;
   }
   scheduler->total_cpu_ticks = 0;
   scheduler->force_reschedule = 0;
-  reset_priority_cursor();
 
   if (add_init() != 0) {
     free_ready_queue();
@@ -269,15 +250,6 @@ void adopt_children(int64_t pid) {
   }
 }
 
-static void notify_pipe_closure(process_t *proc) {
-  if (proc == NULL) {
-    return;
-  }
-  if (proc->w_fd >= BUILT_IN_FDS) {
-    send_pipe_eof(proc->w_fd);
-  }
-}
-
 static int remove_process(int64_t pid) {
 
   if (scheduler == NULL || pid < 0 || pid >= MAX_PROCESSES) {
@@ -316,7 +288,6 @@ int kill_process(int64_t pid) {
   process_t *proc = scheduler->processes[pid];
   process_t *parent = scheduler->processes[proc->parent_pid];
 
-  notify_pipe_closure(proc);
   semaphore_remove_process(proc->pid);
 
   proc->state = PROC_KILLED;
@@ -495,7 +466,6 @@ void exit_process(int64_t ret) {
   if (current->w_fd != STDOUT && current->w_fd != STDERR) {
     send_pipe_eof(current->w_fd);
   }
-  notify_pipe_closure(current);
 
   adopt_children(current->pid);
 
@@ -541,29 +511,21 @@ static void free_ready_queue(void) {
   if (scheduler == NULL) {
     return;
   }
-  for (int i = 0; i < PRIORITY_LEVELS; i++) {
-    if (scheduler->ready_queues[i] != NULL) {
-      free_list(scheduler->ready_queues[i]);
-      scheduler->ready_queues[i] = NULL;
-    }
+  if (scheduler->ready_queue != NULL) {
+    free_list(scheduler->ready_queue);
+    scheduler->ready_queue = NULL;
   }
-  scheduler->current_priority_slot = 0;
-  scheduler->slot_budget_remaining = 0;
 }
 
 static void enqueue_ready(process_t *proc) {
-  if (scheduler == NULL || proc == NULL) {
+  if (scheduler == NULL || scheduler->ready_queue == NULL || proc == NULL) {
     return;
   }
   if (proc->in_ready_queue) {
     return;
   }
-  DListADT queue = ready_queue_for_priority(proc->priority);
-  if (queue == NULL) {
-    return;
-  }
   proc->state = PROC_READY;
-  if (add_last(queue, proc) == -1) {
+  if (add_last(scheduler->ready_queue, proc) == -1) {
     proc->in_ready_queue = 0;
   } else {
     proc->in_ready_queue = 1;
@@ -571,152 +533,32 @@ static void enqueue_ready(process_t *proc) {
 }
 
 static process_t *dequeue_ready(void) {
-  if (scheduler == NULL) {
+  if (scheduler == NULL || scheduler->ready_queue == NULL) {
     return NULL;
   }
-
-  for (int inspected = 0; inspected < PRIORITY_LEVELS; inspected++) {
-    if (scheduler->slot_budget_remaining == 0) {
-      scheduler->slot_budget_remaining =
-          slot_budget_for_index(scheduler->current_priority_slot);
-      if (scheduler->slot_budget_remaining == 0) {
-        advance_priority_slot();
-        continue;
-      }
-    }
-
-    process_t *proc = pop_ready_from_slot(scheduler->current_priority_slot);
+  while (!is_empty(scheduler->ready_queue)) {
+    process_t *proc = get_first(scheduler->ready_queue);
+    delete_first(scheduler->ready_queue);
     if (proc != NULL) {
-      if (scheduler->slot_budget_remaining > 0) {
-        scheduler->slot_budget_remaining--;
+      proc->in_ready_queue = 0;
+      if (proc->state == PROC_READY) {
+        return proc;
       }
-      if (scheduler->slot_budget_remaining == 0) {
-        advance_priority_slot();
-      }
-      return proc;
     }
-
-    advance_priority_slot();
   }
-
   return NULL;
 }
 
 static void remove_from_ready_queue(process_t *proc) {
-  if (scheduler == NULL || proc == NULL || !proc->in_ready_queue) {
+  if (scheduler == NULL || scheduler->ready_queue == NULL || proc == NULL ||
+      !proc->in_ready_queue) {
     return;
   }
-
-  for (int i = 0; i < PRIORITY_LEVELS; i++) {
-    DListADT queue = scheduler->ready_queues[i];
-    if (queue != NULL && delete_element(queue, proc) == 0) {
-      proc->in_ready_queue = 0;
-      return;
-    }
+  if (delete_element(scheduler->ready_queue, proc) == 0) {
+    proc->in_ready_queue = 0;
+    return;
   }
-
   proc->in_ready_queue = 0;
-}
-
-static uint8_t clamp_priority(uint8_t priority) {
-  if (priority < MIN_PRIORITY) {
-    return MIN_PRIORITY;
-  }
-  if (priority > MAX_PRIORITY) {
-    return MAX_PRIORITY;
-  }
-  return priority;
-}
-
-static uint8_t priority_index(uint8_t priority) {
-  return clamp_priority(priority) - MIN_PRIORITY;
-}
-
-static uint8_t priority_weight_for_index(uint8_t index) {
-  if (index >= PRIORITY_LEVELS) {
-    return 1;
-  }
-  uint8_t base = (uint8_t)(index + 1);
-  return (uint8_t)(base * base);
-}
-
-static uint16_t slot_budget_for_index(uint8_t index) {
-  if (scheduler == NULL || index >= PRIORITY_LEVELS) {
-    return 0;
-  }
-
-  DListADT queue = scheduler->ready_queues[index];
-  if (queue == NULL) {
-    return 0;
-  }
-
-  uint16_t queue_size = (uint16_t)get_size(queue);
-  if (queue_size == 0) {
-    return 0;
-  }
-
-  uint16_t weight = (uint16_t)priority_weight_for_index(index);
-  uint32_t budget = (uint32_t)weight * queue_size;
-  if (budget > UINT16_MAX) {
-    budget = UINT16_MAX;
-  }
-  return (uint16_t)budget;
-}
-
-static uint8_t highest_priority_index(void) { return PRIORITY_LEVELS - 1; }
-
-static uint8_t previous_priority_index(uint8_t index) {
-  if (index == 0) {
-    return PRIORITY_LEVELS - 1;
-  }
-  return index - 1;
-}
-
-static DListADT ready_queue_for_priority(uint8_t priority) {
-  if (scheduler == NULL) {
-    return NULL;
-  }
-  uint8_t index = priority_index(priority);
-  return scheduler->ready_queues[index];
-}
-
-static process_t *pop_ready_from_slot(uint8_t slot_index) {
-  if (scheduler == NULL || slot_index >= PRIORITY_LEVELS) {
-    return NULL;
-  }
-  DListADT queue = scheduler->ready_queues[slot_index];
-  if (queue == NULL) {
-    return NULL;
-  }
-
-  while (!is_empty(queue)) {
-    process_t *proc = get_first(queue);
-    delete_first(queue);
-    if (proc != NULL && proc->state == PROC_READY) {
-      proc->in_ready_queue = 0;
-      return proc;
-    }
-  }
-  return NULL;
-}
-
-static void reset_priority_cursor(void) {
-  if (scheduler == NULL) {
-    return;
-  }
-  scheduler->current_priority_slot = highest_priority_index();
-  scheduler->slot_budget_remaining =
-      slot_budget_for_index(scheduler->current_priority_slot);
-}
-
-static void advance_priority_slot(void) {
-  if (scheduler == NULL) {
-    return;
-  }
-  scheduler->current_priority_slot =
-      previous_priority_index(scheduler->current_priority_slot);
-  scheduler->slot_budget_remaining =
-      slot_budget_for_index(scheduler->current_priority_slot);
 }
 
 uint8_t is_foreground_process(int64_t pid) {
