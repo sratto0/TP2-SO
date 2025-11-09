@@ -1,8 +1,3 @@
-exit
-cd root
-make clean
-make
-exit
 cd root
 make clean
 make
@@ -496,5 +491,10 @@ make buddy
 exit
 cd root
 make clean
+make buddy
+exit
+cd root
+make clean
+make buddy
 make buddy
 exit

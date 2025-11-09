@@ -637,11 +637,21 @@ static uint16_t slot_budget_for_index(uint8_t index) {
   }
 
   DListADT queue = scheduler->ready_queues[index];
-  if (queue == NULL || is_empty(queue)) {
+  if (queue == NULL) {
     return 0;
   }
 
-  return (uint16_t)priority_weight_for_index(index);
+  uint16_t queue_size = (uint16_t)get_size(queue);
+  if (queue_size == 0) {
+    return 0;
+  }
+
+  uint16_t weight = (uint16_t)priority_weight_for_index(index);
+  uint32_t budget = (uint32_t)weight * queue_size;
+  if (budget > UINT16_MAX) {
+    budget = UINT16_MAX;
+  }
+  return (uint16_t)budget;
 }
 
 static uint8_t highest_priority_index(void) { return PRIORITY_LEVELS - 1; }
