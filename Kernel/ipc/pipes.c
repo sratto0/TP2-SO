@@ -1,8 +1,8 @@
 #include "pipes.h"
-#include "../include/semaphore.h"
+#include "semaphore.h"
 #include <stdlib.h>
-#include "../include/memoryManager.h"
-#include "../include/lib.h"
+#include "memoryManager.h"
+#include "lib.h"
 
 extern void acquire_lock(lock_t *lock);
 extern void release_lock(lock_t *lock);

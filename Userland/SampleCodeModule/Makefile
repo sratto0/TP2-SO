@@ -7,13 +7,14 @@ OBJECTS=$(SOURCES:.c=.o)
 OBJECTS_ASM=$(SOURCES_ASM:asm/%.asm=obj/%.asm.o)
 TEST_OBJECTS=test_mm.o test_prio.o test_sync.o test_processes.o test_util.o
 COMMANDS=$(wildcard commands/*.c)
+LIB=$(wildcard lib/*.c)
 INCLUDE=./include
 
 all: tests $(MODULE)
 
-$(MODULE): _loader.c $(OBJECTS) $(OBJECTS_ASM) $(TEST_OBJECTS) $(COMMANDS)
-	$(GCC) $(GCCFLAGS) -I$(INCLUDE) -T sampleCodeModule.ld _loader.c $(OBJECTS_ASM) $(OBJECTS) $(TEST_OBJECTS) $(COMMANDS) -o ../$(MODULE)
-	$(GCC) $(GCCFLAGS) -I$(INCLUDE) -T sampleCodeModule.ld -Wl,--oformat=elf64-x86-64 _loader.c $(OBJECTS_ASM) $(OBJECTS) $(TEST_OBJECTS) $(COMMANDS) -o ../0000-sampleCodeModule.elf
+$(MODULE): _loader.c $(OBJECTS) $(OBJECTS_ASM) $(TEST_OBJECTS) $(COMMANDS) $(LIB) 
+	$(GCC) $(GCCFLAGS) -I$(INCLUDE) -T sampleCodeModule.ld _loader.c $(OBJECTS_ASM) $(OBJECTS) $(TEST_OBJECTS) $(COMMANDS) $(LIB) -o ../$(MODULE)
+	$(GCC) $(GCCFLAGS) -I$(INCLUDE) -T sampleCodeModule.ld -Wl,--oformat=elf64-x86-64 _loader.c $(OBJECTS_ASM) $(OBJECTS) $(TEST_OBJECTS) $(COMMANDS) $(LIB)  -o ../0000-sampleCodeModule.elf
 
 %.o: %.c
 	mkdir -p obj

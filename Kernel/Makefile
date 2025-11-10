@@ -9,7 +9,7 @@ else
 endif
 
 
-SOURCES=$(wildcard *.c) $(wildcard memoryManagement/*.c) $(wildcard process/*.c) $(wildcard semaphores/*.c) $(wildcard pipes/*.c)
+SOURCES=$(wildcard *.c) $(wildcard memory/*.c) $(wildcard process/*.c) $(wildcard ipc/*.c) $(wildcard interruptions/*.c) $(wildcard drivers/*.c) $(wildcard utils/*.c)
 SOURCES_ASM=$(wildcard asm/*.asm)
 OBJECTS=$(SOURCES:.c=.o)
 OBJECTS_ASM=$(SOURCES_ASM:.asm=.o)

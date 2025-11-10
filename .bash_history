@@ -154,3 +154,90 @@ make
 cd ..
 make
 exit
+cd root
+make clean
+cd Toolchain
+make clean
+make
+cd ..
+make 
+make clean
+cd Toolchain
+make clean
+make
+cd ..
+make
+make clean
+cd Toolchain
+make clean
+make
+cd ..
+make
+make
+make
+make
+make
+make
+make
+make clean
+cd Toolchain
+make clean
+make
+cd ..
+make
+make clean
+cd Toolchain
+make clean
+make
+cd ..
+make
+exit
+cd root
+cd Toolchain
+make
+cd ..
+make
+exit
+cd root
+cd Toolchain
+make
+cd ..
+make
+make
+make clean
+cd Toolchain
+make clean
+make
+cd ..
+cd Toolchain
+make
+cd ..
+make
+make
+make
+make clean
+cd Toolchain
+make clean
+make
+cd ..
+cd Toochain
+make
+exit
+cd root
+cd Toolchain
+make
+cd ..
+make
+make clean
+cd Toolchain
+make clean
+make
+cd ..
+make 
+make clean
+cd Toolchain
+make clean
+make
+cd ..
+make
+exit
