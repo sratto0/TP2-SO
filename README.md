@@ -85,6 +85,13 @@ PVS-Studio es una herramienta de análisis estático que detecta posibles bugs, 
    Elimina todos los archivos temporales y reportes del análisis.
 
 
+**Notas:**
+ Si al ejecutar PVS obtenés errores de "Permission denied" y ya tenés PVS-Studio instalado, podés eliminar el directorio de objetos del módulo userland y volver a intentar (usar sudo sólo si es necesario):
+```bash
+sudo rm -rf Userland/SampleCodeModule/obj
+make pvs
+```
+
 ## Instrucciones de replicación
 
 ### Nombre preciso y breve descripción de cada comando/test y parámetros que admiten
