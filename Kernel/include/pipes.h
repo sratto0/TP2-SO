@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include "../../SharedLibraries/sharedStructs.h"
 
-#define PIPE_BUFFER_SIZE 1024
+#define PIPE_BUFFER_SIZE 4096
 #define MAX_PIPES 64
 #define BUILTIN_FDS 3
 #define PIPE_EOF -1
@@ -21,6 +21,7 @@ int pipe_write(fd_t fd, const char * buffer, int size);
 int pipe_read(fd_t fd, char * buffer, int size);
 void send_pipe_eof (fd_t fd);
 void pipe_destroy(fd_t fd);
+void pipe_release(fd_t fd);
 
 
 #endif /* PIPES_H */

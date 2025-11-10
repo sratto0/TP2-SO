@@ -3,13 +3,13 @@
 // https://pvs-studio.com
 
 
-#include "./include/shell.h"
-#include "../../SharedLibraries/sharedStructs.h"
-#include "./include/color.h"
-#include "./include/inputParser.h"
-#include "./include/shellCommands.h"
-#include "./include/syscalls.h"
-#include "./include/test_functions.h"
+#include "shell.h"
+#include "sharedStructs.h"
+#include "color.h"
+#include "inputParser.h"
+#include "shellCommands.h"
+#include "syscalls.h"
+#include "test_functions.h"
 #include "stdio.h"
 #include "stdlib.h"
 #include "string.h"

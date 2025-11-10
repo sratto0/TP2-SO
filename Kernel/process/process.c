@@ -3,7 +3,7 @@
 // https://pvs-studio.com
 
 #include "process.h"
-#include "../../SharedLibraries/sharedStructs.h"
+#include "sharedStructs.h"
 #include "lib.h"
 #include "scheduler.h"
 #include <stdint.h>

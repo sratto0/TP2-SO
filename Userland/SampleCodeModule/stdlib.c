@@ -3,7 +3,7 @@
 // https://pvs-studio.com
 
 #include "stdlib.h"
-#include "../../SharedLibraries/sharedStructs.h"
+#include "sharedStructs.h"
 #include <stdint.h>
 #include <stdio.h>
 
