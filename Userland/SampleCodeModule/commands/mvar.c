@@ -44,7 +44,7 @@ static void zero_memory(void *ptr, uint64_t size) {
 
 static void build_name(char *dest, const char *prefix, const char *suffix) {
   uint32_t idx = 0;
-  while (prefix[idx] && idx < SEM_NAME_LEN - 1) {
+  while (idx < SEM_NAME_LEN - 1 && prefix[idx]) {
     dest[idx] = prefix[idx];
     idx++;
   }
@@ -231,7 +231,7 @@ static int manager_main(int argc, char **argv) {
   int created = 0;
   int error = 0;
 
-  for (int i = 0; i < writers && !error; i++) {
+  for (int i = 0; i < writers; i++) {
     char token_buf[2] = {(char)('A' + (i % 26)), '\0'};
     char delay_buf[12];
     itoa(2 + i % 3, delay_buf, 10);

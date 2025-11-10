@@ -492,6 +492,9 @@ void exit_process(int64_t ret) {
   }
 
   process_t *current = get_current_process();
+  if(current == NULL){
+    return ;
+  }
 
   notify_pipe_closure(current);
 
@@ -617,9 +620,6 @@ static void remove_from_ready_queue(process_t *proc) {
 }
 
 static uint8_t clamp_priority(uint8_t priority) {
-  if (priority < MIN_PRIORITY) {
-    return MIN_PRIORITY;
-  }
   if (priority > MAX_PRIORITY) {
     return MAX_PRIORITY;
   }
