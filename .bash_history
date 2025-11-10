@@ -72,3 +72,9 @@ cd root
 make clean
 make buddy
 exit
+cd root
+make clean
+cd Toolchian
+cd Toolchain
+make clean
+exit

@@ -488,13 +488,7 @@ void exit_process(int64_t ret) {
   }
 
   process_t *current = get_current_process();
-  // if (current == NULL) {
-  //   return;
-  // }
 
-  // if (current->w_fd != STDOUT && current->w_fd != STDERR) {
-  //   send_pipe_eof(current->w_fd);
-  // }
   notify_pipe_closure(current);
 
   adopt_children(current->pid);

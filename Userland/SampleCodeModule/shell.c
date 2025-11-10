@@ -198,7 +198,7 @@ const static Command commands[] = {
      "Lee desde la entrada estandar (teclado o pipe) y muestra el flujo por pantalla" 
      " sin realizar modificaciones hasta recibir la senal de fin de archivo (Ctrl+D).",
      "No recibe parametros.",
-     "Util para testear redirecciones y pipes."
+     "Util para testear redirecciones y pipes. "
      "Permite verificar la comunicacion entre procesos.",
      "cat"},
     {"wc", "Cuenta lineas del texto ingresado", (entry_point_t)cmd_wc, CAT_IO,
@@ -208,7 +208,7 @@ const static Command commands[] = {
     {"filter", "Filtra vocales del texto ingresado",
      (entry_point_t)cmd_filter, CAT_IO, "filter",
      "Lee caracteres desde stdin y reimprime solo los que no son vocales.",
-     "No recibe parametros.", "Termina con Ctrl+D o una linea vacia.",
+     "No recibe parametros.", "Termina con Ctrl+D.",
      "filter"}};
 
 
