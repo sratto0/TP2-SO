@@ -1,30 +1,20 @@
 #ifndef memoryManager_h
 #define memoryManager_h
 
+#include "../../SharedLibraries/sharedStructs.h"
+#include "string.h"
 #include <stddef.h>
 #include <stdint.h>
 #include <stdlib.h>
-#include "string.h"
-
-typedef struct {
-    uint64_t size;
-    uint64_t used;
-    uint64_t free;
-} memory_info_t;
 
 #define BLOCKSIZE 64
 #define MEM_SIZE 0x100000
 
-
-
-typedef struct MemoryManagerCDT* MemoryManagerADT;
-
+typedef struct MemoryManagerCDT *MemoryManagerADT;
 
 void memory_init(void *start, uint64_t size);
-void * memory_alloc(uint64_t size);
-void memory_free(void* ptr);
-memory_info_t memory_get_info();
-
-
+void *memory_alloc(uint64_t size);
+void memory_free(void *ptr);
+memory_info_t *memory_get_info();
 
 #endif

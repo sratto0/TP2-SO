@@ -1,3 +1,7 @@
+// This is a personal academic project. Dear PVS-Studio, please check it.
+// PVS-Studio Static Code Analyzer for C, C++, C#, and Java:
+// https://pvs-studio.com
+
 #include "syscalls.h"
 #include "test_util.h"
 #include <stdio.h>
@@ -18,10 +22,10 @@ uint64_t test_mm(uint64_t argc, char *argv[]) {
   uint32_t total;
   uint64_t max_memory;
 
-  if (argc != 1)
+  if (argc != 2)
     return -1;
 
-  if ((max_memory = satoi(argv[0])) <= 0)
+  if ((max_memory = satoi(argv[1])) <= 0)
     return -1;
 
   while (1) {
@@ -34,7 +38,7 @@ uint64_t test_mm(uint64_t argc, char *argv[]) {
       mm_rqs[rq].address = my_malloc(mm_rqs[rq].size);
 
       if (mm_rqs[rq].address) {
-        printf(" block of size %u\n", mm_rqs[rq].size);
+        printf(" block of size %d\n", mm_rqs[rq].size);
         total += mm_rqs[rq].size;
         rq++;
       }
@@ -43,15 +47,17 @@ uint64_t test_mm(uint64_t argc, char *argv[]) {
     // Set
     uint32_t i;
     for (i = 0; i < rq; i++)
-      if (mm_rqs[i].address){
-        printf("Setting block at %p, size=%u\n", mm_rqs[i].address, mm_rqs[i].size);
+      if (mm_rqs[i].address) {
+        printf("Setting block at %d, size=%d\n", mm_rqs[i].address,
+               mm_rqs[i].size);
         my_memset(mm_rqs[i].address, i, mm_rqs[i].size);
       }
 
     // Check
     for (i = 0; i < rq; i++)
-      if (mm_rqs[i].address){
-        printf("Checking block at %p, size=%u\n", mm_rqs[i].address, mm_rqs[i].size);
+      if (mm_rqs[i].address) {
+        printf("Checking block at %d, size=%d\n", mm_rqs[i].address,
+               mm_rqs[i].size);
         if (!memcheck(mm_rqs[i].address, i, mm_rqs[i].size)) {
           printf("test_mm ERROR\n");
           return -1;
@@ -59,10 +65,10 @@ uint64_t test_mm(uint64_t argc, char *argv[]) {
       }
 
     // Free
-    for (i = 0; i < rq; i++){
-      printf("Freeing block of size %u\n", mm_rqs[i].size);
-      if (mm_rqs[i].address){
-        printf("Freeing block of size %u\n", mm_rqs[i].size);
+    for (i = 0; i < rq; i++) {
+      printf("Freeing block of size %d\n", mm_rqs[i].size);
+      if (mm_rqs[i].address) {
+        printf("Freeing block of size %d\n", mm_rqs[i].size);
         my_free(mm_rqs[i].address);
       }
     }

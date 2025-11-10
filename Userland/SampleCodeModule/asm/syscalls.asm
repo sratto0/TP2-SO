@@ -29,7 +29,13 @@ GLOBAL sys_sem_open
 GLOBAL sys_sem_wait
 GLOBAL sys_sem_post
 GLOBAL sys_sem_close
-
+GLOBAL sys_memory_get_info
+GLOBAL sys_sleep
+GLOBAL sys_create_pipe
+GLOBAL sys_destroy_pipe
+GLOBAL sys_read_pipe
+GLOBAL sys_write_pipe
+GLOBAL sys_adopt_child
 
 read:
     mov rax, 0
@@ -175,5 +181,40 @@ sys_sem_post:
 
 sys_sem_close:
     mov rax, 28
+    int 80h
+    ret
+
+sys_memory_get_info:
+    mov rax, 29
+    int 80h
+    ret
+
+sys_sleep:
+    mov rax, 30
+    int 80h
+    ret
+
+sys_create_pipe:
+    mov rax, 31
+    int 80h
+    ret 
+
+sys_destroy_pipe:
+    mov rax, 32
+    int 80h
+    ret
+
+sys_read_pipe:
+    mov rax, 33
+    int 80h
+    ret 
+
+sys_write_pipe:
+    mov rax, 34
+    int 80h  
+    ret
+
+sys_adopt_child:
+    mov rax, 35
     int 80h
     ret

@@ -1,100 +1,127 @@
-// #include "memoryManager.h"
-// #define BLOCK_HEADER_SIZE sizeof(block_t)
-// #define ALIGN4(x) (((((x) - 1) >> 2) << 2) + 4)
+#ifndef USE_BUDDY
+// This is a personal academic project. Dear PVS-Studio, please check it.
+// PVS-Studio Static Code Analyzer for C, C++, C#, and Java:
+// https://pvs-studio.com
+#include "memoryManager.h"
 
-// typedef struct block_t{
-//     uint64_t size;       
-//     int is_free;       
-//     struct block_t * next; 
-// } block_t;
+typedef struct block_t {
+  uint64_t size;
+  int is_free;
+  struct block_t *next;
+} block_t;
 
-// typedef struct MemoryManagerCDT{ 
-//     void * heap_start;
-//     uint64_t total_size;
-//     uint64_t used_size;
-//     block_t * first_block;
-// } MemoryManagerCDT;
+#define BLOCK_HEADER_SIZE ((uint64_t)sizeof(block_t))
+#define ALIGN4(x) (((((x) - 1) >> 2) << 2) + 4)
 
-// MemoryManagerCDT memory_manager;
-// memory_info_t memory_info;
+typedef struct MemoryManagerCDT {
+  void *heap_start;
+  uint64_t total_size;
+  uint64_t used_size;
+  block_t *first_block;
+} MemoryManagerCDT;
 
-// static void *heap_start = NULL;
-// static uint32_t heap_size = 0;
-// static block_t *free_list = NULL;
-// static memory_info_t mem_info;
+static MemoryManagerCDT memory_manager = {0};
+static memory_info_t memory_info = {0};
 
+static block_t *free_list = NULL;
 
-// void memory_init(void * start, uint64_t size){
+static void update_usage(uint64_t delta, int allocate) {
+  if (allocate) {
+    memory_manager.used_size += delta;
+    if (memory_manager.used_size > memory_manager.total_size) {
+      memory_manager.used_size = memory_manager.total_size;
+    }
+  } else {
+    if (delta <= memory_manager.used_size) {
+      memory_manager.used_size -= delta;
+    } else {
+      memory_manager.used_size = 0;
+    }
+  }
 
-//     heap_start = start;
-//     heap_size = size;
+  memory_info.used = memory_manager.used_size;
+  memory_info.free = memory_info.size - memory_info.used;
+}
 
-    
-//     mem_info.size = size;
-//     mem_info.used = 0;
+void memory_init(void *start, uint64_t size) {
 
-//     free_list = (block_t *)start;
-//     free_list->size = size - BLOCK_HEADER_SIZE; // solo la parte de datos
-//     free_list->is_free = 1;
-//     free_list->next = NULL;
-// }
+  memory_manager.heap_start = start;
+  memory_manager.total_size = size;
+  memory_manager.used_size = 0;
+  memory_manager.first_block = NULL;
 
+  memory_info.size = size;
+  memory_info.used = 0;
+  memory_info.free = size;
 
-// void *memory_alloc(uint64_t size) {
-//     size = ALIGN4(size);
+  free_list = (block_t *)start;
+  free_list->size = size - BLOCK_HEADER_SIZE;
+  free_list->is_free = 1;
+  free_list->next = NULL;
 
-//     block_t *curr = free_list;
+  memory_manager.first_block = free_list;
+}
 
-//     while (curr != NULL) {
-//         if (curr->is_free && curr->size >= size) {
-//             // Si el bloque es suficientemente grande para dividir
-//             if (curr->size >= size + BLOCK_HEADER_SIZE + 4) {
-//                 // Dividimos el bloque en uno asignado y otro libre
-//                 block_t *new_block = (block_t *)((uint8_t *)curr + BLOCK_HEADER_SIZE + size);
-//                 new_block->size = curr->size - size - BLOCK_HEADER_SIZE;
-//                 new_block->is_free = 1;
-//                 new_block->next = curr->next;
+void *memory_alloc(uint64_t size) {
+  size = ALIGN4(size);
 
-//                 curr->size = size;
-//                 curr->next = new_block;
-//             }
+  block_t *curr = free_list;
 
-//             curr->is_free = 0;
-//             memory_info.used += curr->size + BLOCK_HEADER_SIZE;
+  while (curr != NULL) {
+    if (curr->is_free && curr->size >= size) {
+      if (curr->size >= size + BLOCK_HEADER_SIZE + 4) {
+        block_t *new_block =
+            (block_t *)((uint8_t *)curr + BLOCK_HEADER_SIZE + size);
+        new_block->size = curr->size - size - BLOCK_HEADER_SIZE;
+        new_block->is_free = 1;
+        new_block->next = curr->next;
 
-//             // Retornamos la dirección después de la cabecera (donde empieza el bloque útil)
-//             return (void *)((uint8_t *)curr + BLOCK_HEADER_SIZE);
-//         }
+        curr->size = size;
+        curr->next = new_block;
+      }
 
-//         curr = curr->next;
-//     }
+      curr->is_free = 0;
+      update_usage(curr->size + BLOCK_HEADER_SIZE, 1);
 
-//     return NULL;
-// }
+      return (void *)((uint8_t *)curr + BLOCK_HEADER_SIZE);
+    }
 
+    curr = curr->next;
+  }
 
-// void memory_free(void* ptr) {
-//     if (ptr == NULL) return;
+  return NULL;
+}
 
-//     block_t *block_to_free = (block_t *)((uint8_t *)ptr - BLOCK_HEADER_SIZE);
-//     block_to_free->is_free = 1;
-//     memory_info.used -= block_to_free->size + BLOCK_HEADER_SIZE;
+void memory_free(void *ptr) {
+  if (ptr == NULL) {
+    return;
+  }
 
-//     // Coalescing de bloques libres adyacentes
-//     block_t *curr = free_list;
-//     while (curr != NULL && curr->next != NULL) {
-//         if (curr->is_free && curr->next->is_free && (uint8_t *)curr + BLOCK_HEADER_SIZE + curr->size == (uint8_t *)curr->next) {
-//             curr->size += BLOCK_HEADER_SIZE + curr->next->size;
-//             curr->next = curr->next->next;
-//         } else {
-//             curr = curr->next;
-//         }
-//     }
-// }
+  block_t *block_to_free = (block_t *)((uint8_t *)ptr - BLOCK_HEADER_SIZE);
+  if (block_to_free->is_free) {
+    return;
+  }
 
-// memory_info_t memory_get_info(){
-//     memory_info.size = memory_manager.total_size;
-//     memory_info.used = memory_manager.used_size;
-//     memory_info.free = memory_manager.total_size - memory_manager.used_size;
-//     return memory_info;
-// } 
+  block_to_free->is_free = 1;
+  update_usage(block_to_free->size + BLOCK_HEADER_SIZE, 0);
+
+  block_t *curr = free_list;
+  while (curr != NULL && curr->next != NULL) {
+    uint8_t *curr_end =
+        (uint8_t *)curr + BLOCK_HEADER_SIZE + curr->size;
+    if (curr->is_free && curr->next->is_free &&
+        curr_end == (uint8_t *)curr->next) {
+      curr->size += BLOCK_HEADER_SIZE + curr->next->size;
+      curr->next = curr->next->next;
+    } else {
+      curr = curr->next;
+    }
+  }
+}
+
+memory_info_t *memory_get_info() {
+  memory_info.free = memory_info.size - memory_info.used;
+  return &memory_info;
+}
+
+#endif // USE_BUDDY

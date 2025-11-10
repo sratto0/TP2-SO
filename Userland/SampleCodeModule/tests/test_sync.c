@@ -1,10 +1,14 @@
-#include <stdint.h>
-#include <stdio.h>
-#include <stddef.h>
+// This is a personal academic project. Dear PVS-Studio, please check it.
+// PVS-Studio Static Code Analyzer for C, C++, C#, and Java:
+// https://pvs-studio.com
+
+#include "../../../SharedLibraries/sharedStructs.h"
+#include "stdlib.h"
 #include "syscall.h"
 #include "test_util.h"
-#include "stdlib.h"
-#include "../../../SharedLibraries/sharedStructs.h"
+#include <stddef.h>
+#include <stdint.h>
+#include <stdio.h>
 
 #define SEM_ID "sem"
 #define TOTAL_PAIR_PROCESSES 2
@@ -23,14 +27,15 @@ uint64_t my_process_inc(uint64_t argc, char *argv[]) {
   int8_t inc;
   int8_t use_sem;
 
-  if (argc != 3)
+  if (argc != 4) {
     return -1;
+  }
 
-  if ((n = satoi(argv[0])) <= 0)
+  if ((n = satoi(argv[1])) <= 0)
     return -1;
-  if ((inc = satoi(argv[1])) == 0)
+  if ((inc = satoi(argv[2])) == 0)
     return -1;
-  if ((use_sem = satoi(argv[2])) < 0)
+  if ((use_sem = satoi(argv[3])) < 0)
     return -1;
 
   if (use_sem)
@@ -41,16 +46,16 @@ uint64_t my_process_inc(uint64_t argc, char *argv[]) {
 
   uint64_t i;
   for (i = 0; i < n; i++) {
-    if (use_sem){
-        my_sem_wait(SEM_ID);
+    if (use_sem) {
+      my_sem_wait(SEM_ID);
     }
     slowInc(&global, inc);
-    if (use_sem){
-        my_sem_post(SEM_ID);
+    if (use_sem) {
+      my_sem_post(SEM_ID);
     }
   }
 
-  if (use_sem){
+  if (use_sem) {
     my_sem_close(SEM_ID);
   }
 
@@ -61,18 +66,21 @@ uint64_t test_sync(uint64_t argc, char *argv[]) { //{n, use_sem, 0}
   uint64_t pids[2 * TOTAL_PAIR_PROCESSES];
   int exit_code;
 
-  if (argc != 2)
+  if (argc != 3)
     return -1;
 
-  char *argvDec[] = {argv[0], "-1", argv[1], NULL};
-  char *argvInc[] = {argv[0], "1", argv[1], NULL};
+  char *argvDec[] = {"my_process_dec", argv[1], "-1", argv[2], NULL};
+  char *argvInc[] = {"my_process_inc", argv[1], "1", argv[2], NULL};
 
   global = 0;
 
   uint64_t i;
   for (i = 0; i < TOTAL_PAIR_PROCESSES; i++) {
-    pids[i] = my_create_process((entry_point_t)my_process_inc, argvDec, "my_process_inc", NULL);
-    pids[i + TOTAL_PAIR_PROCESSES] = my_create_process((entry_point_t)my_process_inc, argvInc, "my_process_dec", NULL);
+    fd_t fds[2] = {STDIN, STDOUT};
+    pids[i] = my_create_process((entry_point_t)my_process_inc, argvDec,
+                                "my_process_inc", fds);
+    pids[i + TOTAL_PAIR_PROCESSES] = my_create_process(
+        (entry_point_t)my_process_inc, argvInc, "my_process_dec", fds);
   }
 
   for (i = 0; i < TOTAL_PAIR_PROCESSES; i++) {
