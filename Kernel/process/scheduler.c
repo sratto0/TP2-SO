@@ -6,12 +6,12 @@
 #include "doubleLinkedList.h"
 #include "memoryManager.h"
 #include "memoryMap.h"
-#include "process.h"
-#include "time.h"
-#include "semaphore.h"
 #include "pipes.h"
-#include "video.h"
+#include "process.h"
+#include "semaphore.h"
 #include "stdlib.h"
+#include "time.h"
+#include "video.h"
 
 extern void timer_tick();
 
@@ -45,7 +45,7 @@ static void init(int argc, char **argv) {
       _hlt();
   }
 
-  fd_t shell_fds[2] = {STDIN, STDOUT}; 
+  fd_t shell_fds[2] = {STDIN, STDOUT};
   int shell_pid =
       add_process((entry_point_t)SHELL_ADDRESS, shell_argv, "shell", shell_fds);
 
@@ -64,7 +64,7 @@ static int add_init() {
     return -1;
   }
 
-  fd_t init_fds[2] = {STDIN, STDOUT}; 
+  fd_t init_fds[2] = {STDIN, STDOUT};
   process_t *pcb_init =
       my_create_process(INIT_PID, (entry_point_t)init, NULL, "init", init_fds);
 
@@ -123,7 +123,7 @@ void *schedule(void *prev_rsp) {
     return prev_rsp;
   }
 
-  scheduler->force_reschedule = 0; 
+  scheduler->force_reschedule = 0;
 
   process_t *current_process = get_current_process();
 
@@ -172,9 +172,10 @@ void *schedule(void *prev_rsp) {
   return next_process->stack_pointer;
 }
 
-
-int64_t add_process(entry_point_t main, char ** argv, char * name, fd_t file_descriptors[2]){
-  if(scheduler == NULL || scheduler->process_count >= MAX_PROCESSES || file_descriptors == NULL){
+int64_t add_process(entry_point_t main, char **argv, char *name,
+                    fd_t file_descriptors[2]) {
+  if (scheduler == NULL || scheduler->process_count >= MAX_PROCESSES ||
+      file_descriptors == NULL) {
     return -1;
   }
 
@@ -405,7 +406,8 @@ int unblock_current_process() {
 }
 
 int set_process_priority(int64_t pid, uint8_t priority) {
-  if (scheduler == NULL || pid < 0 || pid >= MAX_PROCESSES || priority > MAX_PRIORITY) {
+  if (scheduler == NULL || pid < 0 || pid >= MAX_PROCESSES ||
+      priority > MAX_PRIORITY) {
     return -1;
   }
 
@@ -430,21 +432,19 @@ int set_process_priority(int64_t pid, uint8_t priority) {
   return 0;
 }
 
-
 void get_fds(fd_t fds[2]) {
   if (scheduler == NULL || scheduler->current_pid == NO_PID) {
     return;
   }
-  process_t * current_process = scheduler->processes[scheduler->current_pid];
+  process_t *current_process = scheduler->processes[scheduler->current_pid];
   fds[STDIN] = current_process->r_fd;
   fds[STDOUT] = current_process->w_fd;
 }
 
-int64_t wait_pid(int64_t pid, int32_t * exit_code){
-  
-  process_t * child = get_process(pid);
-  process_t * current = get_current_process();
+int64_t wait_pid(int64_t pid, int32_t *exit_code) {
 
+  process_t *child = get_process(pid);
+  process_t *current = get_current_process();
 
   if (child == NULL || current == NULL) {
     return -1;
@@ -487,13 +487,13 @@ int64_t wait_pid(int64_t pid, int32_t * exit_code){
 }
 
 void exit_process(int64_t ret) {
-  if(scheduler == NULL) {
+  if (scheduler == NULL) {
     return;
   }
 
   process_t *current = get_current_process();
-  if(current == NULL){
-    return ;
+  if (current == NULL) {
+    return;
   }
 
   notify_pipe_closure(current);
@@ -501,7 +501,6 @@ void exit_process(int64_t ret) {
   adopt_children(current->pid);
 
   semaphore_remove_process(current->pid);
-
 
   if (scheduler->processes[scheduler->current_pid]->parent_pid == INIT_PID) {
     remove_process(current->pid);
@@ -516,7 +515,8 @@ void exit_process(int64_t ret) {
 
     process_t *parent = get_process(current->parent_pid);
 
-    if (parent != NULL && parent->state == PROC_BLOCKED && parent->waiting_pid == current->pid) {
+    if (parent != NULL && parent->state == PROC_BLOCKED &&
+        parent->waiting_pid == current->pid) {
       unblock_process(parent->pid);
     }
   }
@@ -726,7 +726,8 @@ uint8_t is_foreground_process(int64_t pid) {
 }
 
 process_info_t *get_processes_info() {
-  process_info_t *processes_info = (process_info_t *)memory_alloc(sizeof(process_info_t) * MAX_PROCESSES);
+  process_info_t *processes_info =
+      (process_info_t *)memory_alloc(sizeof(process_info_t) * MAX_PROCESSES);
   if (processes_info == NULL) {
     return NULL;
   }

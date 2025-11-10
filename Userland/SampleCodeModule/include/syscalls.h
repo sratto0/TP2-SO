@@ -6,23 +6,19 @@
 
 #include "../../../SharedLibraries/sharedStructs.h"
 
-
-
-
 /**
  * @brief Escribe a partir del descriptor recibido un caracter
  * @param fd: FileDescriptor (STDOUT | STDERR)
  * @param c: Caracter a escribir
  */
-void write(fd_t fd, char * buffer, uint64_t len);
+void write(fd_t fd, char *buffer, uint64_t len);
 
 /**
  * @brief Lee un byte a partir del descriptor recibido
  * @param fd: FileDescriptor (STDIN | KBDIN)
  * @return Numero de bytes leidos o EOF (-1) si se alcanzó el final
  */
-int64_t read(fd_t fd, char * destination_buffer, uint64_t len);
-
+int64_t read(fd_t fd, char *destination_buffer, uint64_t len);
 
 /**
  * @brief Devuelve la hora expresada en segundos
@@ -146,13 +142,12 @@ void sys_sleep(uint64_t seconds);
 
 int sys_create_pipe(fd_t fds[2]);
 
-int sys_write_pipe(fd_t fd, const char * buffer, int size);
+int sys_write_pipe(fd_t fd, const char *buffer, int size);
 
-int sys_read_pipe(fd_t fd, char * buffer, int size);
+int sys_read_pipe(fd_t fd, char *buffer, int size);
 
 void sys_destroy_pipe(fd_t fd);
 
 void sys_adopt_child(int64_t pid);
-
 
 #endif

@@ -12,9 +12,7 @@
 #define CURSOR_FREQ 10 /* Frecuencia en Ticks del dibujo del cursor*/
 static volatile uint8_t cursor_enabled = 1;
 
-void set_cursor_enabled(uint8_t enabled) {
-    cursor_enabled = enabled;
-}
+void set_cursor_enabled(uint8_t enabled) { cursor_enabled = enabled; }
 
 /**
  * @brief Funcion auxiliar para printf y printfc
@@ -39,13 +37,13 @@ void printErr(const char *s) {
 }
 
 int getchar() {
-    char c;
-    int64_t ret = read(STDIN, &c, 1);
-    if (ret == EOF) {
-        return EOF;
-    }
-    return c;
-}// char getScanCode() { return read(KBDIN); }
+  char c;
+  int64_t ret = read(STDIN, &c, 1);
+  if (ret == EOF) {
+    return EOF;
+  }
+  return c;
+} // char getScanCode() { return read(KBDIN); }
 
 void printf(char *fmt, ...) {
   va_list v;
@@ -78,7 +76,7 @@ void vprintf(char *fmt, va_list args) {
         puts(buffer);
         break;
       case 's':
-        printNChars(' ', dx); 
+        printNChars(' ', dx);
         puts((char *)va_arg(args, char *));
         break;
       }
@@ -120,10 +118,10 @@ int scanf(char *fmt, ...) {
       cursorTicks = 0;
       if (cursorDrawn) {
         putchar('\b');
-        cursorDrawn = 0; 
+        cursorDrawn = 0;
       } else {
         putchar('_');
-        cursorDrawn = 1; 
+        cursorDrawn = 1;
       }
     }
     if (c != 0) {

@@ -20,7 +20,7 @@ static const char *PAGE_FAULT_DESCRIPTION = "Fallo de pagina";
 
 void exceptionDispatcher(int ex, uint64_t *rip, uint64_t *rsp) {
   const char *msg = "Excepcion desconocida";
-  
+
   switch (ex) {
   case ZERO_EXCEPTION_ID:
     msg = ZERO_EXCEPTION_DESCRIPTION;
@@ -37,7 +37,7 @@ void exceptionDispatcher(int ex, uint64_t *rip, uint64_t *rsp) {
   default:
     break;
   }
-  
+
   printError(msg, *rip, rsp);
 }
 

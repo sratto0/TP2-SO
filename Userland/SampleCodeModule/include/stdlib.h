@@ -77,13 +77,12 @@ void my_sleep(uint64_t seconds);
 
 int my_pipe_create(fd_t fds[2]);
 
-int my_pipe_write(fd_t fd, const char * buffer, int size);
+int my_pipe_write(fd_t fd, const char *buffer, int size);
 
-int my_pipe_read(fd_t fd, char * buffer, int size);
+int my_pipe_read(fd_t fd, char *buffer, int size);
 
 void my_destroy_pipe(fd_t fd);
 
 void my_adopt_child(int64_t pid);
-
 
 #endif

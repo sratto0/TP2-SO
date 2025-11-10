@@ -15,7 +15,6 @@ typedef uint16_t fd_t;
 #define FD_INVALID ((fd_t)0xFFFF)
 #define DEV_NULL_FD ((fd_t)0xFFFE)
 
-
 typedef int (*entry_point_t)(int argc, char **argv);
 
 typedef enum {

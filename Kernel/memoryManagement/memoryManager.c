@@ -11,7 +11,7 @@ typedef struct block_t {
 } block_t;
 
 #define BLOCK_HEADER_SIZE ((uint64_t)sizeof(block_t))
-#define ALIGN4(x) (((((x) - 1) >> 2) << 2) + 4)
+#define ALIGN4(x) (((((x)-1) >> 2) << 2) + 4)
 
 typedef struct MemoryManagerCDT {
   void *heap_start;
@@ -107,8 +107,7 @@ void memory_free(void *ptr) {
 
   block_t *curr = free_list;
   while (curr != NULL && curr->next != NULL) {
-    uint8_t *curr_end =
-        (uint8_t *)curr + BLOCK_HEADER_SIZE + curr->size;
+    uint8_t *curr_end = (uint8_t *)curr + BLOCK_HEADER_SIZE + curr->size;
     if (curr->is_free && curr->next->is_free &&
         curr_end == (uint8_t *)curr->next) {
       curr->size += BLOCK_HEADER_SIZE + curr->next->size;

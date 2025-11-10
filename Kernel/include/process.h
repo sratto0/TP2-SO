@@ -1,9 +1,9 @@
 #ifndef PROCESS_H
 #define PROCESS_H
 
+#include "../../SharedLibraries/sharedStructs.h"
 #include "memoryManager.h"
 #include <stdint.h>
-#include "../../SharedLibraries/sharedStructs.h"
 
 #define DEFAULT_PRIORITY 1
 
@@ -37,7 +37,7 @@ typedef struct process {
 
   fd_t r_fd;
   fd_t w_fd;
-  
+
 } process_t;
 
 process_t *my_create_process(int64_t pid, entry_point_t entry_point,

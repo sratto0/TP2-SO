@@ -66,7 +66,7 @@ int cmd_mem(int argc, char **argv) {
 int cmd_loop(int argc, char *argv[]) {
   if (argc != 2) {
     printfc(RED, "Necesita un argumento numerico que representa la cantidad de "
-           "segundos\n");
+                 "segundos\n");
     return -1;
   }
   int seconds = atoi(argv[1]);
@@ -111,7 +111,8 @@ int cmd_kill(int argc, char **argv) {
   int result = my_kill(pid);
 
   if (result == -1) {
-    printfc(RED, "Error al matar el proceso. Verifique que el PID sea correcto.\n");
+    printfc(RED,
+            "Error al matar el proceso. Verifique que el PID sea correcto.\n");
     return -1;
   } else if (result == 0) {
     printf("Proceso %d matado exitosamente\n", pid);
@@ -130,13 +131,15 @@ int cmd_nice(int argc, char **argv) {
   int pid = atoi(argv[1]);
   int new_priority = atoi(argv[2]);
   if (pid <= 0 || new_priority < 0) {
-    printfc(RED, "El PID debe ser un numero positivo y la prioridad un numero no "
-           "negativo\n");
+    printfc(RED,
+            "El PID debe ser un numero positivo y la prioridad un numero no "
+            "negativo\n");
     return -1;
   }
   int result = my_nice(pid, new_priority);
   if (result == -1) {
-    printfc(RED, 
+    printfc(
+        RED,
         "Error al cambiar la prioridad. Verifique que el PID sea correcto.\n");
     return -1;
   }
@@ -172,7 +175,8 @@ int cmd_block(int argc, char **argv) {
 
   int result = my_block_process(pid);
   if (result == -1) {
-    printfc(RED, "Error al bloquear/desbloquear el proceso. Verifique que el PID sea correcto.\n");
+    printfc(RED, "Error al bloquear/desbloquear el proceso. Verifique que el "
+                 "PID sea correcto.\n");
     return -1;
   } else if (result == 0) {
     printf("Proceso %d bloqueado/desbloqueado exitosamente\n", pid);
@@ -210,7 +214,8 @@ int cmd_unblock(int argc, char **argv) {
 
   int result = my_unblock_process(pid);
   if (result == -1) {
-    printfc(RED, "Error al desbloquear el proceso. Verifique que el PID sea correcto.\n");
+    printfc(RED, "Error al desbloquear el proceso. Verifique que el PID sea "
+                 "correcto.\n");
     return -1;
   } else if (result == 0) {
     printf("Proceso %d desbloqueado exitosamente\n", pid);

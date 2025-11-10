@@ -11,7 +11,7 @@
 
 #define RGB_SIZE 3
 #define MAX_RESOLUTION (64 * 128)
-#define MSG_BUFFER_EXCEEDED \
+#define MSG_BUFFER_EXCEEDED                                                    \
   "Buffer de video excedido, la pantalla ha sido limpiada\n"
 
 struct vbe_mode_info_structure {
@@ -51,7 +51,8 @@ struct vbe_mode_info_structure {
 } __attribute__((packed));
 
 struct vbe_mode_info_structure *_screenData = (void *)0x5C00;
-uint16_t _cursorX = 0, _cursorY = 0; /* Coordenadas de escritura de caracteres */
+uint16_t _cursorX = 0,
+         _cursorY = 0; /* Coordenadas de escritura de caracteres */
 Color _fontColor = DEFAULT_COLOR;
 uint8_t _charWidth = CHAR_WIDTH_12;
 uint8_t _charHeight = CHAR_HEIGHT_12;

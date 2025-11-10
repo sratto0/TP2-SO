@@ -120,22 +120,16 @@ memory_info_t *my_memory_get_info() { return sys_memory_get_info(); }
 
 void my_sleep(uint64_t seconds) { sys_sleep(seconds); }
 
-int my_pipe_create(fd_t fds[2]){
-    return sys_create_pipe(fds);
+int my_pipe_create(fd_t fds[2]) { return sys_create_pipe(fds); }
+
+int my_pipe_write(fd_t fd, const char *buffer, int size) {
+  return sys_write_pipe(fd, buffer, size);
 }
 
-int my_pipe_write(fd_t fd, const char * buffer, int size){
-    return sys_write_pipe(fd, buffer, size);
+int my_pipe_read(fd_t fd, char *buffer, int size) {
+  return sys_read_pipe(fd, buffer, size);
 }
 
-int my_pipe_read(fd_t fd, char * buffer, int size){
-    return sys_read_pipe(fd, buffer, size);
-}
+void my_destroy_pipe(fd_t fd) { sys_destroy_pipe(fd); }
 
-void my_destroy_pipe(fd_t fd){
-    sys_destroy_pipe(fd);
-}
-
-void my_adopt_child(int64_t pid){
-    sys_adopt_child(pid);
-}
+void my_adopt_child(int64_t pid) { sys_adopt_child(pid); }

@@ -48,7 +48,7 @@ int add_first(DListADT list, void *info) {
   if (node == NULL)
     return -1;
 
-  if (list->head == NULL) { 
+  if (list->head == NULL) {
     list->head = node;
     list->tail = node;
   } else {
@@ -73,7 +73,7 @@ int add_last(DListADT list, void *info) {
   if (node == NULL)
     return -1;
 
-  if (list->head == NULL) { 
+  if (list->head == NULL) {
     list->head = node;
     list->tail = node;
   } else {
@@ -90,12 +90,12 @@ int delete_first(DListADT list) {
     return -1;
   }
 
-  if (list->head == NULL) 
+  if (list->head == NULL)
     return -1;
 
   TNode to_delete = list->head;
 
-  if (list->head == list->tail) { 
+  if (list->head == list->tail) {
     list->head = NULL;
     list->tail = NULL;
   } else {
@@ -113,12 +113,12 @@ int delete_last(DListADT list) {
     return -1;
   }
 
-  if (list->head == NULL) 
+  if (list->head == NULL)
     return -1;
 
   TNode to_delete = list->tail;
 
-  if (list->head == list->tail) { 
+  if (list->head == list->tail) {
     list->head = NULL;
     list->tail = NULL;
   } else {
@@ -140,13 +140,13 @@ int delete_element(DListADT list, void *info) {
     return -1;
   }
 
-  if (list->head == NULL) 
+  if (list->head == NULL)
     return -1;
 
   TNode current = list->head;
   while (current != NULL) {
     if (current->info == info) {
-      if (current == list->head) { 
+      if (current == list->head) {
         return delete_first(list);
       } else if (current == list->tail) {
         return delete_last(list);
@@ -160,7 +160,7 @@ int delete_element(DListADT list, void *info) {
     }
     current = current->next;
   }
-  return -1; 
+  return -1;
 }
 
 void *get_first(DListADT list) {
@@ -169,7 +169,7 @@ void *get_first(DListADT list) {
     return NULL;
   }
 
-  if (list->head == NULL) 
+  if (list->head == NULL)
     return NULL;
   return list->head->info;
 }
@@ -179,7 +179,7 @@ void *get_last(DListADT list) {
     return NULL;
   }
 
-  if (list->head == NULL) 
+  if (list->head == NULL)
     return NULL;
   return list->tail->info;
 }

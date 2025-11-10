@@ -2,17 +2,16 @@
 // PVS-Studio Static Code Analyzer for C, C++, C#, and Java:
 // https://pvs-studio.com
 
-
 #include "shell.h"
-#include "sharedStructs.h"
 #include "color.h"
 #include "inputParser.h"
+#include "sharedStructs.h"
 #include "shellCommands.h"
-#include "syscalls.h"
-#include "test_functions.h"
 #include "stdio.h"
 #include "stdlib.h"
 #include "string.h"
+#include "syscalls.h"
+#include "test_functions.h"
 #include <libasm.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -43,8 +42,11 @@ typedef enum { NO_PARAMS = 0, SINGLE_PARAM, DUAL_PARAM } functionType;
 #define COLOR_USAGE TURQUOISE
 #define COLOR_DESC SILVER
 
-#define RETURN_IF_INVALID(idx) if ((idx) == -1) { printfc(RED, INVALID_COMMAND); return; }
-
+#define RETURN_IF_INVALID(idx)                                                 \
+  if ((idx) == -1) {                                                           \
+    printfc(RED, INVALID_COMMAND);                                             \
+    return;                                                                    \
+  }
 
 typedef struct {
   const char *name;
@@ -66,7 +68,7 @@ static void div(int argc, char **argv);
 static void fontSize(int argc, char **argv);
 static void printMem(int argc, char **argv);
 static int getCommandIndex(char *command);
-static void create_piped_processes(input_parser_t * parser);
+static void create_piped_processes(input_parser_t *parser);
 static void create_single_process(input_parser_t *parser);
 static void print_block(const char *text);
 static void print_section(const char *title, const char *text);
@@ -104,14 +106,13 @@ const static Command commands[] = {
     {"kaboom", "Dispara una excepcion de opcode invalido",
      (entry_point_t)kaboom, CAT_GENERAL, "kaboom",
      "Ejecuta un opcode invalido para probar el manejador de excepciones.",
-     "No recibe parametros.",
-     "Provoca un dump de registros y vuelve al shell.", "kaboom"},
+     "No recibe parametros.", "Provoca un dump de registros y vuelve al shell.",
+     "kaboom"},
     {"inforeg", "Muestra el ultimo snapshot de registros",
      (entry_point_t)printInfoReg, CAT_INFO, "inforeg",
      "Imprime el estado guardado de los registros generales y de pila.",
      "No recibe parametros.",
-     "El snapshot se captura al presionar Ctrl+S en el teclado.",
-     "inforeg"},
+     "El snapshot se captura al presionar Ctrl+S en el teclado.", "inforeg"},
     {"time", "Despliega la hora actual UTC-3", (entry_point_t)time, CAT_INFO,
      "time", "Lee el RTC y muestra la hora local en formato hh:mm:ss.",
      "No recibe parametros.", NULL, "time"},
@@ -121,10 +122,11 @@ const static Command commands[] = {
      "<direccion_hex>  Direccion en hexadecimal (sin 0x).",
      "Util para depurar contenido de memoria.", "printmem F00"},
     {"ps", "Lista PID, estado, prioridad y stack", (entry_point_t)cmd_ps,
-    CAT_INFO, "ps",
-    "Muestra para cada proceso su PID, nombre, estado, prioridad, stack y si está en foreground/background.",
-    "No recibe parametros.", "Los procesos marcados como foreground aparecen como 'Foreground'.",
-    "ps"},
+     CAT_INFO, "ps",
+     "Muestra para cada proceso su PID, nombre, estado, prioridad, stack y si "
+     "está en foreground/background.",
+     "No recibe parametros.",
+     "Los procesos marcados como foreground aparecen como 'Foreground'.", "ps"},
     {"mem", "Muestra el uso de memoria", (entry_point_t)cmd_mem, CAT_INFO,
      "mem",
      "Consulta al administrador de memoria y muestra total, usado y libre.",
@@ -139,8 +141,10 @@ const static Command commands[] = {
      (entry_point_t)test_processes, CAT_TESTS, "test-processes <cantidad>",
      "Crea la cantidad indicada de procesos y los va matando, bloqueando y "
      "desbloqueando al azar.",
-     "<cantidad>  Cantidad de procesos que el test crea por ronda (1..MAX_PROCESSES-1).",
-     "Corre en bucle infinito: detenelo con Ctrl+C cuando termines de observar el comportamiento.",
+     "<cantidad>  Cantidad de procesos que el test crea por ronda "
+     "(1..MAX_PROCESSES-1).",
+     "Corre en bucle infinito: detenelo con Ctrl+C cuando termines de observar "
+     "el comportamiento.",
      "test-processes 10"},
     {"test-prio", "Muestra como impactan las prioridades en el scheduler",
      (entry_point_t)test_prio, CAT_TESTS, "test-prio <vueltas>",
@@ -162,7 +166,8 @@ const static Command commands[] = {
      (entry_point_t)cmd_mvar, CAT_TESTS, "mvar <writers> <readers>",
      "Crea procesos escritores y lectores que se sincronizan con semaforos "
      "para compartir una MVar.",
-     "<writers>  Cantidad de escritores (1-6).\n<readers>  Cantidad de lectores (1-6).",
+     "<writers>  Cantidad de escritores (1-6).\n<readers>  Cantidad de "
+     "lectores (1-6).",
      "Oculta el cursor mientras corre; usar Ctrl+C para abortar la demo.",
      "mvar 2 2"},
     {"loop", "Imprime su PID y duerme en un bucle infinito",
@@ -195,100 +200,100 @@ const static Command commands[] = {
      "Complemento de 'block': reanuda el proceso pausado.", "unblock 6"},
     {"cat", "Reproduce stdin en pantalla", (entry_point_t)cmd_cat, CAT_IO,
      "cat",
-     "Lee desde la entrada estandar (teclado o pipe) y muestra el flujo por pantalla" 
-     " sin realizar modificaciones hasta recibir la senal de fin de archivo (Ctrl+D).",
+     "Lee desde la entrada estandar (teclado o pipe) y muestra el flujo por "
+     "pantalla"
+     " sin realizar modificaciones hasta recibir la senal de fin de archivo "
+     "(Ctrl+D).",
      "No recibe parametros.",
      "Util para testear redirecciones y pipes. "
      "Permite verificar la comunicacion entre procesos.",
      "cat"},
     {"wc", "Cuenta lineas del texto ingresado", (entry_point_t)cmd_wc, CAT_IO,
-     "wc",
-     "Lee lineas desde stdin y al final informa cuantas se recibieron.",
+     "wc", "Lee lineas desde stdin y al final informa cuantas se recibieron.",
      "No recibe parametros.", "Se detiene con Ctrl+D.", "wc"},
-    {"filter", "Filtra vocales del texto ingresado",
-     (entry_point_t)cmd_filter, CAT_IO, "filter",
+    {"filter", "Filtra vocales del texto ingresado", (entry_point_t)cmd_filter,
+     CAT_IO, "filter",
      "Lee caracteres desde stdin y reimprime solo los que no son vocales.",
-     "No recibe parametros.", "Termina con Ctrl+D.",
-     "filter"}};
+     "No recibe parametros.", "Termina con Ctrl+D.", "filter"}};
 
-
-void run_shell(){
-    puts(WELCOME);
-    while(1) {
-        printfc(PINK, ">");
-        char raw_input[MAX_CHARS] = {0};
-        scanf("%S", raw_input);
-        input_parser_t * parser = parse_input(raw_input);
-        if(parser == NULL) {
-            printErr(INVALID_COMMAND);
-            continue;
-        }
-        
-        if(parser->qty_shell_programs == 1) {
-            create_single_process(parser);
-        }
-        else if (parser->qty_shell_programs == 2) {
-            create_piped_processes(parser);
-        }
-        free_parser(parser);
+void run_shell() {
+  puts(WELCOME);
+  while (1) {
+    printfc(PINK, ">");
+    char raw_input[MAX_CHARS] = {0};
+    scanf("%S", raw_input);
+    input_parser_t *parser = parse_input(raw_input);
+    if (parser == NULL) {
+      printErr(INVALID_COMMAND);
+      continue;
     }
+
+    if (parser->qty_shell_programs == 1) {
+      create_single_process(parser);
+    } else if (parser->qty_shell_programs == 2) {
+      create_piped_processes(parser);
+    }
+    free_parser(parser);
+  }
 }
 
-static void create_single_process(input_parser_t * parser) {
-    shell_program_t * program = parser->shell_programs[0];
-    int idx = getCommandIndex(program->name);
-    RETURN_IF_INVALID(idx);
+static void create_single_process(input_parser_t *parser) {
+  shell_program_t *program = parser->shell_programs[0];
+  int idx = getCommandIndex(program->name);
+  RETURN_IF_INVALID(idx);
 
-    if(parser->background) {
-        fd_t fds[2] = {DEV_NULL_FD, STDOUT};
-        my_create_process((entry_point_t)commands[idx].f, program->params, program->name, fds);
-    }
-    else {
-        fd_t fds[2] = {STDIN, STDOUT}; // Usar descriptores estándar para foreground
-        int64_t pid = my_create_process((entry_point_t)commands[idx].f, program->params, program->name, fds);
-        my_wait_pid(pid, NULL);
-    }
+  if (parser->background) {
+    fd_t fds[2] = {DEV_NULL_FD, STDOUT};
+    my_create_process((entry_point_t)commands[idx].f, program->params,
+                      program->name, fds);
+  } else {
+    fd_t fds[2] = {STDIN, STDOUT}; // Usar descriptores estándar para foreground
+    int64_t pid = my_create_process((entry_point_t)commands[idx].f,
+                                    program->params, program->name, fds);
+    my_wait_pid(pid, NULL);
+  }
 }
 
+static void create_piped_processes(input_parser_t *parser) {
+  shell_program_t *left_program = get_shell_program(parser, 0);
+  int first_idx = getCommandIndex(left_program->name);
+  RETURN_IF_INVALID(first_idx);
 
-static void create_piped_processes(input_parser_t * parser) {
-    shell_program_t * left_program = get_shell_program(parser, 0);
-    int first_idx = getCommandIndex(left_program->name);
-    RETURN_IF_INVALID(first_idx);
+  shell_program_t *right_program = get_shell_program(parser, 1);
+  int second_idx = getCommandIndex(right_program->name);
+  RETURN_IF_INVALID(second_idx);
 
-    shell_program_t * right_program = get_shell_program(parser, 1);
-    int second_idx = getCommandIndex(right_program->name);
-    RETURN_IF_INVALID(second_idx);
+  fd_t pipe_fds[2];
+  if (my_pipe_create(pipe_fds) == -1) {
+    printErr("No se pudo crear el pipe\n");
+    return;
+  }
 
-    fd_t pipe_fds[2];
-    if(my_pipe_create(pipe_fds) == -1) {
-        printErr("No se pudo crear el pipe\n");
-        return;
-    }
-    
-    fd_t left_fds[2] = {STDIN, pipe_fds[1]};
-    fd_t right_fds[2] = {pipe_fds[0], STDOUT};
+  fd_t left_fds[2] = {STDIN, pipe_fds[1]};
+  fd_t right_fds[2] = {pipe_fds[0], STDOUT};
 
-    int left_pid = my_create_process((entry_point_t)commands[first_idx].f, left_program->params, left_program->name, left_fds);
-    int right_pid = my_create_process((entry_point_t)commands[second_idx].f, right_program->params, right_program->name, right_fds);
+  int left_pid =
+      my_create_process((entry_point_t)commands[first_idx].f,
+                        left_program->params, left_program->name, left_fds);
+  int right_pid =
+      my_create_process((entry_point_t)commands[second_idx].f,
+                        right_program->params, right_program->name, right_fds);
 
-    if (left_pid == -1 || right_pid == -1) {
-        printErr("No se pudo crear uno de los procesos\n");
-        my_destroy_pipe(pipe_fds[0]);
-        return;
-    }
+  if (left_pid == -1 || right_pid == -1) {
+    printErr("No se pudo crear uno de los procesos\n");
+    my_destroy_pipe(pipe_fds[0]);
+    return;
+  }
 
-    if (parser->background) {
-        my_adopt_child(left_pid);
-        my_adopt_child(right_pid);
-    }
-    else {
-        my_wait_pid(left_pid, NULL);
-        my_wait_pid(right_pid, NULL);
-        my_destroy_pipe(pipe_fds[0]);
-    }
+  if (parser->background) {
+    my_adopt_child(left_pid);
+    my_adopt_child(right_pid);
+  } else {
+    my_wait_pid(left_pid, NULL);
+    my_wait_pid(right_pid, NULL);
+    my_destroy_pipe(pipe_fds[0]);
+  }
 }
-
 
 static const char *command_category(const Command *cmd) {
   if (cmd->category != NULL && cmd->category[0] != '\0') {
@@ -427,7 +432,7 @@ static void printInfoReg(int argc, char **argv) {
   uint64_t regSnapshot[len];
   getInfoReg(regSnapshot);
   for (int i = 0; i < len; i++)
-    printf("%s: 0x%llx\n", _regNames[i], regSnapshot[i]);
+    printf("%s: 0x%x\n", _regNames[i], regSnapshot[i]);
 }
 
 static void man(int argc, char **argv) {
@@ -444,7 +449,7 @@ static void man(int argc, char **argv) {
   const Command *cmd = &commands[idx];
   const char *category = command_category(cmd);
 
-printfc(COLOR_SECTION, "Comando:   ");
+  printfc(COLOR_SECTION, "Comando:   ");
   printf("%s\n\n", cmd->name);
   printfc(COLOR_SECTION, "Categoria: ");
   printf("%s\n\n", category);

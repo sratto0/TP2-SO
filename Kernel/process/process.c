@@ -3,9 +3,9 @@
 // https://pvs-studio.com
 
 #include "process.h"
-#include "sharedStructs.h"
 #include "lib.h"
 #include "scheduler.h"
+#include "sharedStructs.h"
 #include <stdint.h>
 
 #define STACK_SIZE 0x1000
@@ -45,8 +45,6 @@ process_t *my_create_process(int64_t pid, entry_point_t entry_point,
   proc->r_fd = fds[0];
   proc->w_fd = fds[1];
   proc->ticks = 0;
-
-  
 
   proc->stack_base = memory_alloc(STACK_SIZE);
   if (proc->stack_base == NULL) {

@@ -29,7 +29,7 @@ int64_t test_processes(uint64_t argc, char *argv[]) {
   if ((max_processes = satoi(argv[1])) <= 0)
     return -1;
 
-  if(max_processes >= MAX_PROCESSES){
+  if (max_processes >= MAX_PROCESSES) {
     printf("El numero maximo de procesos es 64\n");
     return -1;
   }

@@ -1,8 +1,8 @@
 #ifndef PIPES_H
 #define PIPES_H
 
-#include <stdint.h>
 #include "../../SharedLibraries/sharedStructs.h"
+#include <stdint.h>
 
 #define PIPE_BUFFER_SIZE 4096
 #define MAX_PIPES 64
@@ -12,16 +12,14 @@
 #define PIPE_WRITE_END 1
 #define SEM_NAME_LEN 32
 
-
-typedef struct pipeManagerCDT * pipeManagerADT;
+typedef struct pipeManagerCDT *pipeManagerADT;
 
 void pipe_system_init();
 int pipe_create(fd_t fds[2]);
-int pipe_write(fd_t fd, const char * buffer, int size);
-int pipe_read(fd_t fd, char * buffer, int size);
-void send_pipe_eof (fd_t fd);
+int pipe_write(fd_t fd, const char *buffer, int size);
+int pipe_read(fd_t fd, char *buffer, int size);
+void send_pipe_eof(fd_t fd);
 void pipe_destroy(fd_t fd);
 void pipe_release(fd_t fd);
-
 
 #endif /* PIPES_H */

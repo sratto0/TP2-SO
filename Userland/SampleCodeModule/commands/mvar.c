@@ -2,10 +2,10 @@
 // PVS-Studio Static Code Analyzer for C, C++, C#, and Java:
 // https://pvs-studio.com
 
-#include "../include/stdio.h"
-#include "../include/stdlib.h"
 #include "../../../SharedLibraries/sharedStructs.h"
 #include "../include/color.h"
+#include "../include/stdio.h"
+#include "../include/stdlib.h"
 #include "../tests/test_util.h"
 #include <stddef.h>
 #include <stdint.h>
@@ -237,8 +237,8 @@ static int manager_main(int argc, char **argv) {
     itoa(2 + i % 3, delay_buf, 10);
     char *wargv[] = {argv[0], token_buf, delay_buf, NULL};
     fd_t fds[2] = {STDIN, STDOUT};
-    int64_t pid =
-        my_create_process((entry_point_t)writer_main, wargv, "mvar_writer", fds);
+    int64_t pid = my_create_process((entry_point_t)writer_main, wargv,
+                                    "mvar_writer", fds);
     if (pid < 0) {
       error = 1;
       break;
@@ -253,8 +253,8 @@ static int manager_main(int argc, char **argv) {
     itoa(3 + j % 3, delay_buf, 10);
     char *rargv[] = {argv[0], index_buf, delay_buf, NULL};
     fd_t fds[2] = {STDIN, STDOUT};
-    int64_t pid =
-        my_create_process((entry_point_t)reader_main, rargv, "mvar_reader", fds);
+    int64_t pid = my_create_process((entry_point_t)reader_main, rargv,
+                                    "mvar_reader", fds);
     if (pid < 0) {
       error = 1;
       break;
@@ -288,7 +288,8 @@ int cmd_mvar(int argc, char *argv[]) {
   int readers = atoi(argv[2]);
   if (writers <= 0 || readers <= 0 || writers > MAX_PARTICIPANTS ||
       readers > MAX_PARTICIPANTS) {
-    printf("mvar: cantidades invalidas (maximo %d por tipo)\n", MAX_PARTICIPANTS);
+    printf("mvar: cantidades invalidas (maximo %d por tipo)\n",
+           MAX_PARTICIPANTS);
     return -1;
   }
 
@@ -309,9 +310,8 @@ int cmd_mvar(int argc, char *argv[]) {
 
   char *manager_argv[] = {shared_hex, writers_buf, readers_buf, NULL};
   fd_t fds[2] = {STDIN, STDOUT};
-  int64_t manager_pid =
-      my_create_process((entry_point_t)manager_main, manager_argv,
-                        "mvar_manager", fds);
+  int64_t manager_pid = my_create_process((entry_point_t)manager_main,
+                                          manager_argv, "mvar_manager", fds);
   if (manager_pid < 0) {
     printf("mvar: no pude iniciar el administrador\n");
     my_free(shared);

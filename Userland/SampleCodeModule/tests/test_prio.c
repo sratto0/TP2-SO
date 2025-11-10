@@ -38,7 +38,6 @@ uint64_t test_prio(uint64_t argc, char *argv[]) {
   int exit_code;
   fd_t fds[2] = {STDIN, STDOUT};
 
-
   if (argc != 2)
     return -1;
 
@@ -51,8 +50,6 @@ uint64_t test_prio(uint64_t argc, char *argv[]) {
     pids[i] = my_create_process((entry_point_t)zero_to_max, ztm_argv,
                                 "zero_to_max", fds);
   }
-
-
 
   // Expect to see them finish at the same time
 

@@ -396,11 +396,18 @@ Durante la compilación con PVS-Studio aparecen varios warnings que **no** han s
 - **V522**: Warning sobre dereferencia potencial de NULL.  
   *Justificación*: El scheduler se mapea a una dirección física fija (`SCHEDULER_ADDRESS`) conocida en tiempo de compilación; no puede ser NULL en este contexto de kernel.
 
+#### **memory.c**
+- **V576** (líneas 36-38): Warning sobre `printf` con formato `%x` recibiendo argumentos `uint64_t`.  
+  *Justificación*: Nuestra implementación custom de `printf` soporta únicamente los especificadores básicos (`%d`, `%x`, `%s`, `%c`) sin modificadores de longitud (`ll`, `l`, `h`). Para valores de 64 bits en hexadecimal se usa directamente `%x` (no `%llx`), y la función maneja correctamente el argumento completo.
+
 #### **shell.c**
 - **V576** (línea 220): Falta de especificador de ancho en `scanf` (ej: `%255s`).  
   *Justificación*: Nuestra implementación custom de `scanf` ya maneja el límite del buffer internamente (lee hasta `MAX_CHARS-1`). El código está protegido contra overflow.
 - **V576** (línea 220): PVS detecta `%S` y asume el formato estándar de C (wide string).  
   *Justificación*: En nuestra implementación, `%S` se usa para leer una línea completa con propósitos específicos del kernel. El warning es un falso positivo.
+- **V576** (línea 430): Warning sobre `printf` con formato `%x` recibiendo argumentos `uint64_t`.  
+  *Justificación*: Nuestra implementación custom de `printf` soporta únicamente los especificadores básicos (`%d`, `%x`, `%s`, `%c`) sin modificadores de longitud (`ll`, `l`, `h`). Para valores de 64 bits en hexadecimal se usa directamente `%x` (no `%llx`), y la función maneja correctamente el argumento completo.
+
 
 #### **shell_commands.c**
 - **V576**: Conversión de valores de 64 bits (`uint64_t`) en contextos que esperan 32 bits.  

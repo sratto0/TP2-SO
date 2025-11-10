@@ -3,14 +3,13 @@
 // https://pvs-studio.com
 
 #include "semaphore.h"
+#include "doubleLinkedList.h"
 #include "lib.h"
 #include "memoryManager.h"
 #include "process.h"
 #include "scheduler.h"
-#include "doubleLinkedList.h"
 #include <stddef.h>
 #include <stdint.h>
-
 
 typedef struct semaphore {
   int value;
@@ -157,7 +156,7 @@ int64_t my_sem_wait(char *name) {
   return 0;
 }
 
-int64_t my_sem_post(char *name) { 
+int64_t my_sem_post(char *name) {
   if (semaphore_manager == NULL || name == NULL) {
     return -1;
   }

@@ -82,8 +82,7 @@ void saveRegisters();
  */
 void _hlt();
 
-int str_compare(const char * str1, const char * str2);
-int itoa(uint64_t n, char* buffer, int base);
-
+int str_compare(const char *str1, const char *str2);
+int itoa(uint64_t n, char *buffer, int base);
 
 #endif
