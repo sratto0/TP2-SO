@@ -2,11 +2,11 @@
 // PVS-Studio Static Code Analyzer for C, C++, C#, and Java:
 // https://pvs-studio.com
 
-#include "../include/semaphore.h"
-#include "../include/lib.h"
-#include "../include/memoryManager.h"
-#include "../include/process.h"
-#include "../include/scheduler.h"
+#include "semaphore.h"
+#include "lib.h"
+#include "memoryManager.h"
+#include "process.h"
+#include "scheduler.h"
 #include "doubleLinkedList.h"
 #include <stddef.h>
 #include <stdint.h>

@@ -275,6 +275,10 @@ static void notify_pipe_closure(process_t *proc) {
   }
   if (proc->w_fd >= BUILT_IN_FDS) {
     send_pipe_eof(proc->w_fd);
+    pipe_release(proc->w_fd);
+  }
+  if (proc->r_fd >= BUILT_IN_FDS) {
+    pipe_release(proc->r_fd);
   }
 }
 

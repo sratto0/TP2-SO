@@ -4,9 +4,13 @@
 #include "../include/memoryManager.h"
 #include "../include/lib.h"
 
+extern void acquire_lock(lock_t *lock);
+extern void release_lock(lock_t *lock);
+
 typedef struct pipe {
     int in_use;
     fd_t fds[2]; 
+    int ref_count;
 
     char buffer[PIPE_BUFFER_SIZE];
     int read_pos;
@@ -16,6 +20,7 @@ typedef struct pipe {
     char space_sem[SEM_NAME_LEN];
     char data_sem[SEM_NAME_LEN];
     char mutex_sem[SEM_NAME_LEN];
+    lock_t lock;
 } pipe_t;
 
 typedef struct pipeManagerCDT {
@@ -25,6 +30,21 @@ typedef struct pipeManagerCDT {
 
 
 pipeManagerADT pipe_manager = NULL;
+
+static int get_pipe_index_from_fd(fd_t fd, int pos){
+    if(pipe_manager == NULL){
+        return -1;
+    }
+    for(int i = 0; i < MAX_PIPES; i++){
+        if(pipe_manager->pipes[i].in_use){
+            if(pipe_manager->pipes[i].fds[pos] == fd){
+                return i;
+            }
+        }
+    }
+    return -1;
+}
+
 
 void pipe_system_init() {
     if(pipe_manager != NULL){
@@ -41,6 +61,8 @@ void pipe_system_init() {
         pipe_manager->pipes[i].read_pos = 0;
         pipe_manager->pipes[i].write_pos = 0;
         pipe_manager->pipes[i].data_size = 0;
+        pipe_manager->pipes[i].ref_count = 0;
+        pipe_manager->pipes[i].lock = 1;
         pipe_manager->pipes[i].space_sem[0] = '\0';
         pipe_manager->pipes[i].data_sem[0] = '\0';
         pipe_manager->pipes[i].mutex_sem[0] = '\0';
@@ -79,6 +101,8 @@ int pipe_create(fd_t fds[2]){
             pipe_manager->pipes[i].read_pos = 0;
             pipe_manager->pipes[i].write_pos = 0;
             pipe_manager->pipes[i].data_size = 0;
+            pipe_manager->pipes[i].ref_count = 2;
+            pipe_manager->pipes[i].lock = 1;
 
             pipe_build_name(i, "_space", pipe_manager->pipes[i].space_sem);
             pipe_build_name(i, "_data", pipe_manager->pipes[i].data_sem);
@@ -97,19 +121,33 @@ int pipe_create(fd_t fds[2]){
     return -1;
 }
 
-static int get_pipe_index_from_fd(fd_t fd, int pos){
-    if(pipe_manager == NULL){
-        return -1;
+
+void pipe_release(fd_t fd) {
+    if(pipe_manager == NULL || fd < BUILTIN_FDS || fd >= pipe_manager->next_fd){
+        return;
     }
-    for(int i = 0; i < MAX_PIPES; i++){
-        if(pipe_manager->pipes[i].in_use){
-            if(pipe_manager->pipes[i].fds[pos] == fd){
-                return i;
-            }
+
+    int index = get_pipe_index_from_fd(fd, PIPE_READ_END);
+    if(index == -1) {
+        index = get_pipe_index_from_fd(fd, PIPE_WRITE_END);
+        if(index == -1){
+            return;
         }
     }
-    return -1;
+
+    pipe_t * pipe = &pipe_manager->pipes[index];
+
+
+    acquire_lock(&pipe->lock);
+    pipe->ref_count--;
+    int refs = pipe->ref_count;
+    release_lock(&pipe->lock);
+
+    if(refs <= 0) {
+        pipe_destroy(pipe->fds[PIPE_READ_END]);
+    }
 }
+
 
 int pipe_write(fd_t fd, const char * buffer, int size){
     if(pipe_manager == NULL || buffer == NULL || size <= 0){
@@ -213,6 +251,7 @@ void pipe_destroy(fd_t fd){
     my_sem_close(pipe->mutex_sem);
 
     pipe->in_use = 0;
+    pipe->ref_count = 0;
     pipe->fds[PIPE_READ_END] = FD_INVALID;
     pipe->fds[PIPE_WRITE_END] = FD_INVALID;
     pipe->read_pos = 0;
