@@ -122,7 +122,7 @@ int64_t sys_set_priority(int64_t pid, uint8_t priority);
 
 process_info_t *sys_get_processes_info();
 
-int64_t sys_kill_process(int64_t pid);
+int64_t sys_kill_process(int64_t pids);
 
 int64_t sys_wait_pid(int64_t pid, int *ret);
 

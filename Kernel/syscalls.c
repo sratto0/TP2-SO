@@ -346,7 +346,9 @@ static uint64_t syscall_get_processes_info() {
 }
 
 // Kill process
-static int syscall_kill_process(int64_t pid) { return kill_process(pid); }
+static int syscall_kill_process(int64_t pid) { 
+  return kill_process(pid);
+}
 
 // Wait PID
 static int64_t syscall_wait_pid(int64_t pid, int32_t *exit_code) {
