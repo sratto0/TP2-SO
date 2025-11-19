@@ -86,7 +86,7 @@ int cmd_loop(int argc, char *argv[]) {
 
 int cmd_kill(int argc, char **argv) {
   if (argc < 2) {
-    printfc(RED, "Uso: kill <pid1> [pid2] ...\n");
+    printfc(RED, "Uso: kill <PID1> [<PID2>...]\n");
     return -1;
   }
 

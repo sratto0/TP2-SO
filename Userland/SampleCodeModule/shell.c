@@ -176,7 +176,7 @@ const static Command commands[] = {
      "<segundos>  Intervalo en segundos (entero positivo).",
      "Detenelo con Ctrl+C desde la shell.", "loop 2"},
     {"kill", "Mata los procesos indicados por PID", (entry_point_t)cmd_kill,
-     CAT_PROCESOS, "kill <pid> <pid> ...",
+     CAT_PROCESOS, "kill <PID1> [<PID2>...]",
      "Solicita al kernel que termine el proceso con el PID indicado.",
      "<pid>  Identificador del proceso (>1).",
      "No se puede matar init (0) ni la shell (1).", "kill 7"},
