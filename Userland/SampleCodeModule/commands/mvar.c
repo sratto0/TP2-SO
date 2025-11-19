@@ -135,7 +135,8 @@ static void delay_loop(int amount) {
   if (amount <= 0) {
     amount = 1;
   }
-  bussy_wait((uint64_t)amount * 20000000);
+  uint32_t random_variance = GetUniform(8000000);
+  bussy_wait((uint64_t)amount * (12000000 + random_variance));
 }
 
 static int writer_main(int argc, char **argv) {

@@ -118,8 +118,8 @@ int64_t my_sem_open(char *name, uint64_t initialValue) {
   sem->in_use = 1;
   sem->lock = 1;
   sem->using_count = 1;
-  my_strncpy(sem->name, name, MAX_NAME_LEN);
-  sem->name[sizeof(sem->name) - 1] = '\0';
+  my_strncpy(sem->name, name, MAX_NAME_LEN - 1);
+  sem->name[MAX_NAME_LEN - 1] = '\0';
   return 0;
 }
 
@@ -204,6 +204,10 @@ int64_t my_sem_close(char *name) {
 
   if (sem->using_count == 0) {
     sem->in_use = 0;
+    for (int i = 0; i < MAX_NAME_LEN; i++) {
+      sem->name[i] = '\0';
+    }
+    sem->value = 0;
     clear_queue(sem->waiting_queue);
   }
   release_lock(&sem->lock);
