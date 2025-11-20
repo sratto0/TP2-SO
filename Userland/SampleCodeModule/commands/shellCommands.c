@@ -85,42 +85,66 @@ int cmd_loop(int argc, char *argv[]) {
 }
 
 int cmd_kill(int argc, char **argv) {
-  if (argc != 2) {
-    printfc(RED, WRONG_PARAM_1);
+  if (argc < 2) {
+    printfc(RED, "Uso: kill <PID1> [<PID2>...]\n");
     return -1;
   }
-  int pid = atoi(argv[1]);
-  if (pid <= 1) {
-    printfc(RED, "El PID debe ser un numero mayor a 1\n");
-    return -1;
-  }
-  process_info_t *info = my_get_processes_info();
-  if (info != NULL) {
-    int found = 0;
-    for (process_info_t *p = info; p->pid != NO_PID; p++) {
-      if (p->pid == pid) {
-        found = 1;
-        break;
-      }
-    }
-    if (!found) {
-      printfc(RED, "No existe un proceso con ese PID\n");
+
+  // en argc voy a tener la cantidad de pids + 1
+  int pid_count = argc - 1;
+  int64_t pids[pid_count];
+
+  // Llenar el array desde índice 0
+  for (int i = 0; i < pid_count; i++) {
+    pids[i] = atoi(argv[i + 1]);
+    if (pids[i] <= 1) {
+      printfc(RED, "El PID debe ser un numero mayor a 1\n");
       return -1;
     }
   }
-  int result = my_kill(pid);
 
-  if (result == -1) {
-    printfc(RED,
-            "Error al matar el proceso. Verifique que el PID sea correcto.\n");
-    return -1;
-  } else if (result == 0) {
-    printf("Proceso %d matado exitosamente\n", pid);
-    return 0;
-  } else {
-    printfc(RED, "my_kill devolvió código inesperado\n");
-    return -1;
+  // Matar cada proceso, validando uno por uno
+  process_info_t *info = my_get_processes_info();
+  int killed_count = 0;
+  int error_count = 0;
+
+  for (int i = 0; i < pid_count; i++) {
+    // Validar que el PID exista
+    int found = 0;
+    if (info != NULL) {
+      for (process_info_t *p = info; p->pid != NO_PID; p++) {
+        if (p->pid == pids[i]) {
+          found = 1;
+          break;
+        }
+      }
+    }
+
+    if (!found) {
+      printfc(RED, "No existe un proceso con PID %d\n", (int)pids[i]);
+      error_count++;
+      continue;
+    }
+
+    // Intentar matar el proceso
+    int result = my_kill(pids[i]);
+    if (result == -1) {
+      printfc(RED, "Error al matar el proceso con PID=%d.\n", (int)pids[i]);
+      error_count++;
+    } else {
+      printf("Proceso %d matado exitosamente\n", (int)pids[i]);
+      killed_count++;
+    }
   }
+
+  if (info != NULL) {
+    my_free(info);
+  }
+
+  if (killed_count > 0) {
+    return 0;
+  }
+  return -1;
 }
 
 int cmd_nice(int argc, char **argv) {

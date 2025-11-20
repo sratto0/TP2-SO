@@ -185,9 +185,9 @@ Una vez que el kernel esté corriendo, la shell interactiva permite ejecutar los
   *Parámetros*: `<segundos>` - Intervalo de sleep en segundos (entero positivo).  
   *Nota*: Detener con Ctrl+C.
 
-- **`kill <pid>`**  
-  Mata el proceso indicado por PID.  
-  *Parámetros*: `<pid>` - Identificador del proceso (mayor a 1).  
+- **`kill <pid> <pid> ...`**  
+  Mata los procesos indicados por PID.  
+  *Parámetros*: `<pid> <pid> ...` - Identificador de los procesos (mayor a 1).  
   *Nota*: No se puede matar init (0) ni la shell (1).
 
 - **`nice <pid> <prioridad>`**  
